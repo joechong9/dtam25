@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdnjs.cloudflare.com docs.opencv.org; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; worker-src blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DTAM-MY OMR Scanner v2.0</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <script async src="https://docs.opencv.org/4.8.0/opencv.js"
+    onload="window.cvReady=true;console.log('OpenCV ready');"
+    onerror="console.warn('OpenCV failed to load — perspective correction disabled');"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; }
+    button:disabled { opacity: 0.5; cursor: not-allowed !important; }
+    select, input[type=text], input[type=number] { outline: none; }
+    select:focus, input:focus { border-color: #0E8B8B !important; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f0f4f8; }
+    ::-webkit-scrollbar-thumb { background: #b0bec5; border-radius: 3px; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+// ==============================================================
+// DTAM-MY OMR SCANNER v1.1
+// Telerehabilitation Research · UTAR 24UED03838
+// Processes: Caregiver, Allied Health, Policy-Maker, General Public, Elderly
+// ==============================================================
+
+// ── Part 1: Constants & Sheet Configs ─────────────────────────
+const PAGE_W = 297, PAGE_H = 210;
+const LM = 12, TM = 10, BM = 10;
+const COL_A_X = LM, COL_A_W = 154;
+const COL_B_X = LM + COL_A_W + 4;
+const COL_B_W = PAGE_W - COL_B_X - LM;
+const BSPC = 8, BR = 2.6;
+const BADGE_H = 5, SOURCE_H = 3.8, COL_HDR_H = 5.5;
+const SECTION_HDR_H = BADGE_H + SOURCE_H + COL_HDR_H;
+const ROW_H_SINGLE = 6;
+const P1_Y = 65, P2_Y = 18;
+
+function bubbleXs(col, nOptions) {
+  const cx = col === 'A' ? COL_A_X : COL_B_X;
+  const cw = col === 'A' ? COL_A_W : COL_B_W;
+  const stmt_w = cw - nOptions * BSPC - BSPC;
+  return Array.from({length: nOptions}, (_, i) => cx + stmt_w + BSPC/2 + i * BSPC);
+}
+
+function computeItemPositions(section) {
+  const nOpt = section.options.length;
+  const bxs  = bubbleXs(section.col, nOpt);
+  return section.items.map((item, i) => ({
+    ...item,
+    section_id:    section.id,
+    section_label: section.label,
+    page:          section.page,
+    options:       section.options,
+    option_labels: section.option_labels || section.options,
+    bubble_xs:     bxs,
+    y_mm:          section.y_start + SECTION_HDR_H + i * section.row_h + section.row_h / 2,
+  }));
+}
+
+const LIKERT5 = ['1','2','3','4','5'];
+const ZBI_OPT = ['0','1','2','3','4'];
+
+const TAM_ITEMS = [
+  { code:'PU_1',   label:'Using telerehabilitation would improve quality of rehabilitation services' },
+  { code:'PU_2',   label:'Using telerehabilitation would make it easier to access rehabilitation' },
+  { code:'PU_3',   label:'Using telerehabilitation would increase efficiency in delivering/receiving care' },
+  { code:'PU_4',   label:'Telerehabilitation would be useful for my role/family member/patients' },
+  { code:'PU_5',   label:'Overall, I find telerehabilitation to be advantageous' },
+  { code:'PEOU_1', label:'Learning to use telerehabilitation technology would be easy for me' },
+  { code:'PEOU_2', label:'I find telerehabilitation technology easy to use' },
+  { code:'PEOU_3', label:'Interacting with telerehabilitation does not require much mental effort' },
+  { code:'PEOU_4', label:'I can become proficient at using telerehabilitation technology quickly' },
+  { code:'PEOU_5', label:'Overall, I find telerehabilitation technology easy to use' },
+];
+
+const UTAUT2_ITEMS = [
+  { code:'EE_1', label:'Learning how to use telerehabilitation technology is easy for me' },
+  { code:'EE_2', label:'My interaction with telerehabilitation is clear and understandable' },
+  { code:'EE_3', label:'It is easy for me to become skillful at using telerehabilitation technology' },
+  { code:'SI_1', label:'People who are important to me think I should use telerehabilitation' },
+  { code:'SI_2', label:'People who influence my behaviour think I should use telerehabilitation' },
+  { code:'SI_3', label:'My professional community has been supportive of telerehabilitation use' },
+  { code:'FC_1', label:'I have the resources necessary to use telerehabilitation (device, internet)' },
+  { code:'FC_2', label:'I have the knowledge necessary to use telerehabilitation' },
+  { code:'FC_3', label:'Telerehabilitation is compatible with other technologies I use' },
+  { code:'HM_1', label:'Using telerehabilitation is fun' },
+  { code:'HM_2', label:'Using telerehabilitation is enjoyable' },
+  { code:'HM_3', label:'Using telerehabilitation is very entertaining' },
+  { code:'HB_1', label:'The use of telerehabilitation has become a habit for me' },
+  { code:'HB_2', label:'I am committed to using telerehabilitation' },
+  { code:'HB_3', label:'I must use telerehabilitation' },
+  { code:'BI_1', label:'I intend to use telerehabilitation in the future' },
+  { code:'BI_2', label:'I predict I would use telerehabilitation in the next 12 months' },
+  { code:'BI_3', label:'I plan to use telerehabilitation as often as needed' },
+];
+
+const TUQ_ITEMS = [
+  { code:'TUQ_1',  label:'The telerehabilitation system was easy to use' },
+  { code:'TUQ_2',  label:'It was easy to learn how to use the telerehabilitation system' },
+  { code:'TUQ_3',  label:'The interface of the telerehabilitation system was pleasant' },
+  { code:'TUQ_4',  label:'The telerehabilitation system has all the functions I expected' },
+  { code:'TUQ_5',  label:'The telerehabilitation system performed reliably' },
+  { code:'TUQ_6',  label:'The telerehabilitation system was fast enough for my purposes' },
+  { code:'TUQ_7',  label:'I am satisfied with the telerehabilitation system' },
+  { code:'TUQ_8',  label:'Overall, I am satisfied with the quality of the telerehabilitation service' },
+  { code:'TUQ_9',  label:'I would use telerehabilitation again' },
+  { code:'TUQ_10', label:'I would recommend telerehabilitation to others' },
+];
+
+const SUS_ITEMS = [
+  { code:'SUS_1',  label:'I think that I would like to use this system frequently',                              polarity:'pos' },
+  { code:'SUS_2',  label:'I found the system unnecessarily complex',                                             polarity:'neg' },
+  { code:'SUS_3',  label:'I thought the system was easy to use',                                                 polarity:'pos' },
+  { code:'SUS_4',  label:'I would need the support of a technical person to use this system',                    polarity:'neg' },
+  { code:'SUS_5',  label:'The various functions in this system were well integrated',                            polarity:'pos' },
+  { code:'SUS_6',  label:'There was too much inconsistency in this system',                                      polarity:'neg' },
+  { code:'SUS_7',  label:'Most people would learn to use this system very quickly',                              polarity:'pos' },
+  { code:'SUS_8',  label:'I found the system very cumbersome to use',                                           polarity:'neg' },
+  { code:'SUS_9',  label:'I felt very confident using the system',                                               polarity:'pos' },
+  { code:'SUS_10', label:'I needed to learn a lot of things before I could get going with this system',          polarity:'neg' },
+];
+
+const ZBI_ITEMS = [
+  { code:'ZBI_1',  label:'Your relative asks for more help than they need?' },
+  { code:'ZBI_2',  label:'Because of caregiving you do not have enough time for yourself?' },
+  { code:'ZBI_3',  label:'You feel stressed between caring and other responsibilities?' },
+  { code:'ZBI_4',  label:'You feel embarrassed over your relative\'s behaviour?' },
+  { code:'ZBI_5',  label:'You feel angry when you are around your relative?' },
+  { code:'ZBI_6',  label:'Caregiving negatively affects your relationship with family/friends?' },
+  { code:'ZBI_7',  label:'You are afraid about what the future holds for your relative?' },
+  { code:'ZBI_8',  label:'Your relative is dependent on you?' },
+  { code:'ZBI_9',  label:'You feel strained when you are around your relative?' },
+  { code:'ZBI_10', label:'Your health has suffered because of your involvement with your relative?' },
+  { code:'ZBI_11', label:'You don\'t have as much privacy as you would like because of your relative?' },
+  { code:'ZBI_12', label:'Your social life has suffered because you are caring for your relative?' },
+  { code:'ZBI_13', label:'You feel uncomfortable about having friends over due to caregiving?' },
+  { code:'ZBI_14', label:'Your relative seems to expect you to take care of them?' },
+  { code:'ZBI_15', label:'You don\'t have enough money to care for your relative in addition to your expenses?' },
+  { code:'ZBI_16', label:'You will be unable to take care of your relative much longer?' },
+  { code:'ZBI_17', label:'You have lost control of your life since your relative\'s illness?' },
+  { code:'ZBI_18', label:'You wish you could leave the care of your relative to someone else?' },
+  { code:'ZBI_19', label:'You feel uncertain about what to do about your relative?' },
+  { code:'ZBI_20', label:'You feel you should be doing more for your relative?' },
+  { code:'ZBI_21', label:'You feel you could do a better job in caring for your relative?' },
+  { code:'ZBI_22', label:'Overall, how often do you feel burdened in caring for your relative?' },
+];
+
+const MAST_ITEMS = [
+  { code:'MAST_D1_1', label:'Telerehabilitation addresses an important health problem' },
+  { code:'MAST_D1_2', label:'The technology is well-described and mature for deployment' },
+  { code:'MAST_D1_3', label:'The target population is clearly defined' },
+  { code:'MAST_D1_4', label:'There is a need for telerehabilitation in the Malaysian context' },
+  { code:'MAST_D2_1', label:'Telerehabilitation appears to be safe for patients' },
+  { code:'MAST_D2_2', label:'Patient data security is adequately protected' },
+  { code:'MAST_D2_3', label:'Adverse events can be detected and managed remotely' },
+  { code:'MAST_D2_4', label:'Technical failures are unlikely to compromise patient safety' },
+  { code:'MAST_D3_1', label:'Telerehabilitation is clinically effective' },
+  { code:'MAST_D3_2', label:'Evidence supports its use for stroke rehabilitation' },
+  { code:'MAST_D3_3', label:'Outcomes are comparable to face-to-face rehabilitation' },
+  { code:'MAST_D3_4', label:'Quality of life improvement is demonstrated' },
+  { code:'MAST_D3_5', label:'The technology integrates well with current clinical practice' },
+  { code:'MAST_D4_1', label:'Patients are likely to accept telerehabilitation' },
+  { code:'MAST_D4_2', label:'The patient experience is satisfactory' },
+  { code:'MAST_D4_3', label:'Telerehabilitation is accessible to elderly patients' },
+  { code:'MAST_D4_4', label:'Patient privacy is respected during telerehabilitation' },
+  { code:'MAST_D5_1', label:'Telerehabilitation reduces healthcare costs' },
+  { code:'MAST_D5_2', label:'The cost-effectiveness is acceptable' },
+  { code:'MAST_D5_3', label:'Implementation costs are justified by benefits' },
+  { code:'MAST_D5_4', label:'Telerehabilitation reduces patient travel and time costs' },
+  { code:'MAST_D6_1', label:'Telerehabilitation can be integrated into existing workflows' },
+  { code:'MAST_D6_2', label:'Staff training requirements are manageable' },
+  { code:'MAST_D6_3', label:'The technology is compatible with existing health infrastructure' },
+  { code:'MAST_D6_4', label:'Telerehabilitation supports national health system goals' },
+  { code:'MAST_D7_1', label:'Telerehabilitation raises no major ethical concerns' },
+  { code:'MAST_D7_2', label:'Legal and regulatory requirements are met (PDPA 2010)' },
+  { code:'MAST_D7_3', label:'Telerehabilitation is culturally appropriate for Malaysia' },
+];
+
+const SHEET_CONFIGS = {
+  CAREGIVER: {
+    name: 'Caregiver / Penjaga', code: 'CG', pages: 3,
+    sections: [
+      { id:'B1_TAM',   label:'B1: Technology Acceptance (TAM)',  page:1, col:'B', y_start:P1_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:TAM_ITEMS },
+      { id:'B2_UTAUT2',label:'B2: UTAUT2 Constructs',            page:2, col:'A', y_start:P2_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:UTAUT2_ITEMS },
+      { id:'C_ZBI',    label:'Part C: Zarit Burden Interview',   page:3, col:'A', y_start:P2_Y, row_h:ROW_H_SINGLE, options:ZBI_OPT, items:ZBI_ITEMS },
+    ]
+  },
+  ALLIED_HEALTH: {
+    name: 'Allied Health Professional', code: 'AH', pages: 2,
+    sections: [
+      { id:'B1_TAM',    label:'B1: Technology Acceptance (TAM)',  page:1, col:'A', y_start:P1_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:TAM_ITEMS },
+      { id:'B2_UTAUT2', label:'B2: UTAUT2 Constructs',            page:1, col:'B', y_start:P1_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:UTAUT2_ITEMS.slice(0,12) },
+      { id:'B3_TUQ',    label:'B3: Telehealth Usability (TUQ)',   page:2, col:'A', y_start:P2_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:TUQ_ITEMS },
+      { id:'C_SUS',     label:'Part C: System Usability (SUS)',   page:2, col:'B', y_start:P2_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:SUS_ITEMS },
+    ]
+  },
+  POLICY_MAKER: {
+    name: 'Policy-Maker / Pembuat Dasar', code: 'PM', pages: 2,
+    sections: [
+      { id:'B1_TAM',      label:'B1: Technology Acceptance (TAM)', page:1, col:'A', y_start:P1_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:TAM_ITEMS },
+      { id:'B2_MAST_D1_4',label:'B2–B5: MAST Domains 1–4',        page:1, col:'B', y_start:P1_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:MAST_ITEMS.slice(0,17) },
+      { id:'B6_MAST_D5_7',label:'B6–B8: MAST Domains 5–7',        page:2, col:'A', y_start:P2_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:MAST_ITEMS.slice(17) },
+    ]
+  },
+  GENERAL_PUBLIC: {
+    name: 'General Public / Orang Awam', code: 'GP', pages: 2,
+    sections: [
+      { id:'B1_TAM',  label:'B1: Technology Acceptance (TAM)', page:1, col:'A', y_start:P1_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:TAM_ITEMS },
+      { id:'B2_ATT',  label:'B2: Attitude & Intention',        page:1, col:'B', y_start:P1_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:[
+        { code:'ATT_1', label:'I have a positive attitude towards telerehabilitation' },
+        { code:'ATT_2', label:'I believe telerehabilitation is beneficial for elderly patients' },
+        { code:'ATT_3', label:'I support the implementation of telerehabilitation in Malaysia' },
+        { code:'ATT_4', label:'I would recommend telerehabilitation to people who need rehabilitation' },
+        { code:'BI_1',  label:'I intend to use telerehabilitation if I need rehabilitation' },
+        { code:'BI_2',  label:'I predict I would use telerehabilitation if recommended by a doctor' },
+        { code:'SI_1',  label:'People important to me would support using telerehabilitation' },
+        { code:'FC_1',  label:'I have access to devices and internet for telerehabilitation' },
+        { code:'FC_2',  label:'I have sufficient knowledge to use telerehabilitation' },
+      ]},
+    ]
+  },
+  ELDERLY: {
+    name: 'Elderly / Warga Emas', code: 'EL', pages: 3,
+    sections: [
+      // PAGE 1 — Col A: TUQ (post-use usability)
+      { id:'B1_TUQ', label:'B1: Telehealth Usability (TUQ)', page:1, col:'A',
+        y_start:P1_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:TUQ_ITEMS },
+      // PAGE 2 — WHOQOL-BREF split across both columns (26 items total)
+      // Col A: global items + Physical + Psychological domains (items 1–13)
+      { id:'C_WHOQOL_A', label:'Part C: Quality of Life — WHOQOL-BREF (1–13)', page:2, col:'A',
+        y_start:P2_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:[
+          // Global items
+          { code:'WHOQ_1',  label:'How would you rate your quality of life?',                                             domain:'Global',        neg:false },
+          { code:'WHOQ_2',  label:'How satisfied are you with your health?',                                              domain:'Global',        neg:false },
+          // Physical domain
+          { code:'WHOQ_3',  label:'To what extent does physical pain prevent you from doing what you need to do?',        domain:'Physical',      neg:true  },
+          { code:'WHOQ_4',  label:'How much do you need medical treatment to function in your daily life?',               domain:'Physical',      neg:true  },
+          { code:'WHOQ_10', label:'Do you have enough energy for everyday life?',                                         domain:'Physical',      neg:false },
+          { code:'WHOQ_15', label:'How well are you able to get around?',                                                 domain:'Physical',      neg:false },
+          { code:'WHOQ_16', label:'How satisfied are you with your sleep?',                                               domain:'Physical',      neg:false },
+          { code:'WHOQ_17', label:'How satisfied are you with your ability to perform your daily living activities?',     domain:'Physical',      neg:false },
+          { code:'WHOQ_18', label:'How satisfied are you with your capacity for work?',                                   domain:'Physical',      neg:false },
+          // Psychological domain
+          { code:'WHOQ_5',  label:'How much do you enjoy life?',                                                          domain:'Psychological', neg:false },
+          { code:'WHOQ_6',  label:'To what extent do you feel your life to be meaningful?',                               domain:'Psychological', neg:false },
+          { code:'WHOQ_7',  label:'How well are you able to concentrate?',                                                domain:'Psychological', neg:false },
+          { code:'WHOQ_11', label:'Are you able to accept your bodily appearance?',                                       domain:'Psychological', neg:false },
+        ]
+      },
+      // Col B: Psychological (cont.) + Social + Environmental domains (items 14–26)
+      { id:'C_WHOQOL_B', label:'Part C: Quality of Life — WHOQOL-BREF (14–26)', page:2, col:'B',
+        y_start:P2_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:[
+          { code:'WHOQ_19', label:'How satisfied are you with yourself?',                                                 domain:'Psychological', neg:false },
+          { code:'WHOQ_26', label:'How often do you have negative feelings (blue mood, despair, anxiety, depression)?',   domain:'Psychological', neg:true  },
+          // Social domain
+          { code:'WHOQ_20', label:'How satisfied are you with your personal relationships?',                              domain:'Social',        neg:false },
+          { code:'WHOQ_21', label:'How satisfied are you with your sex life?',                                            domain:'Social',        neg:false },
+          { code:'WHOQ_22', label:'How satisfied are you with the support you get from your friends?',                    domain:'Social',        neg:false },
+          // Environmental domain
+          { code:'WHOQ_8',  label:'How safe do you feel in your daily life?',                                             domain:'Environmental', neg:false },
+          { code:'WHOQ_9',  label:'How healthy is your physical environment?',                                            domain:'Environmental', neg:false },
+          { code:'WHOQ_12', label:'Have you enough money to meet your needs?',                                            domain:'Environmental', neg:false },
+          { code:'WHOQ_13', label:'How available to you is the information that you need in your day-to-day life?',       domain:'Environmental', neg:false },
+          { code:'WHOQ_14', label:'To what extent do you have the opportunity for leisure activities?',                   domain:'Environmental', neg:false },
+          { code:'WHOQ_23', label:'How satisfied are you with the conditions of your living place?',                      domain:'Environmental', neg:false },
+          { code:'WHOQ_24', label:'How satisfied are you with your access to health services?',                           domain:'Environmental', neg:false },
+          { code:'WHOQ_25', label:'How satisfied are you with your transport?',                                           domain:'Environmental', neg:false },
+        ]
+      },
+      // PAGE 3 — SUS (post-pilot usability evaluation)
+      { id:'D_SUS', label:'Part D: System Usability Scale (SUS) — Post-Pilot', page:3, col:'A',
+        y_start:P2_Y, row_h:ROW_H_SINGLE, options:LIKERT5, items:SUS_ITEMS },
+    ]
+  },
+};
+
+function getAllItems(sheetKey) {
+  return SHEET_CONFIGS[sheetKey].sections.flatMap(sec => computeItemPositions(sec));
+}
+
+// ── Part 2: OMR Processing Engine ─────────────────────────────
+
+function toGrayscaleCanvas(imgEl) {
+  const c = document.createElement('canvas');
+  c.width  = imgEl.naturalWidth  || imgEl.width;
+  c.height = imgEl.naturalHeight || imgEl.height;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(imgEl, 0, 0);
+  const id = ctx.getImageData(0, 0, c.width, c.height);
+  const d  = id.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const g = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+    d[i] = d[i+1] = d[i+2] = g;
+  }
+  ctx.putImageData(id, 0, 0);
+  return c;
+}
+
+function sampleBubble(ctx, cw, ch, x_mm, y_mm) {
+  const sx = cw / PAGE_W, sy = ch / PAGE_H;
+  const cx = Math.round(x_mm * sx), cy = Math.round(y_mm * sy);
+  const r  = Math.max(3, Math.round(BR * sx));
+  const x0 = Math.max(0, cx-r), y0 = Math.max(0, cy-r);
+  const w  = Math.min(cw-x0, 2*r), h = Math.min(ch-y0, 2*r);
+  if (w <= 0 || h <= 0) return 0;
+  const { data } = ctx.getImageData(x0, y0, w, h);
+  let dark = 0, total = 0;
+  for (let py = 0; py < h; py++) {
+    for (let px = 0; px < w; px++) {
+      const dx = px-r, dy = py-r;
+      if (dx*dx + dy*dy <= r*r) {
+        total++;
+        if (data[(py*w+px)*4] < 130) dark++;
+      }
+    }
+  }
+  return total > 0 ? dark/total : 0;
+}
+
+function readItem(grayCanvas, item, calibration) {
+  const ctx = grayCanvas.getContext('2d');
+  const cw  = grayCanvas.width, ch = grayCanvas.height;
+  const cal = (calibration && calibration[item.section_id]) || {};
+  const dy  = cal.dy_mm || 0;
+  const fills = item.bubble_xs.map(bx => sampleBubble(ctx, cw, ch, bx, item.y_mm + dy));
+  const maxFill = Math.max(...fills);
+  const THRESH  = 0.28, AMB_T = 0.18;
+  const selIdx  = maxFill > THRESH ? fills.indexOf(maxFill) : -1;
+  return {
+    ...item,
+    fills, maxFill,
+    selectedIndex: selIdx,
+    selectedValue: selIdx >= 0 ? item.options[selIdx] : null,
+    ambiguous:   maxFill > THRESH && fills.filter(f => f > AMB_T).length > 1,
+    no_response: maxFill <= THRESH,
+  };
+}
+
+function processPage(grayCanvas, allItems, pageNum, calibration) {
+  return allItems.filter(i => i.page === pageNum).map(i => readItem(grayCanvas, i, calibration));
+}
+
+// Scoring
+function mean(vals) { return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null; }
+function getVals(results, codes) {
+  return results.filter(r=>codes.includes(r.code)&&r.selectedValue).map(r=>Number(r.selectedValue));
+}
+
+function computeScores(results) {
+  const tam = {
+    pu_mean:   mean(getVals(results,['PU_1','PU_2','PU_3','PU_4','PU_5']))?.toFixed(2),
+    peou_mean: mean(getVals(results,['PEOU_1','PEOU_2','PEOU_3','PEOU_4','PEOU_5']))?.toFixed(2),
+  };
+  tam.tam_mean = mean([tam.pu_mean,tam.peou_mean].filter(Boolean).map(Number))?.toFixed(2);
+
+  const utaut2Constructs = {EE:['EE_1','EE_2','EE_3'],SI:['SI_1','SI_2','SI_3'],
+    FC:['FC_1','FC_2','FC_3'],HM:['HM_1','HM_2','HM_3'],HB:['HB_1','HB_2','HB_3'],BI:['BI_1','BI_2','BI_3']};
+  const utaut2 = Object.fromEntries(
+    Object.entries(utaut2Constructs).map(([k,c])=>[k,mean(getVals(results,c))?.toFixed(2)])
+  );
+
+  const susItems = results.filter(r=>r.code.startsWith('SUS_')&&r.selectedValue);
+  const sus = susItems.length === 10 ? (() => {
+    const s = susItems.reduce((t,r)=>{
+      const v=Number(r.selectedValue);
+      return t+(r.polarity==='pos'?v-1:5-v);
+    },0)*2.5;
+    return { score:s.toFixed(1), grade:s>=85?'Excellent (A)':s>=70?'Acceptable (C)':'Poor (F)', n:susItems.length };
+  })() : null;
+
+  const zbiItems = results.filter(r=>r.code.startsWith('ZBI_')&&r.selectedValue);
+  const zbiTotal = zbiItems.reduce((s,r)=>s+Number(r.selectedValue),0);
+  const zbi = zbiItems.length ? {
+    total:zbiTotal,n:zbiItems.length,
+    category:zbiTotal<=20?'Little/No burden (0–20)':zbiTotal<=40?'Mild-Moderate (21–40)':
+      zbiTotal<=60?'Moderate-Severe (41–60)':'Severe burden (61–88)'
+  } : null;
+
+  const tuqItems = results.filter(r=>r.code.startsWith('TUQ_')&&r.selectedValue);
+  const tuqMean  = mean(tuqItems.map(r=>Number(r.selectedValue)));
+  const tuq = tuqItems.length ? {
+    mean:tuqMean?.toFixed(2), n:tuqItems.length,
+    grade:tuqMean>=3.5?'Acceptable (≥3.5)':'Below threshold'
+  } : null;
+
+  const mastDomains = {D1:['MAST_D1_1','MAST_D1_2','MAST_D1_3','MAST_D1_4'],
+    D2:['MAST_D2_1','MAST_D2_2','MAST_D2_3','MAST_D2_4'],
+    D3:['MAST_D3_1','MAST_D3_2','MAST_D3_3','MAST_D3_4','MAST_D3_5'],
+    D4:['MAST_D4_1','MAST_D4_2','MAST_D4_3','MAST_D4_4'],
+    D5:['MAST_D5_1','MAST_D5_2','MAST_D5_3','MAST_D5_4'],
+    D6:['MAST_D6_1','MAST_D6_2','MAST_D6_3','MAST_D6_4'],
+    D7:['MAST_D7_1','MAST_D7_2','MAST_D7_3']};
+  const mast = Object.fromEntries(
+    Object.entries(mastDomains).map(([k,c])=>[k,mean(getVals(results,c))?.toFixed(2)])
+  );
+
+  // WHOQOL-BREF scoring
+  // Negatively-worded items (Q3, Q4, Q26): reversed = 6 − raw
+  // Domain score (0–100) = (mean_of_domain_items − 1) × 25
+  const whoqolItems = results.filter(r => r.code.startsWith('WHOQ_') && r.selectedValue);
+  let whoqol = null;
+  if (whoqolItems.length > 0) {
+    const getScore = code => {
+      const item = whoqolItems.find(r => r.code === code);
+      if (!item) return null;
+      const raw = Number(item.selectedValue);
+      return item.neg ? 6 - raw : raw;
+    };
+    const domainMean = codes => {
+      const vals = codes.map(getScore).filter(v => v !== null);
+      return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+    };
+    const toScore = mean => mean !== null ? ((mean - 1) * 25).toFixed(1) : null;
+    const physMean  = domainMean(['WHOQ_3','WHOQ_4','WHOQ_10','WHOQ_15','WHOQ_16','WHOQ_17','WHOQ_18']);
+    const psychMean = domainMean(['WHOQ_5','WHOQ_6','WHOQ_7','WHOQ_11','WHOQ_19','WHOQ_26']);
+    const socMean   = domainMean(['WHOQ_20','WHOQ_21','WHOQ_22']);
+    const envMean   = domainMean(['WHOQ_8','WHOQ_9','WHOQ_12','WHOQ_13','WHOQ_14','WHOQ_23','WHOQ_24','WHOQ_25']);
+    const globalMean= domainMean(['WHOQ_1','WHOQ_2']);
+    whoqol = {
+      global:      toScore(globalMean),
+      physical:    toScore(physMean),
+      psychological: toScore(psychMean),
+      social:      toScore(socMean),
+      environmental: toScore(envMean),
+      n: whoqolItems.length,
+      threshold: '≥10% change at 12 weeks',
+    };
+  }
+
+  return { tam, utaut2, sus, zbi, tuq, mast, whoqol };
+}
+
+function resultsToCSV(results, pid, sheetKey, ts) {
+  const hdr = ['participant_id','sheet','timestamp','page','section','code','label','response','ambiguous','confidence'];
+  const rows = results.map(r=>[
+    pid,sheetKey,ts,r.page,r.section_id,r.code,
+    `"${r.label.replace(/"/g,'""')}"`,
+    r.selectedValue??'',r.ambiguous?'1':'0',
+    (r.maxFill*100).toFixed(0)+'%'
+  ]);
+  return [hdr,...rows].map(r=>r.join(',')).join('\n');
+}
+
+function downloadBlob(content, filename, mime) {
+  const a = Object.assign(document.createElement('a'),{
+    href:URL.createObjectURL(new Blob([content],{type:mime})),download:filename});
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+// OpenCV perspective warp
+function sortCorners(pts) {
+  const cx = pts.reduce((s,p)=>s+p.x,0)/4, cy = pts.reduce((s,p)=>s+p.y,0)/4;
+  const q = p => (p.x<cx?0:1)*2 + (p.y<cy?0:1); // TL=0,TR=2,BR=3,BL=1
+  const tl = pts.find(p=>p.x<cx&&p.y<cy)||pts[0];
+  const tr = pts.find(p=>p.x>cx&&p.y<cy)||pts[1];
+  const br = pts.find(p=>p.x>cx&&p.y>cy)||pts[2];
+  const bl = pts.find(p=>p.x<cx&&p.y>cy)||pts[3];
+  return [tl,tr,br,bl];
+}
+
+function detectAndWarp(srcCanvas) {
+  if (!window.cv) return srcCanvas;
+  try {
+    const src = cv.imread(srcCanvas);
+    const gray = new cv.Mat(), blurred = new cv.Mat(), edges = new cv.Mat(), dilated = new cv.Mat();
+    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+    cv.GaussianBlur(gray, blurred, new cv.Size(9,9), 0);
+    cv.Canny(blurred, edges, 30, 100);
+    const kernel = cv.Mat.ones(5,5,cv.CV_8U);
+    cv.dilate(edges, dilated, kernel);
+    const contours = new cv.MatVector(), hier = new cv.Mat();
+    cv.findContours(dilated, contours, hier, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+    let maxArea = 0, bestApprox = null;
+    const minArea = srcCanvas.width * srcCanvas.height * 0.15;
+    for (let i = 0; i < contours.size(); i++) {
+      const c = contours.get(i), area = cv.contourArea(c);
+      if (area < minArea) continue;
+      const approx = new cv.Mat();
+      cv.approxPolyDP(c, approx, 0.02*cv.arcLength(c,true), true);
+      if (approx.rows === 4 && area > maxArea) {
+        if (bestApprox) bestApprox.delete();
+        bestApprox = approx; maxArea = area;
+      } else approx.delete();
+    }
+
+    let result = srcCanvas;
+    if (bestApprox) {
+      const pts = Array.from({length:4},(_,i)=>({x:bestApprox.data32S[i*2],y:bestApprox.data32S[i*2+1]}));
+      const sorted = sortCorners(pts);
+      const dstW=2339, dstH=1654;
+      const srcPts = cv.matFromArray(4,1,cv.CV_32FC2, sorted.flatMap(p=>[p.x,p.y]));
+      const dstPts = cv.matFromArray(4,1,cv.CV_32FC2, [0,0, dstW,0, dstW,dstH, 0,dstH]);
+      const M = cv.getPerspectiveTransform(srcPts, dstPts);
+      const dst = new cv.Mat();
+      cv.warpPerspective(src, dst, M, new cv.Size(dstW,dstH));
+      const out = document.createElement('canvas');
+      out.width=dstW; out.height=dstH;
+      cv.imshow(out, dst);
+      result = out;
+      [srcPts,dstPts,M,dst,bestApprox].forEach(m=>{try{m.delete()}catch(e){}});
+    }
+    [src,gray,blurred,edges,dilated,kernel,contours,hier].forEach(m=>{try{m.delete()}catch(e){}});
+    return result;
+  } catch(err) {
+    console.error('Warp failed:', err);
+    return srcCanvas;
+  }
+}
+
+// ── Part 3: React Components ───────────────────────────────────
+const { useState, useEffect, useRef, useCallback } = React;
+
+const C = { navy:'#1B3A6B', teal:'#0E8B8B', lteal:'#D6F0F0', lnavy:'#D8E4F0',
+  lgrey:'#F2F5F8', orange:'#E07B39', green:'#2E7D32', red:'#C62828', amber:'#F57C00' };
+
+const btnStyle = (bg, color, extra={}) => ({
+  background:bg, color, border:'none', borderRadius:5,
+  padding:'5px 12px', cursor:'pointer', fontSize:12, fontWeight:600, ...extra });
+
+function Badge({color, children}) {
+  return <span style={{background:color,color:'#fff',borderRadius:4,padding:'2px 7px',
+    fontSize:11,fontWeight:700,marginRight:4}}>{children}</span>;
+}
+
+function OverlayCanvas({ grayCanvas, pageResults, scale }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current || !grayCanvas || !pageResults.length) return;
+    const c = ref.current, ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, c.width, c.height);
+    const sx = c.width/PAGE_W, sy = c.height/PAGE_H, r = BR*sx;
+    pageResults.forEach(item => {
+      item.bubble_xs.forEach((bx, bi) => {
+        const cx = bx*sx, cy = item.y_mm*sy;
+        const sel = item.selectedIndex === bi;
+        const fill = item.fills?.[bi] || 0;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2*Math.PI);
+        ctx.fillStyle = sel
+          ? (item.ambiguous ? 'rgba(245,124,0,0.75)' : 'rgba(46,125,50,0.75)')
+          : fill > 0.15 ? 'rgba(198,40,40,0.3)' : 'rgba(30,100,180,0.1)';
+        ctx.fill();
+        ctx.strokeStyle = sel ? (item.ambiguous ? C.amber : C.green) : 'rgba(30,100,180,0.45)';
+        ctx.lineWidth = sel ? 2 : 1; ctx.stroke();
+      });
+      // item code label
+      ctx.fillStyle='rgba(27,58,107,0.65)';
+      ctx.font=`${Math.round(3.2*sy)}px monospace`;
+      ctx.fillText(item.code, 2, item.y_mm*sy + 1.5*sy);
+    });
+  }, [grayCanvas, pageResults, scale]);
+  const w=Math.round(PAGE_W*scale), h=Math.round(PAGE_H*scale);
+  return <canvas ref={ref} width={w} height={h}
+    style={{position:'absolute',top:0,left:0,pointerEvents:'none'}}/>;
+}
+
+function PageViewer({ grayCanvas, pageResults }) {
+  const imgRef = useRef(null);
+  const [scale, setScale] = useState(2.2);
+  useEffect(() => {
+    if (!grayCanvas || !imgRef.current) return;
+    const c = imgRef.current;
+    c.width=Math.round(PAGE_W*scale); c.height=Math.round(PAGE_H*scale);
+    c.getContext('2d').drawImage(grayCanvas, 0, 0, c.width, c.height);
+  }, [grayCanvas, scale]);
+  const W=Math.round(PAGE_W*scale), H=Math.round(PAGE_H*scale);
+  return (
+    <div style={{border:`1px solid ${C.lnavy}`,borderRadius:6,overflow:'hidden',background:'#f8f8f8'}}>
+      <div style={{overflowX:'auto'}}>
+        <div style={{position:'relative',width:W,height:H}}>
+          <canvas ref={imgRef} width={W} height={H} style={{display:'block'}}/>
+          {pageResults.length>0 && grayCanvas &&
+            <OverlayCanvas grayCanvas={grayCanvas} pageResults={pageResults} scale={scale}/>}
+        </div>
+      </div>
+      <div style={{padding:'4px 8px',display:'flex',gap:6,background:C.lgrey,
+        borderTop:`1px solid ${C.lnavy}`,alignItems:'center'}}>
+        <span style={{fontSize:11,color:'#666'}}>Zoom:</span>
+        {[1.5,2.0,2.2,2.5,3.0].map(z=>(
+          <button key={z} onClick={()=>setScale(z)} style={{
+            padding:'2px 7px',fontSize:11,cursor:'pointer',borderRadius:3,border:`1px solid ${C.teal}`,
+            background:scale===z?C.teal:'#fff',color:scale===z?'#fff':C.navy}}>
+            {z}×
+          </button>
+        ))}
+        <span style={{marginLeft:'auto',fontSize:10,color:'#999'}}>
+          {W}×{H}px · {grayCanvas?.width}×{grayCanvas?.height}px source
+        </span>
+      </div>
+    </div>
+  );
+}
+
+const TH = {padding:'5px 8px',fontWeight:700,color:C.navy,textAlign:'center',
+  borderBottom:`2px solid ${C.lnavy}`,fontSize:11,background:C.lgrey};
+const TD = {padding:'4px 8px',verticalAlign:'middle',borderBottom:`1px solid ${C.lgrey}`};
+
+function ResultsTable({ results, onOverride }) {
+  const sections = [...new Set(results.map(r=>r.section_id))];
+  return (
+    <div style={{maxHeight:520,overflowY:'auto'}}>
+      {sections.map(sid => {
+        const items = results.filter(r=>r.section_id===sid);
+        const miss  = items.filter(r=>r.no_response).length;
+        const amb   = items.filter(r=>r.ambiguous).length;
+        return (
+          <div key={sid} style={{marginBottom:12}}>
+            <div style={{background:C.lnavy,padding:'5px 10px',borderRadius:'6px 6px 0 0',
+              display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <span style={{fontWeight:700,color:C.navy,fontSize:12}}>{items[0]?.section_label}</span>
+              <span>
+                {miss>0 && <Badge color={C.red}>{miss} missing</Badge>}
+                {amb>0  && <Badge color={C.amber}>{amb} ambig</Badge>}
+                <span style={{fontSize:11,color:'#666'}}>pg {items[0]?.page}</span>
+              </span>
+            </div>
+            <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
+              <thead>
+                <tr>
+                  <th style={{...TH,width:70}}>Code</th>
+                  <th style={{...TH,textAlign:'left'}}>Item</th>
+                  <th style={{...TH,width:60}}>Answer</th>
+                  <th style={{...TH,width:70}}>Conf.</th>
+                  <th style={{...TH,width:70}}>Fix</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map(r=>(
+                  <tr key={r.code} style={{
+                    background:r.ambiguous?'#FFF8E1':r.no_response?'#FFEBEE':'#fff'}}>
+                    <td style={{...TD,fontFamily:'monospace',fontWeight:700,
+                      color:C.teal,textAlign:'center'}}>{r.code}</td>
+                    <td style={{...TD,color:'#333',fontSize:11}}>{r.label}</td>
+                    <td style={{...TD,textAlign:'center'}}>
+                      <span style={{fontWeight:700,fontSize:14,
+                        color:r.no_response?'#bbb':r.ambiguous?C.amber:C.green}}>
+                        {r.selectedValue??'—'}
+                      </span>
+                    </td>
+                    <td style={{...TD,textAlign:'center',fontSize:11}}>
+                      <span style={{
+                        color:r.maxFill>0.5?C.green:r.maxFill>0.28?C.teal:r.maxFill>0.15?C.amber:'#bbb'}}>
+                        {(r.maxFill*100).toFixed(0)}%
+                      </span>
+                    </td>
+                    <td style={{...TD,textAlign:'center'}}>
+                      <select value={r.selectedValue??''}
+                        onChange={e=>onOverride(r.code,e.target.value||null)}
+                        style={{fontSize:11,padding:'1px 2px',border:`1px solid #ccc`,borderRadius:3,width:50}}>
+                        <option value=''>—</option>
+                        {r.options.map(o=><option key={o} value={o}>{o}</option>)}
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ScoresSummary({ scores }) {
+  const cards = [];
+  const { tam, utaut2, sus, zbi, tuq, mast } = scores;
+
+  if (tam?.tam_mean) cards.push({ title:'TAM', color:C.teal, rows:[
+    ['PU Mean', tam.pu_mean+'/5'], ['PEOU Mean', tam.peou_mean+'/5'], ['Overall', tam.tam_mean+'/5']
+  ]});
+
+  const u2vals = utaut2 ? Object.entries(utaut2).filter(([,v])=>v) : [];
+  if (u2vals.length) cards.push({ title:'UTAUT2', color:'#5C6BC0',
+    rows: u2vals.map(([k,v])=>[k, v+'/5']) });
+
+  if (sus) cards.push({ title:'SUS',color:sus.score>=85?C.green:sus.score>=70?C.teal:C.red,
+    rows:[['Score',sus.score+'/100'],['Grade',sus.grade],['n items',sus.n]] });
+
+  if (zbi) cards.push({ title:'ZBI',color:C.orange,
+    rows:[['Total',zbi.total+'/88'],['Category',zbi.category],['n items',zbi.n]] });
+
+  if (tuq) cards.push({ title:'TUQ',color:tuq.mean>=3.5?C.green:C.amber,
+    rows:[['Mean',tuq.mean+'/5'],['Grade',tuq.grade],['n items',tuq.n]] });
+
+  const mastVals = mast ? Object.entries(mast).filter(([,v])=>v) : [];
+  if (mastVals.length) cards.push({ title:'MAST',color:'#7B1FA2',
+    rows: mastVals.map(([k,v])=>[`Domain ${k.slice(1)}`, v+'/5']) });
+
+  const { whoqol } = scores;
+  if (whoqol) {
+    const worstDomain = [
+      ['Physical',       whoqol.physical],
+      ['Psychological',  whoqol.psychological],
+      ['Social',         whoqol.social],
+      ['Environmental',  whoqol.environmental],
+    ].filter(([,v])=>v).sort(([,a],[,b])=>Number(a)-Number(b))[0];
+    cards.push({ title:'WHOQOL-BREF', color:'#00796B', rows:[
+      ['Global QoL',      (whoqol.global      ?? '—')+'/100'],
+      ['Physical',        (whoqol.physical     ?? '—')+'/100'],
+      ['Psychological',   (whoqol.psychological?? '—')+'/100'],
+      ['Social',          (whoqol.social       ?? '—')+'/100'],
+      ['Environmental',   (whoqol.environmental?? '—')+'/100'],
+      ['n items read',    whoqol.n+'/26'],
+      ['Change threshold','≥10% at 12 wks'],
+    ]});
+  }
+
+  if (!cards.length) return null;
+  return (
+    <div style={{display:'flex',flexWrap:'wrap',gap:10,marginBottom:14}}>
+      {cards.map(card=>(
+        <div key={card.title} style={{border:`2px solid ${card.color}`,borderRadius:8,
+          minWidth:160,flex:'1 1 160px',overflow:'hidden'}}>
+          <div style={{background:card.color,color:'#fff',padding:'4px 10px',
+            fontWeight:700,fontSize:12}}>{card.title}</div>
+          {card.rows.map(([k,v])=>(
+            <div key={k} style={{display:'flex',justifyContent:'space-between',padding:'3px 8px',
+              borderBottom:`1px solid ${C.lgrey}`,fontSize:11}}>
+              <span style={{color:'#555'}}>{k}</span>
+              <span style={{fontWeight:700,color:card.color}}>{v}</span>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CalibPanel({ sections, calibration, onChange }) {
+  return (
+    <div style={{background:C.lgrey,border:`1px solid ${C.lnavy}`,borderRadius:6,
+      padding:12,marginBottom:12,fontSize:12}}>
+      <div style={{fontWeight:700,color:C.navy,marginBottom:8}}>
+        🎯 Grid Calibration — adjust ΔY (mm) if bubble rows are offset
+      </div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:10}}>
+        {sections.map(s=>{
+          const dy=(calibration[s.id]||{dy_mm:0}).dy_mm;
+          return (
+            <label key={s.id} style={{display:'flex',alignItems:'center',gap:5}}>
+              <span style={{color:C.navy,fontWeight:600,minWidth:100}}>{s.id}</span>
+              ΔY:
+              <input type='number' step='0.5' min='-20' max='20' value={dy}
+                onChange={e=>onChange(s.id,{dy_mm:parseFloat(e.target.value)||0})}
+                style={{width:55,padding:'2px 4px',border:`1px solid #ccc`,borderRadius:3}}/>
+              mm
+            </label>
+          );
+        })}
+      </div>
+      <div style={{fontSize:10,color:'#999',marginTop:5}}>
+        Positive = shift grid down · Negative = shift up · Re-process after adjusting
+      </div>
+    </div>
+  );
+}
+
+// ── Part 4: Main App ───────────────────────────────────────────
+function App() {
+  // [v2] M4 — Pre-select sheet from URL query param: omr_scanner_v2.html?sheet=ALLIED_HEALTH
+  const _urlSheet = (() => {
+    try {
+      const p = new URLSearchParams(window.location.search).get('sheet');
+      return (p && SHEET_CONFIGS[p]) ? p : 'CAREGIVER';
+    } catch(e) { return 'CAREGIVER'; }
+  })();
+  const [sheetKey,  setSheetKey]  = useState(_urlSheet);
+  const [pid,       setPid]       = useState('');
+  const [pages,     setPages]     = useState({});
+  const [curPage,   setCurPage]   = useState(1);
+  const [results,   setResults]   = useState([]);
+  const [scores,    setScores]    = useState({});
+  const [calib,     setCalib]     = useState({});
+  const [cvReady,   setCvReady]   = useState(false);
+  const [processing,setProcessing]= useState(false);
+  const [showCalib, setShowCalib] = useState(false);
+  const [autoWarp,  setAutoWarp]  = useState(true);
+  const [camStream, setCamStream] = useState(null);
+  const [camPage,   setCamPage]   = useState(null);
+  const fileRefs = useRef({});
+  const videoRef = useRef(null);
+
+  useEffect(()=>{
+    const t=setInterval(()=>{ if(window.cvReady){setCvReady(true);clearInterval(t);} },400);
+    return ()=>clearInterval(t);
+  },[]);
+
+  const sheet    = SHEET_CONFIGS[sheetKey];
+  const allItems = getAllItems(sheetKey);
+
+  const loadPage = useCallback((pageNum, file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const raw = document.createElement('canvas');
+        raw.width=img.naturalWidth; raw.height=img.naturalHeight;
+        raw.getContext('2d').drawImage(img,0,0);
+        const corrected = (cvReady&&autoWarp) ? detectAndWarp(raw) : raw;
+        setPages(p=>({...p,[pageNum]:{corrected,gray:toGrayscaleCanvas(corrected)}}));
+        setCurPage(pageNum);
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  },[cvReady,autoWarp]);
+
+  const openCamera = async (pn) => {
+    setCamPage(pn);
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({
+        video:{facingMode:'environment',width:{ideal:2560},height:{ideal:1920}}});
+      setCamStream(s);
+      setTimeout(()=>{ if(videoRef.current) videoRef.current.srcObject=s; },120);
+    } catch(e) { alert('Camera error: '+e.message); setCamPage(null); }
+  };
+
+  const captureCamera = () => {
+    if (!videoRef.current||camPage===null) return;
+    const v=videoRef.current, c=document.createElement('canvas');
+    c.width=v.videoWidth; c.height=v.videoHeight;
+    c.getContext('2d').drawImage(v,0,0);
+    c.toBlob(b=>{ loadPage(camPage,b); closeCamera(); },'image/jpeg',0.95);
+  };
+
+  const closeCamera = () => {
+    if(camStream) camStream.getTracks().forEach(t=>t.stop());
+    setCamStream(null); setCamPage(null);
+  };
+
+  const processAll = () => {
+    setProcessing(true);
+    setTimeout(()=>{
+      const res=[];
+      for(let p=1;p<=sheet.pages;p++){
+        if(!pages[p]?.gray) continue;
+        res.push(...processPage(pages[p].gray, allItems, p, calib));
+      }
+      setResults(res);
+      setScores(computeScores(res));
+      setProcessing(false);
+    },50);
+  };
+
+  const handleOverride = (code, val) => {
+    setResults(prev=>{
+      const next=prev.map(r=>r.code===code
+        ?{...r,selectedValue:val,no_response:val===null,ambiguous:false}:r);
+      setScores(computeScores(next));
+      return next;
+    });
+  };
+
+  const exportCSV=()=>{
+    const ts=new Date().toISOString().slice(0,19).replace(/[:-]/g,'');
+    downloadBlob(resultsToCSV(results,pid||'UNKNOWN',sheetKey,ts),
+      `omr_${sheetKey}_${pid||'UNKNOWN'}_${ts}.csv`,'text/csv');
+  };
+
+  const exportJSON=()=>{
+    const ts=new Date().toISOString();
+    downloadBlob(JSON.stringify({participant_id:pid,sheet:sheetKey,timestamp:ts,scores,results},null,2),
+      `omr_${sheetKey}_${pid||'UNKNOWN'}_${ts.slice(0,10)}.json`,'application/json');
+  };
+
+  const pageResults  = results.filter(r=>r.page===curPage);
+  const totalLoaded  = Object.keys(pages).length;
+  const totalMissing = results.filter(r=>r.no_response).length;
+  const totalAmbig   = results.filter(r=>r.ambiguous).length;
+  const allPagesLoaded = totalLoaded>=sheet.pages;
+
+  return (
+    <div style={{fontFamily:'Segoe UI,Arial,sans-serif',minHeight:'100vh',background:'#f0f4f8'}}>
+
+      {/* Header */}
+      <div style={{background:C.navy,color:'#fff',padding:'10px 20px',
+        display:'flex',gap:16,alignItems:'center',flexWrap:'wrap'}}>
+        <div>
+          <div style={{fontWeight:800,fontSize:15,letterSpacing:.5}}>DTAM-MY OMR SCANNER</div>
+          <div style={{fontSize:10,color:'#9ab',marginTop:1}}>
+            Telerehabilitation Research · UTAR 24UED03838 · All processing is local
+          </div>
+        </div>
+        <div style={{display:'flex',gap:6,alignItems:'center',marginLeft:'auto',flexWrap:'wrap'}}>
+          <span style={{fontSize:11,color:'#9ab'}}>OpenCV:</span>
+          <span style={{fontSize:11,padding:'2px 8px',borderRadius:10,
+            background:cvReady?C.green:'#777',color:'#fff'}}>
+            {cvReady?'✓ Ready':'Loading…'}
+          </span>
+          {results.length>0 && <>
+            <button onClick={exportCSV} style={btnStyle(C.teal,'#fff')}>⬇ CSV</button>
+            <button onClick={exportJSON} style={btnStyle(C.lnavy,C.navy)}>⬇ JSON</button>
+          </>}
+        </div>
+      </div>
+
+      <div style={{maxWidth:1150,margin:'0 auto',padding:'14px 12px'}}>
+
+        {/* Config row */}
+        <div style={{display:'flex',gap:10,marginBottom:10,flexWrap:'wrap',alignItems:'flex-end'}}>
+          <div>
+            <div style={LBL}>Questionnaire Type</div>
+            <select value={sheetKey}
+              onChange={e=>{setSheetKey(e.target.value);setResults([]);setPages({});setScores({});}}
+              style={SEL}>
+              {Object.entries(SHEET_CONFIGS).map(([k,v])=>(
+                <option key={k} value={k}>[{v.code}] {v.name}</option>))}
+            </select>
+          </div>
+          <div>
+            <div style={LBL}>Participant ID</div>
+            <input value={pid} onChange={e=>setPid(e.target.value)}
+              placeholder='e.g. CG-001' style={{...SEL,width:120}}/>
+          </div>
+          <label style={{display:'flex',alignItems:'center',gap:5,fontSize:12,
+            color:C.navy,paddingBottom:3,cursor:'pointer'}}>
+            <input type='checkbox' checked={autoWarp} onChange={e=>setAutoWarp(e.target.checked)}/>
+            Auto perspective-correct
+          </label>
+          <div style={{marginLeft:'auto',display:'flex',gap:6}}>
+            <button onClick={()=>setShowCalib(v=>!v)}
+              style={btnStyle(C.lgrey,C.navy)}>
+              🎯 {showCalib?'Hide':'Show'} Calibration
+            </button>
+            <button onClick={processAll}
+              disabled={totalLoaded===0||processing}
+              style={btnStyle(processing?'#888':C.orange,'#fff',{padding:'5px 16px'})}>
+              {processing?'⏳ Processing…':`⚡ Process (${totalLoaded}/${sheet.pages} pages loaded)`}
+            </button>
+          </div>
+        </div>
+
+        {/* Calibration panel */}
+        {showCalib && (
+          <CalibPanel sections={sheet.sections} calibration={calib}
+            onChange={(id,v)=>setCalib(c=>({...c,[id]:v}))}/>
+        )}
+
+        {/* Page tabs */}
+        <div style={{display:'flex',gap:6,marginBottom:10,flexWrap:'wrap'}}>
+          {Array.from({length:sheet.pages},(_,i)=>i+1).map(p=>(
+            <div key={p} style={{display:'flex',gap:3,alignItems:'center'}}>
+              <button onClick={()=>setCurPage(p)} style={{
+                ...btnStyle(curPage===p?C.teal:C.lnavy,curPage===p?'#fff':C.navy),
+                outline:pages[p]?`2px solid ${C.green}`:'none',outlineOffset:1}}>
+                Page {p} {pages[p]?'✓':'—'}
+              </button>
+              <input ref={el=>fileRefs.current[p]=el} type='file' accept='image/*'
+                style={{display:'none'}} onChange={e=>loadPage(p,e.target.files[0])}/>
+              <button title='Upload scan' onClick={()=>fileRefs.current[p]?.click()}
+                style={btnStyle(C.lgrey,C.navy,{padding:'5px 8px'})}>📁</button>
+              <button title='Capture photo' onClick={()=>openCamera(p)}
+                style={btnStyle(C.lgrey,C.navy,{padding:'5px 8px'})}>📷</button>
+            </div>
+          ))}
+        </div>
+
+        {/* Camera modal */}
+        {camStream && (
+          <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.88)',zIndex:999,
+            display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:14}}>
+            <div style={{color:'#fff',fontWeight:700,fontSize:15}}>
+              📷 Page {camPage} — hold sheet flat, good lighting
+            </div>
+            <video ref={videoRef} autoPlay playsInline
+              style={{maxWidth:'90vw',maxHeight:'60vh',border:`3px solid ${C.teal}`,borderRadius:8}}/>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={captureCamera}
+                style={btnStyle(C.teal,'#fff',{fontSize:15,padding:'10px 26px'})}>
+                📸 Capture
+              </button>
+              <button onClick={closeCamera}
+                style={btnStyle('#666','#fff',{padding:'10px 18px'})}>Cancel</button>
+            </div>
+          </div>
+        )}
+
+        {/* Main two-column layout */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,alignItems:'start'}}>
+
+          {/* Left: image viewer */}
+          <div>
+            <div style={{fontWeight:700,color:C.navy,fontSize:13,marginBottom:6,
+              display:'flex',justifyContent:'space-between'}}>
+              <span>Page {curPage}
+                <span style={{fontWeight:400,color:'#888',fontSize:11,marginLeft:6}}>
+                  ({allItems.filter(i=>i.page===curPage).length} items)
+                </span>
+              </span>
+              {pages[curPage] && (
+                <span style={{fontSize:11,color:C.green,fontWeight:600}}>✓ Loaded</span>
+              )}
+            </div>
+            {pages[curPage]?.gray ? (
+              <PageViewer grayCanvas={pages[curPage].gray} pageResults={pageResults}/>
+            ) : (
+              <div style={{border:`2px dashed ${C.lnavy}`,borderRadius:8,padding:'36px 20px',
+                textAlign:'center',color:'#aaa',background:'#fafbfc'}}>
+                <div style={{fontSize:36}}>🖼️</div>
+                <div style={{marginTop:8,fontSize:13}}>Upload a scan or capture with camera</div>
+                <div style={{fontSize:11,marginTop:4,color:'#bbb'}}>A4 landscape · ≥150 DPI · JPEG or PNG</div>
+                <div style={{marginTop:14,display:'flex',gap:8,justifyContent:'center'}}>
+                  <button onClick={()=>fileRefs.current[curPage]?.click()}
+                    style={btnStyle(C.teal,'#fff')}>📁 Upload</button>
+                  <button onClick={()=>openCamera(curPage)}
+                    style={btnStyle(C.navy,'#fff')}>📷 Camera</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right: results */}
+          <div>
+            {results.length>0 ? (<>
+              <div style={{display:'flex',gap:6,marginBottom:10,flexWrap:'wrap',alignItems:'center'}}>
+                <Badge color={C.teal}>{results.length} items</Badge>
+                {totalMissing>0 && <Badge color={C.red}>{totalMissing} missing</Badge>}
+                {totalAmbig>0  && <Badge color={C.amber}>{totalAmbig} ambiguous</Badge>}
+                <div style={{marginLeft:'auto',display:'flex',gap:4}}>
+                  {Array.from({length:sheet.pages},(_,i)=>i+1).map(p=>(
+                    <button key={p} onClick={()=>setCurPage(p)}
+                      style={btnStyle(curPage===p?C.navy:C.lgrey,curPage===p?'#fff':C.navy)}>
+                      Pg {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <ScoresSummary scores={scores}/>
+              <ResultsTable results={pageResults} onOverride={handleOverride}/>
+            </>) : (
+              <div style={{border:`2px dashed ${C.lnavy}`,borderRadius:8,padding:'36px 20px',
+                textAlign:'center',color:'#aaa',background:'#fafbfc'}}>
+                <div style={{fontSize:36}}>📊</div>
+                <div style={{marginTop:8,fontSize:13}}>Results appear here after processing</div>
+                <div style={{fontSize:11,marginTop:4,color:'#bbb'}}>
+                  Upload {sheet.pages} page(s) then click ⚡ Process
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Instructions */}
+        <details style={{marginTop:16,border:`1px solid ${C.lnavy}`,borderRadius:8,overflow:'hidden'}}>
+          <summary style={{background:C.lnavy,padding:'7px 14px',cursor:'pointer',
+            fontWeight:700,color:C.navy,fontSize:12}}>
+            ℹ️ Instructions &amp; Scoring Thresholds
+          </summary>
+          <div style={{padding:14,fontSize:12,lineHeight:1.8,color:'#444',
+            display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
+            <ol style={{paddingLeft:18}}>
+              <li>Select <strong>questionnaire type</strong> and enter participant ID.</li>
+              <li>Upload scanned pages (📁) or photograph with camera (📷) — one per page tab.</li>
+              <li>For camera shots, enable <em>Auto perspective-correct</em> (needs OpenCV).</li>
+              <li>Click <strong>⚡ Process</strong> to extract all responses.</li>
+              <li>Overlay: <span style={{color:C.green}}>green</span> = filled · <span style={{color:C.amber}}>orange</span> = ambiguous · grey = empty.</li>
+              <li>Use <strong>Fix</strong> dropdowns to correct any misread items.</li>
+              <li>If rows are misaligned, open <strong>🎯 Calibration</strong> and adjust ΔY per section.</li>
+              <li>Export <strong>CSV</strong> or <strong>JSON</strong> for data entry / analysis.</li>
+            </ol>
+            <div>
+              <div style={{fontWeight:700,color:C.navy,marginBottom:6}}>Scoring Thresholds</div>
+              {[
+                ['TAM / UTAUT2','Mean ≥3.5/5 = acceptable adoption intent'],
+                ['TUQ','Mean ≥3.5/5 = acceptable usability'],
+                ['SUS','≥70 = Acceptable · ≥85 = Excellent'],
+                ['ZBI','0–20 minimal · 21–40 mild · 41–60 moderate · 61–88 severe'],
+                ['MAST','Domain mean ≥3.5/5 = recommended for deployment'],
+                ['WHOQOL-BREF','Domain score 0–100 · ≥10% improvement at 12 wks = target · Q3,Q4,Q26 reverse-scored'],
+                ['Detection threshold','Fill ratio ≥28% = marked response'],
+              ].map(([k,v])=>(
+                <div key={k} style={{marginBottom:4}}>
+                  <strong style={{color:C.teal}}>{k}:</strong> {v}
+                </div>
+              ))}
+            </div>
+          </div>
+        </details>
+
+        <div style={{textAlign:'center',marginTop:12,fontSize:10,color:'#bbb'}}>
+          DTAM-MY OMR Scanner v1.0 · UTAR PhD Research · All data processed locally in-browser
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const LBL = { fontSize:11,color:'#666',marginBottom:3,fontWeight:600 };
+const SEL = { padding:'5px 8px',border:`1px solid #ccc`,borderRadius:5,fontSize:13,background:'#fff' };
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

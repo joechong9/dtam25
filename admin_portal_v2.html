@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.anthropic.com; img-src 'self' data: blob:; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DTAM-MY | Administrator Portal v2</title>
+<style>
+:root {
+  --navy:#1B3A6B; --teal:#0E8B8B; --lteal:#D6F0F0; --lnavy:#D8E4F0;
+  --lgrey:#F2F5F8; --orange:#E07B39; --white:#fff; --text:#1a1a2e;
+  --muted:#6b7280; --danger:#dc2626; --success:#16a34a; --warn:#d97706;
+  --sidebar-w:260px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--lgrey);color:var(--text);display:flex;min-height:100vh;font-size:14px}
+
+/* ── SIDEBAR ───────────────────────────────────────── */
+.sidebar{width:var(--sidebar-w);background:var(--navy);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;overflow-y:auto}
+.sb-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-logo-title{font-size:20px;font-weight:900;letter-spacing:-.3px}
+.sb-logo-sub{font-size:11px;opacity:.6;margin-top:3px;line-height:1.4}
+.sb-section{padding:12px 0}
+.sb-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;opacity:.45;padding:8px 20px 4px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;transition:background .15s;color:rgba(255,255,255,.8);font-size:13px;font-weight:500;text-decoration:none;border-left:3px solid transparent}
+.sb-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.sb-item.active{background:rgba(14,139,139,.3);border-left-color:var(--teal);color:#fff}
+.sb-item .icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.sb-divider{height:1px;background:rgba(255,255,255,.08);margin:8px 20px}
+.sb-footer{margin-top:auto;padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;opacity:.5}
+
+/* ── MAIN ──────────────────────────────────────────── */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid #e5e7eb;padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.topbar-title{font-size:16px;font-weight:700;color:var(--navy)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.tb-badge{background:var(--lteal);color:var(--teal);border-radius:12px;padding:4px 12px;font-size:12px;font-weight:700}
+.tb-btn{background:var(--teal);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s}
+.tb-btn:hover{background:#0a7070}
+
+.content{padding:28px;flex:1}
+.section{display:none}
+.section.active{display:block}
+
+/* ── KPI STRIP ─────────────────────────────────────── */
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:28px}
+.kpi{background:#fff;border-radius:12px;padding:18px 20px;border-top:4px solid var(--teal);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.kpi.navy{border-top-color:var(--navy)}
+.kpi.orange{border-top-color:var(--orange)}
+.kpi.success{border-top-color:var(--success)}
+.kpi-val{font-size:32px;font-weight:900;color:var(--navy);line-height:1}
+.kpi-label{font-size:12px;color:var(--muted);font-weight:600;margin-top:6px}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── CARDS ─────────────────────────────────────────── */
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.07);padding:22px;margin-bottom:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:15px;font-weight:700;color:var(--navy)}
+.card-desc{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5}
+
+/* ── TOOL GRID ──────────────────────────────────────── */
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:24px}
+.tool-card{background:#fff;border-radius:14px;border:2px solid #e5e7eb;padding:22px;cursor:pointer;transition:all .2s;text-decoration:none;display:block}
+.tool-card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 6px 20px rgba(14,139,139,.12)}
+.tool-card.featured{border-color:var(--teal);background:linear-gradient(135deg,#f0fdfa,var(--lteal))}
+.tool-icon{font-size:36px;margin-bottom:12px}
+.tool-name{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.tool-desc{font-size:12px;color:var(--muted);line-height:1.5}
+.tool-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.tool-tag{background:var(--lnavy);color:var(--navy);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700}
+.tool-tag.teal{background:var(--lteal);color:var(--teal)}
+.tool-tag.orange{background:#FFF7ED;color:var(--orange)}
+.tool-launch{margin-top:14px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--teal)}
+
+/* ── GROUP PROGRESS ─────────────────────────────────── */
+.group-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.group-card{background:#fff;border-radius:10px;padding:16px;border:1px solid #e5e7eb}
+.group-icon{font-size:24px;margin-bottom:8px}
+.group-name{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.prog-bar{background:#e5e7eb;border-radius:99px;height:7px;overflow:hidden;margin-bottom:5px}
+.prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--teal),#2dd4bf);transition:width .6s}
+.prog-text{font-size:11px;color:var(--muted);display:flex;justify-content:space-between}
+
+/* ── ACTIVITY FEED ──────────────────────────────────── */
+.activity-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f3f4f6}
+.activity-item:last-child{border-bottom:none}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.act-dot.survey{background:var(--teal)}
+.act-dot.interview{background:var(--orange)}
+.act-dot.system{background:var(--navy)}
+.act-text{font-size:13px;color:var(--text)}
+.act-time{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── TABLE ──────────────────────────────────────────── */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;font-weight:700;color:var(--navy);background:var(--lgrey);border-bottom:2px solid #e5e7eb}
+td{padding:10px 12px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+tr:hover td{background:#fafafa}
+.status-badge{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:700}
+.status-badge.active{background:#dcfce7;color:var(--success)}
+.status-badge.pending{background:#fef3c7;color:var(--warn)}
+.status-badge.done{background:var(--lteal);color:var(--teal)}
+
+/* ── CHAT ───────────────────────────────────────────── */
+.chat-widget{position:fixed;bottom:24px;right:24px;z-index:1000;display:flex;flex-direction:column;align-items:flex-end}
+.chat-toggle{background:var(--teal);color:#fff;border:none;border-radius:50%;width:52px;height:52px;font-size:22px;cursor:pointer;box-shadow:0 4px 14px rgba(14,139,139,.35);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.chat-toggle:hover{transform:scale(1.07)}
+.chat-window{width:340px;height:460px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.15);display:flex;flex-direction:column;margin-bottom:12px;overflow:hidden;border:1px solid #e5e7eb;animation:chatPop .3s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes chatPop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.chat-head{background:linear-gradient(135deg,var(--navy),#2a5298);color:#fff;padding:14px 16px;font-weight:700;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.chat-close-btn{background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;font-size:13px;background:#f9fafb}
+.chat-msg{padding:9px 13px;border-radius:12px;max-width:85%;line-height:1.5;word-wrap:break-word}
+.chat-msg.user{background:var(--lteal);color:var(--navy);align-self:flex-end;border-bottom-right-radius:4px}
+.chat-msg.model{background:#fff;color:var(--text);align-self:flex-start;border-bottom-left-radius:4px;border:1px solid #e5e7eb}
+.chat-input-area{display:flex;border-top:1px solid #e5e7eb;padding:10px;gap:8px;align-items:center}
+.chat-input-area input{flex:1;border:1px solid #d1d5db;border-radius:20px;padding:8px 14px;font-size:13px;outline:none;transition:border-color .2s}
+.chat-input-area input:focus{border-color:var(--teal)}
+.chat-send-btn{background:var(--teal);color:#fff;border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;transition:transform .2s}
+.chat-send-btn:not(:disabled):hover{transform:scale(1.07)}
+.chat-send-btn:disabled{background:#d1d5db;cursor:not-allowed}
+.typing-dot{display:inline-block;width:5px;height:5px;background:#9ca3af;border-radius:50%;margin:0 2px;animation:ty 1.4s infinite ease-in-out both}
+.typing-dot:nth-child(1){animation-delay:-.32s}
+.typing-dot:nth-child(2){animation-delay:-.16s}
+@keyframes ty{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+
+/* ── MODAL ──────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:#fff;border-radius:16px;max-width:480px;width:100%;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:slideUp .25s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.modal h3{font-size:18px;font-weight:800;color:var(--navy);margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end}
+.btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--teal);color:#fff}
+.btn-primary:hover{background:#0a7070}
+.btn-secondary{background:#f3f4f6;color:var(--text)}
+.btn-secondary:hover{background:#e5e7eb}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#b91c1c}
+
+/* ── MISC ───────────────────────────────────────────── */
+.section-header{margin-bottom:20px}
+.section-header h2{font-size:20px;font-weight:800;color:var(--navy)}
+.section-header p{font-size:13px;color:var(--muted);margin-top:4px}
+.divider{border:none;border-top:1px solid #e5e7eb;margin:20px 0}
+.text-teal{color:var(--teal)}
+.text-navy{color:var(--navy)}
+.text-muted{color:var(--muted)}
+.flex{display:flex;align-items:center;gap:8px}
+.mt-4{margin-top:16px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* ── SETTINGS ───────────────────────────────────────── */
+.setting-row{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 0;border-bottom:1px solid #f3f4f6;gap:16px}
+.setting-label{font-size:13px;font-weight:600;color:var(--text)}
+.setting-desc{font-size:12px;color:var(--muted);margin-top:2px}
+.setting-val{font-size:12px;color:var(--teal);font-weight:700;text-align:right;flex-shrink:0}
+input[type=text].api-input{border:1px solid #d1d5db;border-radius:8px;padding:8px 12px;font-size:13px;width:100%;outline:none;transition:border-color .2s;margin-top:6px;font-family:monospace}
+input[type=text].api-input:focus{border-color:var(--teal)}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);transition:transform .3s}
+  .sidebar.open{transform:none}
+  .main{margin-left:0}
+  .topbar{padding:0 16px}
+  .content{padding:16px}
+  .kpi-strip{grid-template-columns:1fr 1fr}
+  .tool-grid{grid-template-columns:1fr}
+  .grid-2{grid-template-columns:1fr}
+}
+
+/* ── LOGIN PAGE ─────────────────────────────────────── */
+.login-page{position:fixed;inset:0;background:linear-gradient(145deg,#0f1f40 0%,#1B3A6B 50%,#0a4a4a 100%);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.login-page::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
+.login-box{background:#fff;border-radius:20px;padding:40px 36px;width:100%;max-width:420px;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.35);animation:loginPop .4s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes loginPop{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo-circle{width:68px;height:68px;background:linear-gradient(135deg,var(--navy),var(--teal));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 14px;box-shadow:0 6px 20px rgba(14,139,139,.35)}
+.login-title{font-size:22px;font-weight:900;color:var(--navy);margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--muted)}
+.login-field{margin-bottom:16px}
+.login-label{display:block;font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.login-input{width:100%;border:2px solid #e5e7eb;border-radius:10px;padding:12px 16px;font-size:14px;font-family:inherit;transition:border-color .2s,box-shadow .2s;outline:none}
+.login-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(14,139,139,.12)}
+.login-input.error{border-color:var(--danger);animation:shake .3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.login-btn{width:100%;background:linear-gradient(135deg,var(--teal),#0a7070);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s;margin-top:4px;box-shadow:0 4px 14px rgba(14,139,139,.35)}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(14,139,139,.45)}
+.login-btn:active{transform:scale(.98)}
+.login-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.login-btn.navy{background:linear-gradient(135deg,var(--navy),#2a5298);box-shadow:0 4px 14px rgba(27,58,107,.35)}
+.login-btn.navy:hover{box-shadow:0 6px 20px rgba(27,58,107,.45)}
+.login-error{background:#fee2e2;color:var(--danger);border-radius:8px;padding:10px 14px;font-size:12px;font-weight:600;margin-bottom:14px;display:none;text-align:center}
+.login-success{background:#dcfce7;color:var(--success);border-radius:8px;padding:10px 14px;font-size:12px;font-weight:600;margin-bottom:14px;display:none;text-align:center}
+.login-hint{text-align:center;font-size:11px;color:var(--muted);margin-top:16px;line-height:1.6;border-top:1px solid #f3f4f6;padding-top:14px}
+.login-divider{display:flex;align-items:center;gap:10px;margin:16px 0}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:#e5e7eb}
+.login-divider span{font-size:11px;color:var(--muted);white-space:nowrap}
+.lock-icon{font-size:13px;margin-right:4px}
+.login-switch{text-align:center;margin-top:16px;font-size:12px;color:var(--muted)}
+.login-switch a{color:var(--teal);font-weight:700;cursor:pointer;text-decoration:none}
+.login-switch a:hover{text-decoration:underline}
+.login-panel{transition:opacity .2s}
+/* password strength bar */
+.pw-strength{height:4px;border-radius:2px;margin-top:6px;transition:all .3s;background:#e5e7eb;overflow:hidden}
+.pw-strength-fill{height:100%;border-radius:2px;transition:width .3s,background .3s}
+.pw-strength-label{font-size:10px;color:var(--muted);margin-top:3px}
+/* Session pill in topbar */
+.session-pill{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.session-dot{width:7px;height:7px;border-radius:50%;background:var(--success);flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN PAGE ════════════════════════════════════ -->
+<div class="login-page" id="login-page">
+  <div class="login-box">
+
+    <!-- ── Shared logo ── -->
+    <div class="login-logo">
+      <div class="login-logo-circle">🔬</div>
+      <div class="login-title" id="auth-title">DTAM-MY Admin</div>
+      <div class="login-sub" id="auth-sub">Restricted Access · Authorised Personnel Only</div>
+    </div>
+
+    <!-- ══ SIGN-IN PANEL ══ -->
+    <div class="login-panel" id="panel-login">
+      <div class="login-error" id="login-error"></div>
+
+      <div class="login-field">
+        <label class="login-label" for="login-user">Username / Email</label>
+        <input class="login-input" type="text" id="login-user" placeholder="chongyz@utar.edu.my"
+          autocomplete="username"
+          onkeypress="if(event.key==='Enter')document.getElementById('login-pass').focus()"/>
+      </div>
+      <div class="login-field">
+        <label class="login-label" for="login-pass">Password</label>
+        <input class="login-input" type="password" id="login-pass" placeholder="••••••••"
+          autocomplete="current-password"
+          onkeypress="if(event.key==='Enter')doLogin()"/>
+      </div>
+
+      <button class="login-btn" id="login-btn" onclick="doLogin()">
+        <span class="lock-icon">🔐</span> Sign In
+      </button>
+
+      <div class="login-switch">
+        New to the portal?
+        <a onclick="showRegister()">Create an account</a>
+      </div>
+
+      <div class="login-divider"><span>Study Information</span></div>
+      <div class="login-hint">
+        <strong>DTAM-MY Research Suite</strong><br/>
+        Digital Telerehabilitation Assessment Model — Malaysia<br/>
+        UTAR Lee Kong Chian FES · PhD Research 2025<br/>
+        PI: CHONG Yu Zheng · 24UED03838<br/><br/>
+        <em>Unauthorised access is prohibited under PDPA 2010 (Act 709).</em>
+      </div>
+    </div>
+
+    <!-- ══ REGISTER PANEL ══ -->
+    <div class="login-panel" id="panel-register" style="display:none">
+      <div class="login-error"   id="reg-error"></div>
+      <div class="login-success" id="reg-success"></div>
+
+      <div class="login-field">
+        <label class="login-label" for="reg-name">Full Name / Display Name</label>
+        <input class="login-input" type="text" id="reg-name" placeholder="e.g. Dr Ahmad bin Ali"
+          autocomplete="name"
+          onkeypress="if(event.key==='Enter')document.getElementById('reg-email').focus()"/>
+      </div>
+      <div class="login-field">
+        <label class="login-label" for="reg-email">Email Address</label>
+        <input class="login-input" type="text" id="reg-email" placeholder="e.g. ahmad@utar.edu.my"
+          autocomplete="username"
+          onkeypress="if(event.key==='Enter')document.getElementById('reg-pass').focus()"/>
+      </div>
+      <div class="login-field">
+        <label class="login-label" for="reg-pass">Password</label>
+        <input class="login-input" type="password" id="reg-pass" placeholder="Minimum 8 characters"
+          autocomplete="new-password"
+          oninput="checkPwStrength(this.value)"
+          onkeypress="if(event.key==='Enter')document.getElementById('reg-pass2').focus()"/>
+        <div class="pw-strength"><div class="pw-strength-fill" id="pw-bar" style="width:0%"></div></div>
+        <div class="pw-strength-label" id="pw-label"></div>
+      </div>
+      <div class="login-field">
+        <label class="login-label" for="reg-pass2">Confirm Password</label>
+        <input class="login-input" type="password" id="reg-pass2" placeholder="Re-enter password"
+          autocomplete="new-password"
+          onkeypress="if(event.key==='Enter')document.getElementById('reg-code').focus()"/>
+      </div>
+      <div class="login-field">
+        <label class="login-label" for="reg-code">
+          Registration Code
+          <span style="font-weight:400;color:var(--muted)"> — obtain from PI or supervisor</span>
+        </label>
+        <input class="login-input" type="password" id="reg-code" placeholder="••••••••"
+          autocomplete="off"
+          autocomplete="off"
+          onkeypress="if(event.key==='Enter')doRegister()"/>
+      </div>
+
+      <button class="login-btn navy" id="reg-btn" onclick="doRegister()">
+        ✦ Create Account
+      </button>
+
+      <div class="login-switch">
+        Already have an account?
+        <a onclick="showLoginForm()">Sign in</a>
+      </div>
+
+      <div class="login-divider"><span>Access Policy</span></div>
+      <div class="login-hint">
+        Account creation requires a <strong>Registration Code</strong> issued by the PI.<br/>
+        All accounts are subject to PDPA 2010 (Act 709).<br/>
+        Accounts can be managed under <strong>Settings → User Accounts</strong>.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── SIDEBAR ──────────────────────────────────────── -->
+<nav class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-title">DTAM-MY</div>
+    <div class="sb-logo-sub">Administrator Portal v2<br/>UTAR LKC FES · PhD Research</div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-label">Overview</div>
+    <a class="sb-item active" onclick="showSection('dashboard',this)">
+      <span class="icon">📊</span> Dashboard
+    </a>
+    <a class="sb-item" onclick="showSection('tools',this)">
+      <span class="icon">🧰</span> All Tools
+    </a>
+    <a class="sb-item" onclick="showSection('progress',this)">
+      <span class="icon">📈</span> Study Progress
+    </a>
+  </div>
+
+  <div class="sb-divider"></div>
+
+  <div class="sb-section">
+    <div class="sb-label">Data Collection</div>
+    <a class="sb-item" href="telerehab_questionnaire_app_v2.html" target="_blank">
+      <span class="icon">📋</span> Survey App
+    </a>
+    <a class="sb-item" href="partc_interview_v2.html" target="_blank">
+      <span class="icon">🎙️</span> Interview App
+    </a>
+    <a class="sb-item" href="telerehab_dashboard_v2.html" target="_blank">
+      <span class="icon">📉</span> Quant Dashboard
+    </a>
+    <a class="sb-item" onclick="showSection('omr',this)" style="border-left-color:transparent">
+      <span class="icon">🔍</span> OMR Scanner
+    </a>
+  </div>
+
+  <div class="sb-divider"></div>
+
+  <div class="sb-section">
+    <div class="sb-label">Admin</div>
+    <a class="sb-item" onclick="showSection('participants',this)">
+      <span class="icon">👥</span> Participants
+    </a>
+    <a class="sb-item" onclick="showSection('sessions',this)">
+      <span class="icon">🎤</span> Interview Sessions
+    </a>
+    <a class="sb-item" onclick="showSection('export',this)">
+      <span class="icon">⬇️</span> Export & Reports
+    </a>
+    <a class="sb-item" onclick="showSection('settings',this)">
+      <span class="icon">⚙️</span> Settings
+    </a>
+  </div>
+
+  <div class="sb-divider"></div>
+
+  <div class="sb-section">
+    <div class="sb-label">Resources</div>
+    <a class="sb-item" href="index_v2.html" target="_blank">
+      <span class="icon">🌐</span> Project Website
+    </a>
+    <a class="sb-item" href="DTAM_MY_User_Guide_v1.docx" download>
+      <span class="icon">📖</span> User Guide
+    </a>
+  </div>
+
+  <div class="sb-footer">
+    <div style="margin-bottom:10px;font-size:12px">
+      <div style="opacity:.8;font-weight:600" id="sb-user-label">—</div>
+      <div style="opacity:.5;font-size:10px;margin-top:2px">Signed in</div>
+    </div>
+    <button onclick="doLogout()" style="width:100%;background:rgba(220,38,38,.25);border:1px solid rgba(220,38,38,.4);color:#fca5a5;border-radius:8px;padding:8px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s" onmouseover="this.style.background='rgba(220,38,38,.4)'" onmouseout="this.style.background='rgba(220,38,38,.25)'">
+      🚪 Sign Out
+    </button>
+    <div style="margin-top:10px;opacity:.4;font-size:10px">Study ID: DTAM-MY-2025<br/>UTAR · PDPA 2010</div>
+  </div>
+</nav>
+
+<!-- ── MAIN ─────────────────────────────────────────── -->
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="btn btn-secondary" style="padding:6px 10px;display:none" id="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <div class="session-pill"><div class="session-dot"></div><span id="topbar-user">—</span></div>
+      <span class="tb-badge" id="last-updated">Loading…</span>
+      <button class="tb-btn" onclick="refreshAll()">🔄 Refresh</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ════════════════ DASHBOARD ════════════════ -->
+    <div class="section active" id="sec-dashboard">
+      <div class="section-header">
+        <h2>Research Overview</h2>
+        <p>DTAM-MY Study · Target n=370 · All stakeholder groups</p>
+      </div>
+
+      <div class="kpi-strip" id="kpi-strip">
+        <div class="kpi"><div class="kpi-val" id="kpi-total">0</div><div class="kpi-label">Total Responses</div><div class="kpi-sub">Surveys + Interviews</div></div>
+        <div class="kpi navy"><div class="kpi-val" id="kpi-survey">0</div><div class="kpi-label">Survey Responses</div><div class="kpi-sub">Quantitative</div></div>
+        <div class="kpi orange"><div class="kpi-val" id="kpi-interview">0</div><div class="kpi-label">Interview Sessions</div><div class="kpi-sub">Qualitative</div></div>
+        <div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-val" id="kpi-omr">0</div><div class="kpi-label">OMR Scans</div><div class="kpi-sub">Imported results</div></div>
+        <div class="kpi success"><div class="kpi-val" id="kpi-pct">0%</div><div class="kpi-label">Overall Progress</div><div class="kpi-sub">Target: 370</div></div>
+      </div>
+
+      <!-- Tool Quick-Launch -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">🚀 Quick Launch</div>
+            <div class="card-desc">Open data collection tools directly</div>
+          </div>
+        </div>
+        <div class="tool-grid">
+          <a class="tool-card featured" href="telerehab_dashboard_v2.html" target="_blank">
+            <div class="tool-icon">📉</div>
+            <div class="tool-name">Quantitative Dashboard</div>
+            <div class="tool-desc">Monitor survey responses, domain scores, demographics, and export CSV data.</div>
+            <div class="tool-tags"><span class="tool-tag teal">Live Data</span><span class="tool-tag">MAST TAM SUS ZBI</span></div>
+            <div class="tool-launch">Open Dashboard →</div>
+          </a>
+          <a class="tool-card featured" href="partc_interview_v2.html" target="_blank">
+            <div class="tool-icon">🎙️</div>
+            <div class="tool-name">Qualitative Interview App</div>
+            <div class="tool-desc">Conduct and record semi-structured interviews across all 5 stakeholder groups. Timer, thematic coding, AI analysis.</div>
+            <div class="tool-tags"><span class="tool-tag orange">Qualitative</span><span class="tool-tag">5 Groups</span><span class="tool-tag">AI Assist</span></div>
+            <div class="tool-launch">Open Interview App →</div>
+          </a>
+          <a class="tool-card" href="telerehab_questionnaire_app_v2.html" target="_blank">
+            <div class="tool-icon">📋</div>
+            <div class="tool-name">Survey Questionnaire App</div>
+            <div class="tool-desc">Self-administered multilingual questionnaire for 5 stakeholder groups. EN / BM / 中文 / Tamil.</div>
+            <div class="tool-tags"><span class="tool-tag">4 Languages</span><span class="tool-tag">5 Groups</span></div>
+            <div class="tool-launch">Open Survey →</div>
+          </a>
+          <a class="tool-card featured" href="omr_scanner_v2.html" target="_blank">
+            <div class="tool-icon">🔍</div>
+            <div class="tool-name">OMR Scanner</div>
+            <div class="tool-desc">Scan printed answer sheets by camera or flatbed. Auto perspective-correct, extract responses, score all 7 instruments, export CSV/JSON.</div>
+            <div class="tool-tags"><span class="tool-tag teal">5 Sheet Types</span><span class="tool-tag">OpenCV</span><span class="tool-tag">CSV/JSON</span></div>
+            <div class="tool-launch">Open Scanner →</div>
+          </a>
+          <a class="tool-card" href="index_v2.html" target="_blank">
+            <div class="tool-icon">🌐</div>
+            <div class="tool-name">Project Introduction Page</div>
+            <div class="tool-desc">Public-facing study overview with research team, ethics information, and participant information.</div>
+            <div class="tool-tags"><span class="tool-tag">Public</span></div>
+            <div class="tool-launch">Open Page →</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Group progress -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">👥 Recruitment Progress by Group</div></div>
+        <div class="group-grid" id="group-progress"></div>
+      </div>
+
+      <!-- Activity feed -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🕐 Recent Activity</div>
+          <button class="btn btn-secondary" style="font-size:12px;padding:6px 12px" onclick="refreshAll()">Refresh</button>
+        </div>
+        <div id="activity-feed"><div class="text-muted" style="padding:12px 0;font-size:13px">No activity yet. Complete a survey or interview to see activity here.</div></div>
+      </div>
+    </div>
+
+    <!-- ════════════════ ALL TOOLS ════════════════ -->
+    <div class="section" id="sec-tools">
+      <div class="section-header"><h2>All Tools</h2><p>Complete suite of DTAM-MY research tools</p></div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">📊 Data Collection & Monitoring</div>
+        <div class="tool-grid">
+          <a class="tool-card featured" href="telerehab_questionnaire_app_v2.html" target="_blank">
+            <div class="tool-icon">📋</div>
+            <div class="tool-name">Survey Questionnaire App v6</div>
+            <div class="tool-desc">Self-administered multilingual quantitative questionnaire. 5 stakeholder groups, 8 validated instruments, 4 languages, AI insights, Claude chatbot.</div>
+            <div class="tool-tags"><span class="tool-tag">TAM</span><span class="tool-tag">UTAUT2</span><span class="tool-tag">SUS</span><span class="tool-tag">ZBI</span><span class="tool-tag">WHOQOL</span></div>
+            <div class="tool-launch">Open →</div>
+          </a>
+          <a class="tool-card featured" href="partc_interview_v2.html" target="_blank">
+            <div class="tool-icon">🎙️</div>
+            <div class="tool-name">Qualitative Interview App</div>
+            <div class="tool-desc">Semi-structured interview capture with session timer, per-group question guides, thematic coding, AI-assisted summary, and CSV export.</div>
+            <div class="tool-tags"><span class="tool-tag orange">Qualitative</span><span class="tool-tag">Claude AI</span></div>
+            <div class="tool-launch">Open →</div>
+          </a>
+          <a class="tool-card" href="telerehab_dashboard_v2.html" target="_blank">
+            <div class="tool-icon">📉</div>
+            <div class="tool-name">Quantitative Research Dashboard</div>
+            <div class="tool-desc">Live monitoring of survey responses. KPI overview, domain score analysis, demographics breakdown, full response log, CSV export.</div>
+            <div class="tool-tags"><span class="tool-tag teal">Live</span><span class="tool-tag">Export CSV</span></div>
+            <div class="tool-launch">Open →</div>
+          </a>
+          <a class="tool-card featured" href="omr_scanner_v2.html" target="_blank">
+            <div class="tool-icon">🔍</div>
+            <div class="tool-name">OMR Scanner v1.1</div>
+            <div class="tool-desc">Upload or photograph printed OMR answer sheets. OpenCV perspective correction, bubble detection, automatic scoring of TAM · UTAUT2 · TUQ · SUS · ZBI · MAST · WHOQOL-BREF.</div>
+            <div class="tool-tags"><span class="tool-tag teal">CG</span><span class="tool-tag teal">AH</span><span class="tool-tag teal">PM</span><span class="tool-tag teal">GP</span><span class="tool-tag teal">EL</span><span class="tool-tag">CSV/JSON</span></div>
+            <div class="tool-launch">Open Scanner →</div>
+          </a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">📂 Group-specific Survey Links</div>
+        <div class="tool-grid">
+          <a class="tool-card" href="telerehab_questionnaire_app_v2.html" target="_blank"><div class="tool-icon">🏥</div><div class="tool-name">Allied Health</div><div class="tool-desc">TAM · UTAUT2 · TUQ · SUS · MAST — for physiotherapists, OTs, and other AHPs</div><div class="tool-tags"><span class="tool-tag">n=100</span></div><div class="tool-launch">Open Survey →</div></a>
+          <a class="tool-card" href="telerehab_questionnaire_app_v2.html" target="_blank"><div class="tool-icon">👨‍👩‍👧</div><div class="tool-name">Caregiver</div><div class="tool-desc">ZBI · TAM · UTAUT2 · MAST — for family caregivers and facility personnel</div><div class="tool-tags"><span class="tool-tag">n=100</span></div><div class="tool-launch">Open Survey →</div></a>
+          <a class="tool-card" href="telerehab_questionnaire_app_v2.html" target="_blank"><div class="tool-icon">🧓</div><div class="tool-name">Elderly Patient</div><div class="tool-desc">WHOQOL-BREF · TUQ · SUS · ICF — for post-stroke elderly patients or proxies</div><div class="tool-tags"><span class="tool-tag">n=100</span></div><div class="tool-launch">Open Survey →</div></a>
+          <a class="tool-card" href="telerehab_questionnaire_app_v2.html" target="_blank"><div class="tool-icon">🏛️</div><div class="tool-name">Policy-Maker</div><div class="tool-desc">MAST · Delphi/CVI — for MOH officials, regulators, and healthcare administrators</div><div class="tool-tags"><span class="tool-tag">n=20</span></div><div class="tool-launch">Open Survey →</div></a>
+          <a class="tool-card" href="telerehab_questionnaire_app_v2.html" target="_blank"><div class="tool-icon">🌍</div><div class="tool-name">General Public</div><div class="tool-desc">TAM · Digital Health Literacy — for members of the public with interest in digital health</div><div class="tool-tags"><span class="tool-tag">n=50</span></div><div class="tool-launch">Open Survey →</div></a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">🗂️ Documents & Resources</div>
+        <div class="tool-grid">
+          <a class="tool-card" href="DTAM_MY_User_Guide_v1.docx" download><div class="tool-icon">📖</div><div class="tool-name">User Guide</div><div class="tool-desc">Comprehensive guide covering all app features, AI setup, Android installation, troubleshooting.</div><div class="tool-launch">Download DOCX →</div></a>
+          <a class="tool-card" href="index_v2.html" target="_blank"><div class="tool-icon">🌐</div><div class="tool-name">Project Introduction</div><div class="tool-desc">Public-facing DTAM-MY study overview — share with potential participants.</div><div class="tool-launch">Open →</div></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ STUDY PROGRESS ════════════════ -->
+    <div class="section" id="sec-progress">
+      <div class="section-header"><h2>Study Progress</h2><p>Recruitment status across all groups and data collection phases</p></div>
+      <div class="card" id="progress-detail">
+        <div class="card-title" style="margin-bottom:16px">Recruitment by Stakeholder Group</div>
+        <div id="progress-table-container"><p class="text-muted" style="font-size:13px">Loading…</p></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">Data Collection Timeline</div>
+        <div class="setting-row"><div><div class="setting-label">Phase 1 — Pilot</div><div class="setting-desc">Allied Health + Caregiver pilot (n=30 each)</div></div><div class="setting-val status-badge pending">In Progress</div></div>
+        <div class="setting-row"><div><div class="setting-label">Phase 2 — Full Survey Rollout</div><div class="setting-desc">All 5 groups quantitative questionnaire (n=370 total)</div></div><div class="setting-val status-badge pending">Pending</div></div>
+        <div class="setting-row"><div><div class="setting-label">Phase 3 — Qualitative Interviews</div><div class="setting-desc">Semi-structured interviews across all stakeholder groups</div></div><div class="setting-val status-badge pending">Pending</div></div>
+        <div class="setting-row"><div><div class="setting-label">Phase 4 — ML Pipeline Integration</div><div class="setting-desc">React + Node.js + PostgreSQL PWA deployment</div></div><div class="setting-val status-badge pending">Planned</div></div>
+      </div>
+    </div>
+
+    <!-- ════════════════ PARTICIPANTS ════════════════ -->
+    <div class="section" id="sec-participants">
+      <div class="section-header"><h2>Survey Participants</h2><p>All quantitative survey responses from local storage</p></div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Response Log</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary" style="font-size:12px;padding:7px 14px" onclick="refreshAll()">🔄 Refresh</button>
+            <button class="btn btn-primary" style="font-size:12px;padding:7px 14px" onclick="exportSurveyCSV()">⬇️ Export CSV</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>ID</th><th>Group</th><th>Language</th><th>Submitted</th><th>Status</th></tr></thead>
+            <tbody id="participant-table"><tr><td colspan="5" class="text-muted" style="text-align:center;padding:20px">No survey responses found.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ INTERVIEW SESSIONS ════════════════ -->
+    <div class="section" id="sec-sessions">
+      <div class="section-header"><h2>Interview Sessions</h2><p>All qualitative interview records</p></div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Session Log</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary" style="font-size:12px;padding:7px 14px" onclick="refreshAll()">🔄 Refresh</button>
+            <button class="btn btn-primary" style="font-size:12px;padding:7px 14px" onclick="exportInterviewCSV()">⬇️ Export CSV</button>
+            <a class="btn btn-primary" style="font-size:12px;padding:7px 14px;text-decoration:none" href="partc_interview_v2.html" target="_blank">🎙️ New Interview</a>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Session ID</th><th>Group</th><th>Interviewer</th><th>Duration</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="interview-table"><tr><td colspan="6" class="text-muted" style="text-align:center;padding:20px">No interview sessions found. <a href="partc_interview_v2.html" target="_blank" style="color:var(--teal)">Start an interview →</a></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ EXPORT ════════════════ -->
+    <div class="section" id="sec-export">
+      <div class="section-header"><h2>Export & Reports</h2><p>Download data for SPSS, R, or Excel analysis</p></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:20px">
+        <div class="card" style="margin-bottom:0">
+          <div class="card-title">📋 Survey Data (Quantitative)</div>
+          <p class="card-desc" style="margin-top:8px">Export all quantitative survey responses including demographics, Likert scores, and computed domain scores.</p>
+          <div class="mt-4" style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn btn-primary" onclick="exportSurveyCSV()">⬇️ Export Survey CSV</button>
+            <button class="btn btn-secondary" onclick="openDashboard()">📉 Open Full Dashboard</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:0">
+          <div class="card-title">🎙️ Interview Data (Qualitative)</div>
+          <p class="card-desc" style="margin-top:8px">Export all qualitative interview sessions including responses, thematic codes, and AI-generated summaries.</p>
+          <div class="mt-4" style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn btn-primary" onclick="exportInterviewCSV()">⬇️ Export Interview CSV</button>
+            <button class="btn btn-secondary" onclick="exportInterviewJSON()">⬇️ Export Interview JSON</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:0;border-top:3px solid var(--teal)">
+          <div class="card-title">🔍 OMR Scan Data</div>
+          <p class="card-desc" style="margin-top:8px">Export all imported OMR scan results. Import JSON files from the OMR Scanner first.</p>
+          <div class="mt-4" style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn btn-primary" onclick="exportOmrCSV()">⬇️ Export OMR CSV</button>
+            <button class="btn btn-secondary" onclick="exportOmrJSON()">⬇️ Export OMR JSON</button>
+            <a href="omr_scanner_v2.html" target="_blank" class="btn btn-secondary" style="text-decoration:none;text-align:center">🔍 Open OMR Scanner</a>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">⚠️ Data Management</div>
+        <div class="setting-row">
+          <div><div class="setting-label">Clear Survey Data</div><div class="setting-desc">Permanently deletes all survey responses from local storage. This cannot be undone — export first.</div></div>
+          <button class="btn btn-danger" style="font-size:12px;padding:7px 14px;flex-shrink:0" onclick="confirmClearSurvey()">🗑 Clear Surveys</button>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Clear Interview Data</div><div class="setting-desc">Permanently deletes all interview sessions from local storage. Export first.</div></div>
+          <button class="btn btn-danger" style="font-size:12px;padding:7px 14px;flex-shrink:0" onclick="confirmClearInterviews()">🗑 Clear Interviews</button>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Clear OMR Scan Data</div><div class="setting-desc">Permanently deletes all imported OMR scan results from local storage. Export CSV/JSON first.</div></div>
+          <button class="btn btn-danger" style="font-size:12px;padding:7px 14px;flex-shrink:0" onclick="confirmClearOmr()">🗑 Clear OMR Scans</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ SETTINGS ════════════════ -->
+    <div class="section" id="sec-settings">
+      <div class="section-header"><h2>Settings</h2><p>Administrator configuration and API keys</p></div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:4px">🔑 API Keys</div>
+        <p class="card-desc">Keys are stored in memory only — you will need to re-enter after a page refresh.</p>
+        <div class="setting-row" style="flex-direction:column;align-items:flex-start">
+          <div><div class="setting-label">Anthropic API Key (Claude Chatbot)</div><div class="setting-desc">Required for the Claude AI assistant in the admin portal. Get key at console.anthropic.com</div></div>
+          <input type="text" class="api-input" id="claude-key-input" placeholder="sk-ant-api..." oninput="saveKey('claude',this.value)"/>
+          <div style="margin-top:6px;font-size:11px;color:var(--muted)">Model: claude-haiku-4-5-20251001</div>
+        </div>
+        <div class="setting-row" style="flex-direction:column;align-items:flex-start">
+          <div><div class="setting-label">Gemini API Key (AI Insights in Survey App)</div><div class="setting-desc">Used by the Survey App's AI Insights feature. Get key at aistudio.google.com/apikey</div></div>
+          <input type="text" class="api-input" id="gemini-key-input" placeholder="AIza..." oninput="saveKey('gemini',this.value)"/>
+          <div style="margin-top:6px;font-size:11px;color:var(--muted)">Model: gemini-2.0-flash</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">ℹ️ Study Information</div>
+        <div class="setting-row"><div><div class="setting-label">Study ID</div></div><div class="setting-val">DTAM-MY-2025</div></div>
+        <div class="setting-row"><div><div class="setting-label">Principal Investigator</div></div><div class="setting-val">CHONG Yu Zheng · 24UED03838</div></div>
+        <div class="setting-row"><div><div class="setting-label">Main Supervisor</div></div><div class="setting-val">Dr Kwan Ban Hoe</div></div>
+        <div class="setting-row"><div><div class="setting-label">Co-Supervisor</div></div><div class="setting-val">Ir Dr Goh Choon Hian</div></div>
+        <div class="setting-row"><div><div class="setting-label">Institution</div></div><div class="setting-val">UTAR LKC FES</div></div>
+        <div class="setting-row"><div><div class="setting-label">Ethics</div></div><div class="setting-val">UTAR UREC · PDPA 2010</div></div>
+        <div class="setting-row"><div><div class="setting-label">Target Sample</div></div><div class="setting-val">n = 370</div></div>
+        <div class="setting-row"><div><div class="setting-label">App Version</div></div><div class="setting-val">Admin Portal v1.1</div></div>
+      </div>
+
+      <!-- User Accounts management -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">👥 User Accounts</div>
+            <div class="card-desc">All admin accounts — built-in and created accounts. Built-in accounts cannot be deleted.</div>
+          </div>
+          <button class="btn btn-primary" style="font-size:12px;padding:7px 14px"
+            onclick="showRegisterModal()">+ Add User</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr><th>Display Name</th><th>Username / Email</th><th>Type</th><th>Created</th><th>Action</th></tr>
+            </thead>
+            <tbody id="users-table">
+              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ OMR SCANNER ════════════════ -->
+    <div class="section" id="sec-omr">
+      <div class="section-header">
+        <h2>🔍 OMR Scanner</h2>
+        <p>Scan filled answer sheets · auto-score all instruments · import results into the portal</p>
+      </div>
+
+      <!-- Launch strip -->
+      <div style="background:linear-gradient(135deg,#0E8B8B,#1B3A6B);border-radius:14px;
+        padding:22px 26px;margin-bottom:22px;color:#fff;display:flex;gap:20px;
+        align-items:center;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:18px;font-weight:800;margin-bottom:5px">DTAM-MY OMR Scanner v1.1</div>
+          <div style="font-size:12px;opacity:.85;line-height:1.6">
+            Upload or photograph printed OMR sheets · OpenCV perspective correction ·
+            Bubble detection · Auto-score 7 instruments · Export CSV/JSON
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+            <a href="omr_scanner_v2.html" target="_blank"
+              style="background:#fff;color:#0E8B8B;border:none;border-radius:7px;
+                padding:9px 20px;font-weight:800;font-size:13px;text-decoration:none;
+                display:inline-flex;align-items:center;gap:5px">↗ Open OMR Scanner</a>
+            <label style="background:rgba(255,255,255,.2);color:#fff;
+              border:1px solid rgba(255,255,255,.4);border-radius:7px;
+              padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;
+              display:inline-flex;align-items:center;gap:5px">
+              📥 Import JSON Results
+              <input type="file" accept=".json" style="display:none" onchange="importOmrJson(event)"/>
+            </label>
+          </div>
+        </div>
+        <!-- Per-group quick launch -->
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;min-width:300px">
+          <a href="omr_scanner_v2.html?sheet=CAREGIVER"     target="_blank"
+            style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+              border-radius:8px;padding:8px 4px;text-align:center;text-decoration:none;
+              color:#fff;font-size:10px;font-weight:700;transition:background .2s"
+            onmouseover="this.style.background='rgba(255,255,255,.3)'"
+            onmouseout="this.style.background='rgba(255,255,255,.15)'">
+            <div style="font-size:18px;margin-bottom:3px">👨‍👩‍👧</div>Caregiver
+          </a>
+          <a href="omr_scanner_v2.html?sheet=ALLIED_HEALTH"  target="_blank"
+            style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+              border-radius:8px;padding:8px 4px;text-align:center;text-decoration:none;
+              color:#fff;font-size:10px;font-weight:700"
+            onmouseover="this.style.background='rgba(255,255,255,.3)'"
+            onmouseout="this.style.background='rgba(255,255,255,.15)'">
+            <div style="font-size:18px;margin-bottom:3px">🩺</div>Allied Health
+          </a>
+          <a href="omr_scanner_v2.html?sheet=POLICY_MAKER"   target="_blank"
+            style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+              border-radius:8px;padding:8px 4px;text-align:center;text-decoration:none;
+              color:#fff;font-size:10px;font-weight:700"
+            onmouseover="this.style.background='rgba(255,255,255,.3)'"
+            onmouseout="this.style.background='rgba(255,255,255,.15)'">
+            <div style="font-size:18px;margin-bottom:3px">🏛️</div>Policy-Maker
+          </a>
+          <a href="omr_scanner_v2.html?sheet=GENERAL_PUBLIC" target="_blank"
+            style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+              border-radius:8px;padding:8px 4px;text-align:center;text-decoration:none;
+              color:#fff;font-size:10px;font-weight:700"
+            onmouseover="this.style.background='rgba(255,255,255,.3)'"
+            onmouseout="this.style.background='rgba(255,255,255,.15)'">
+            <div style="font-size:18px;margin-bottom:3px">🌐</div>Gen. Public
+          </a>
+          <a href="omr_scanner_v2.html?sheet=ELDERLY"        target="_blank"
+            style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+              border-radius:8px;padding:8px 4px;text-align:center;text-decoration:none;
+              color:#fff;font-size:10px;font-weight:700"
+            onmouseover="this.style.background='rgba(255,255,255,.3)'"
+            onmouseout="this.style.background='rgba(255,255,255,.15)'">
+            <div style="font-size:18px;margin-bottom:3px">🧓</div>Elderly
+          </a>
+        </div>
+      </div>
+
+      <!-- Imported scans log -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">📂 Imported OMR Scan Results</div>
+            <div class="card-desc">JSON files exported from the OMR Scanner appear here. Use the Import button above after each scanning session.</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary" style="font-size:12px;padding:7px 14px" onclick="refreshAll()">🔄 Refresh</button>
+            <button class="btn btn-primary"   style="font-size:12px;padding:7px 14px" onclick="exportOmrCSV()">⬇️ Export CSV</button>
+            <button class="btn btn-secondary" style="font-size:12px;padding:7px 14px;color:var(--danger)" onclick="confirmClearOmr()">🗑 Clear</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Participant ID</th><th>Sheet Type</th><th>Date/Time</th>
+                <th>Items Read</th><th>Missing</th><th>Ambiguous</th>
+                <th>TAM</th><th>SUS</th><th>ZBI</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="omr-scan-table">
+              <tr><td colspan="10" style="text-align:center;padding:24px;color:var(--muted)">
+                No OMR results imported yet.<br/>
+                <span style="font-size:12px">Open the OMR Scanner → scan a sheet → Export JSON → Import here.</span>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Scoring reference -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">📊 Instrument Scoring Reference</div></div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr><th>Instrument</th><th>Groups</th><th>Items</th><th>Scale</th><th>Formula</th><th>Threshold</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>TAM</strong></td><td>All 5</td><td>10</td><td>1–5</td><td>PU mean · PEOU mean</td><td style="color:var(--teal)">≥3.5/5</td></tr>
+              <tr><td><strong>UTAUT2</strong></td><td>CG · AH</td><td>18</td><td>1–5</td><td>6 construct means</td><td style="color:var(--teal)">≥3.5/5</td></tr>
+              <tr><td><strong>TUQ</strong></td><td>EL · AH</td><td>10</td><td>1–5</td><td>Overall mean</td><td style="color:var(--teal)">≥3.5/5</td></tr>
+              <tr><td><strong>SUS</strong></td><td>EL · AH</td><td>10</td><td>1–5</td><td>Σ converted × 2.5 → 0–100</td><td style="color:var(--teal)">≥70 · ≥85 Excellent</td></tr>
+              <tr><td><strong>ZBI</strong></td><td>CG</td><td>22</td><td>0–4</td><td>Sum → 0–88</td><td style="color:var(--teal)">0–20 minimal burden</td></tr>
+              <tr><td><strong>MAST</strong></td><td>PM</td><td>28</td><td>1–5</td><td>7 domain means</td><td style="color:var(--teal)">Domain ≥3.5/5</td></tr>
+              <tr><td><strong>WHOQOL-BREF</strong></td><td>EL</td><td>26</td><td>1–5</td><td>(mean−1)×25 → 0–100 · Q3,Q4,Q26 reversed</td><td style="color:var(--teal)">≥10% Δ at 12 wks</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Workflow tips -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">📋 Field Scanning Workflow</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">
+          <div style="background:var(--lgrey);border-radius:8px;padding:12px">
+            <div style="font-weight:700;color:var(--navy);margin-bottom:4px;font-size:12px">① Collect</div>
+            <div style="font-size:11px;color:#555;line-height:1.6">Participant fills in printed OMR answer sheet with a black pen or pencil.</div>
+          </div>
+          <div style="background:var(--lgrey);border-radius:8px;padding:12px">
+            <div style="font-weight:700;color:var(--navy);margin-bottom:4px;font-size:12px">② Scan / Capture</div>
+            <div style="font-size:11px;color:#555;line-height:1.6">Use flatbed scanner (≥200 DPI) or camera on flat surface with even lighting.</div>
+          </div>
+          <div style="background:var(--lgrey);border-radius:8px;padding:12px">
+            <div style="font-weight:700;color:var(--navy);margin-bottom:4px;font-size:12px">③ Process</div>
+            <div style="font-size:11px;color:#555;line-height:1.6">Open OMR Scanner → upload pages → click ⚡ Process → review overlay → fix any misreads.</div>
+          </div>
+          <div style="background:var(--lgrey);border-radius:8px;padding:12px">
+            <div style="font-weight:700;color:var(--navy);margin-bottom:4px;font-size:12px">④ Export & Import</div>
+            <div style="font-size:11px;color:#555;line-height:1.6">Export JSON from scanner → return here → click 📥 Import JSON Results → data appears in log.</div>
+          </div>
+          <div style="background:var(--lgrey);border-radius:8px;padding:12px">
+            <div style="font-weight:700;color:var(--navy);margin-bottom:4px;font-size:12px">⑤ Batch Export</div>
+            <div style="font-size:11px;color:#555;line-height:1.6">Once all sessions imported, use ⬇️ Export CSV to download combined dataset for SPSS/R.</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /sec-omr -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ── CHAT WIDGET ────────────────────────────────── -->
+<div class="chat-widget" id="chat-widget">
+  <div class="chat-window" id="chat-window" style="display:none">
+    <div class="chat-head">
+      <span>✦ Claude — Admin Assistant</span>
+      <button class="chat-close-btn" onclick="toggleChat()">✕</button>
+    </div>
+    <div style="background:#fff7ed;border-bottom:1px solid #fed7aa;padding:6px 12px;font-size:11px;color:#92400e;line-height:1.4;">
+    ⚠ For research administration only. Not clinical advice. Verify all outputs.
+  </div>
+  <div class="chat-msgs" id="chat-msgs">
+      <div class="chat-msg model">Hi! I'm Claude, your DTAM-MY admin assistant. I can help you interpret data, plan interviews, draft reports, or answer study questions.</div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" id="chat-input" placeholder="Ask anything…" onkeypress="if(event.key==='Enter')sendChat()"/>
+      <button class="chat-send-btn" id="chat-send" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+  <button class="chat-toggle" onclick="toggleChat()" title="Claude Admin Assistant">✦</button>
+</div>
+
+<!-- ── MODAL ─────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h3 id="modal-title"></h3>
+    <p id="modal-msg"></p>
+    <div class="modal-btns" id="modal-btns"></div>
+  </div>
+</div>
+
+<!-- ── ADD USER MODAL ──────────────────────────── -->
+<div class="modal-overlay" id="add-user-overlay" style="display:none" onclick="if(event.target===this)closeAddUser()">
+  <div class="modal" style="max-width:460px">
+    <h3 style="margin-bottom:6px">👤 Add New Admin User</h3>
+    <p style="margin-bottom:18px">New accounts are stored locally and can sign in immediately.</p>
+    <div id="add-user-error" style="background:#fee2e2;color:var(--danger);border-radius:8px;
+      padding:9px 13px;font-size:12px;font-weight:600;margin-bottom:14px;display:none"></div>
+    <div style="display:grid;gap:12px">
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--navy);margin-bottom:5px">Full Name / Display Name</label>
+        <input id="au-name" type="text" placeholder="e.g. Dr Ahmad bin Ali"
+          style="width:100%;border:2px solid #e5e7eb;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;transition:border-color .2s"
+          onfocus="this.style.borderColor='#0E8B8B'" onblur="this.style.borderColor='#e5e7eb'"/>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--navy);margin-bottom:5px">Email / Username</label>
+        <input id="au-email" type="text" placeholder="e.g. ahmad@utar.edu.my"
+          style="width:100%;border:2px solid #e5e7eb;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;transition:border-color .2s"
+          onfocus="this.style.borderColor='#0E8B8B'" onblur="this.style.borderColor='#e5e7eb'"/>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--navy);margin-bottom:5px">Password</label>
+        <input id="au-pass" type="password" placeholder="Minimum 8 characters"
+          style="width:100%;border:2px solid #e5e7eb;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;transition:border-color .2s"
+          onfocus="this.style.borderColor='#0E8B8B'" onblur="this.style.borderColor='#e5e7eb'"
+          oninput="checkPwStrength(this.value,'au-bar','au-pw-label')"/>
+        <div class="pw-strength"><div class="pw-strength-fill" id="au-bar" style="width:0%"></div></div>
+        <div class="pw-strength-label" id="au-pw-label"></div>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--navy);margin-bottom:5px">Confirm Password</label>
+        <input id="au-pass2" type="password" placeholder="Re-enter password"
+          style="width:100%;border:2px solid #e5e7eb;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;transition:border-color .2s"
+          onfocus="this.style.borderColor='#0E8B8B'" onblur="this.style.borderColor='#e5e7eb'"
+          onkeypress="if(event.key==='Enter')submitAddUser()"/>
+      </div>
+    </div>
+    <div class="modal-btns" style="margin-top:20px">
+      <button class="btn btn-secondary" onclick="closeAddUser()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAddUser()">✦ Create Account</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// AUTH v2 — Web Crypto SHA-256 hashing · no hardcoded credentials
+// ══════════════════════════════════════════════════════
+
+// [v2] Credentials are NEVER stored in source code.
+// All accounts are stored in localStorage as SHA-256 hashes.
+// On first run (no accounts found), a setup wizard creates the admin account.
+
+const USERS_KEY = 'dtam_admin_users_v2';
+
+// Hash a password with SHA-256 via Web Crypto API (async)
+async function hashPassword(password) {
+  const enc = new TextEncoder();
+  const buf = await crypto.subtle.digest('SHA-256', enc.encode(password));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function loadCreatedAccounts() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); } catch(e) { return []; }
+}
+
+function loadAllAccounts() {
+  return loadCreatedAccounts();
+}
+
+function saveCreatedAccounts(arr) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(arr));
+}
+
+// [v2] Registration tokens set by admin after first login (stored hashed)
+const REG_TOKENS_KEY = 'dtam_reg_tokens';
+function getRegTokens() {
+  try { return JSON.parse(localStorage.getItem(REG_TOKENS_KEY) || '[]'); } catch(e) { return []; }
+}
+
+// Show first-run setup if no accounts exist
+function checkFirstRun() {
+  if (loadAllAccounts().length === 0) {
+    showSetupWizard();
+    return true;
+  }
+  return false;
+}
+
+function showSetupWizard() {
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('sidebar').style.display = 'none';
+  // Switch to register panel and explain first-run
+  showRegister();
+  document.getElementById('auth-title').textContent = 'First-Run Setup';
+  document.getElementById('auth-sub').textContent = 'Create the initial administrator account';
+  // Hide registration code field for first run
+  const codeField = document.getElementById('reg-code') && document.getElementById('reg-code').closest('.login-field');
+  if (codeField) codeField.style.display = 'none';
+  document.getElementById('reg-btn').setAttribute('data-firstrun', '1');
+  document.getElementById('reg-btn').textContent = '✦ Create Admin Account';
+}
+
+const SESSION_KEY = 'dtam_admin_session';
+let MAX_ATTEMPTS  = 5;
+let loginAttempts = parseInt(sessionStorage.getItem('dtam_login_attempts') || '0');
+
+function checkSession() {
+  const sess = sessionStorage.getItem(SESSION_KEY);
+  if (sess) {
+    try {
+      const { display, loginTime } = JSON.parse(sess);
+      // Session expires after 8 hours
+      if (Date.now() - loginTime < 8 * 60 * 60 * 1000) {
+        showPortal(display);
+        return true;
+      }
+    } catch(e) {}
+  }
+  // Not authenticated — show login
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('sidebar').style.display = 'none';
+  document.getElementById('login-user').focus();
+  return false;
+}
+
+async function doLogin() {
+  if (loginAttempts >= MAX_ATTEMPTS) {
+    showLoginError('Too many failed attempts. Please refresh the page and try again.');
+    document.getElementById('login-btn').disabled = true;
+    return;
+  }
+
+  const userEl = document.getElementById('login-user');
+  const passEl = document.getElementById('login-pass');
+  const user   = userEl.value.trim().toLowerCase();
+  const pass   = passEl.value;
+
+  if (!user || !pass) { showLoginError('Please enter both username and password.'); return; }
+
+  // [v2] Compare SHA-256 hash — never compare plaintext
+  const hash = await hashPassword(pass);
+  const account = loadAllAccounts().find(a => a.username.toLowerCase() === user && a.passwordHash === hash);
+
+  if (account) {
+    loginAttempts = 0;
+    sessionStorage.removeItem('dtam_login_attempts');
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+      username: account.username,
+      display:  account.display,
+      loginTime: Date.now()
+    }));
+    showPortal(account.display);
+  } else {
+    loginAttempts++;
+    sessionStorage.setItem('dtam_login_attempts', loginAttempts);
+    userEl.classList.add('error');
+    passEl.classList.add('error');
+    passEl.value = '';
+    const remaining = MAX_ATTEMPTS - loginAttempts;
+    showLoginError(remaining > 0
+      ? `Invalid credentials. ${remaining} attempt${remaining!==1?'s':''} remaining.`
+      : 'Account locked. Please refresh the page.');
+    if (remaining <= 0) document.getElementById('login-btn').disabled = true;
+    setTimeout(() => { userEl.classList.remove('error'); passEl.classList.remove('error'); }, 600);
+    passEl.focus();
+  }
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// ── PANEL SWITCHING ───────────────────────────────────
+function showRegister() {
+  document.getElementById('panel-login').style.display    = 'none';
+  document.getElementById('panel-register').style.display = 'block';
+  document.getElementById('auth-title').textContent = 'Create Account';
+  document.getElementById('auth-sub').textContent   = 'Authorised Personnel Only · Registration Code Required';
+  document.getElementById('reg-error').style.display   = 'none';
+  document.getElementById('reg-success').style.display = 'none';
+  document.getElementById('reg-name').focus();
+}
+
+function showLoginForm() {
+  document.getElementById('panel-register').style.display = 'none';
+  document.getElementById('panel-login').style.display    = 'block';
+  document.getElementById('auth-title').textContent = 'DTAM-MY Admin';
+  document.getElementById('auth-sub').textContent   = 'Restricted Access · Authorised Personnel Only';
+  document.getElementById('login-user').focus();
+}
+
+// ── PASSWORD STRENGTH ─────────────────────────────────
+function checkPwStrength(pw, barId='pw-bar', labelId='pw-label') {
+  const bar   = document.getElementById(barId);
+  const label = document.getElementById(labelId);
+  if (!bar || !label) return;
+  let score = 0;
+  if (pw.length >= 8)  score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const levels = [
+    { pct:'20%', color:'#ef4444', text:'Very weak'  },
+    { pct:'40%', color:'#f97316', text:'Weak'        },
+    { pct:'60%', color:'#eab308', text:'Fair'        },
+    { pct:'80%', color:'#22c55e', text:'Strong'      },
+    { pct:'100%',color:'#16a34a', text:'Very strong' },
+  ];
+  const lvl = levels[Math.max(0, score - 1)] || levels[0];
+  bar.style.width     = pw.length ? lvl.pct : '0%';
+  bar.style.background= pw.length ? lvl.color : 'transparent';
+  label.textContent   = pw.length ? lvl.text : '';
+  label.style.color   = lvl.color;
+}
+
+// ── REGISTER (login page) ─────────────────────────────
+async function doRegister() {
+  const nameEl  = document.getElementById('reg-name');
+  const emailEl = document.getElementById('reg-email');
+  const passEl  = document.getElementById('reg-pass');
+  const pass2El = document.getElementById('reg-pass2');
+  const codeEl  = document.getElementById('reg-code');
+  const errEl   = document.getElementById('reg-error');
+  const okEl    = document.getElementById('reg-success');
+
+  errEl.style.display = 'none';
+  okEl.style.display  = 'none';
+
+  const name  = nameEl.value.trim();
+  const email = emailEl.value.trim().toLowerCase();
+  const pass  = passEl.value;
+  const pass2 = pass2El.value;
+  const code  = codeEl.value.trim();
+
+  const showErr = msg => { errEl.textContent = msg; errEl.style.display = 'block'; };
+
+  if (!name)             return showErr('Please enter your display name.');
+  if (!email)            return showErr('Please enter your email address.');
+  if (!/\S+@\S+\.\S+/.test(email)) return showErr('Please enter a valid email address.');
+  if (pass.length < 8)   return showErr('Password must be at least 8 characters.');
+  if (pass !== pass2)    return showErr('Passwords do not match.');
+  // [v2] First-run (no accounts yet) skips token check; subsequent registrations validate token
+  const isFirstRun = document.getElementById('reg-btn').getAttribute('data-firstrun') === '1';
+  if (!isFirstRun) {
+    const tokens = getRegTokens();
+    if (!tokens.includes(code)) return showErr('Invalid registration token. Contact the PI for your token.');
+  }
+
+  const all = loadAllAccounts();
+  if (all.some(a => a.username.toLowerCase() === email))
+    return showErr('An account with this email already exists.');
+
+  // [v2] Hash password before storage
+  const passwordHash = await hashPassword(pass);
+  const newAccount = {
+    username: email,
+    passwordHash,
+    display:  name,
+    builtin:  false,
+    createdAt: new Date().toISOString(),
+  };
+
+  const created = loadCreatedAccounts();
+  created.push(newAccount);
+  saveCreatedAccounts(created);
+
+  // If this was the first-run setup, restore the registration code field and button
+  if (document.getElementById('reg-btn').getAttribute('data-firstrun') === '1') {
+    document.getElementById('reg-btn').removeAttribute('data-firstrun');
+    const codeField = document.getElementById('reg-code') && document.getElementById('reg-code').closest('.login-field');
+    if (codeField) codeField.style.display = '';
+    document.getElementById('reg-btn').textContent = '✦ Create Account';
+  }
+
+  // Clear fields
+  [nameEl, emailEl, passEl, pass2El, codeEl].forEach(el => el.value = '');
+  document.getElementById('pw-bar').style.width = '0%';
+  document.getElementById('pw-label').textContent = '';
+
+  okEl.textContent = `✓ Account created for ${name}. You can now sign in.`;
+  okEl.style.display = 'block';
+  setTimeout(showLoginForm, 2200);
+}
+
+// ── ADD USER MODAL (from Settings) ───────────────────
+function showRegisterModal() {
+  ['au-name','au-email','au-pass','au-pass2'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('au-bar').style.width      = '0%';
+  document.getElementById('au-pw-label').textContent = '';
+  document.getElementById('add-user-error').style.display = 'none';
+  document.getElementById('add-user-overlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('au-name').focus(), 80);
+}
+
+function closeAddUser() {
+  document.getElementById('add-user-overlay').style.display = 'none';
+}
+
+async function submitAddUser() {
+  const name  = document.getElementById('au-name').value.trim();
+  const email = document.getElementById('au-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('au-pass').value;
+  const pass2 = document.getElementById('au-pass2').value;
+  const errEl = document.getElementById('add-user-error');
+  errEl.style.display = 'none';
+
+  const showErr = msg => { errEl.textContent = msg; errEl.style.display = 'block'; };
+
+  if (!name)  return showErr('Display name is required.');
+  if (!email) return showErr('Email address is required.');
+  if (!/\S+@\S+\.\S+/.test(email)) return showErr('Please enter a valid email address.');
+  if (pass.length < 8) return showErr('Password must be at least 8 characters.');
+  if (pass !== pass2)  return showErr('Passwords do not match.');
+
+  const all = loadAllAccounts();
+  if (all.some(a => a.username.toLowerCase() === email))
+    return showErr('An account with this email already exists.');
+
+  const created = loadCreatedAccounts();
+  const pwHash = await hashPassword(pass);
+  created.push({ username:email, passwordHash:pwHash, display:name, builtin:false, createdAt:new Date().toISOString() });
+  saveCreatedAccounts(created);
+  closeAddUser();
+  renderUsersTable();
+  showModal('User Created', `Account for "${name}" (${email}) has been created successfully.`,
+    [{label:'OK', cls:'btn-primary', action:'closeModal()'}]);
+}
+
+// ── USERS TABLE (Settings) ────────────────────────────
+function renderUsersTable() {
+  const tbody = document.getElementById('users-table');
+  if (!tbody) return;
+  const accounts = loadAllAccounts();
+  tbody.innerHTML = accounts.map(a => `
+    <tr>
+      <td style="font-weight:600">${a.display}</td>
+      <td style="font-size:12px;font-family:monospace">${a.username}</td>
+      <td><span class="status-badge ${a.builtin ? 'active' : 'done'}">${a.builtin ? '🔒 Built-in' : '👤 Created'}</span></td>
+      <td style="font-size:11px;color:var(--muted)">${a.createdAt ? new Date(a.createdAt).toLocaleDateString() : 'System'}</td>
+      <td>${a.builtin ? '<span style="color:var(--muted);font-size:12px">—</span>'
+        : `<button class="btn btn-danger" style="font-size:11px;padding:4px 10px"
+             onclick="deleteUser('${a.username}')">Delete</button>`}</td>
+    </tr>`).join('');
+}
+
+function deleteUser(username) {
+  showModal('Delete Account',
+    `Remove account for "${username}"? This cannot be undone.`,
+    [
+      { label:'Cancel',  cls:'btn-secondary', action:'closeModal()' },
+      { label:'Delete',  cls:'btn-danger',    action:`confirmDeleteUser('${username}')` },
+    ]);
+}
+
+function confirmDeleteUser(username) {
+  const created = loadCreatedAccounts().filter(a => a.username !== username);
+  saveCreatedAccounts(created);
+  closeModal();
+  renderUsersTable();
+}
+
+function showPortal(displayName) {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('sidebar').style.display    = 'flex';
+  document.getElementById('topbar-user').textContent  = displayName;
+  document.getElementById('sb-user-label').textContent = displayName;
+  refreshAll();
+}
+
+function doLogout() {
+  if (!confirm('Sign out of the DTAM-MY Admin Portal?')) return;
+  sessionStorage.removeItem(SESSION_KEY);
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('sidebar').style.display    = 'none';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-btn').disabled = false;
+  document.getElementById('login-user').focus();
+}
+
+// ── CONSTANTS ────────────────────────────────────────
+const SURVEY_KEY    = 'dtam_my_responses';
+const INTERVIEW_KEY = 'dtam_my_interviews';
+const OMR_KEY       = 'dtam_omr_scans';
+const TARGETS = { allied:100, caregiver:100, elderly:100, policy:20, public:50 };
+const GROUP_LABELS = { allied:'Allied Health', caregiver:'Caregiver', elderly:'Elderly Patient', policy:'Policy-Maker', public:'General Public' };
+const GROUP_ICONS  = { allied:'🏥', caregiver:'👨‍👩‍👧', elderly:'🧓', policy:'🏛️', public:'🌍' };
+
+// ── API KEYS (session memory) ─────────────────────────
+let _claudeKey = '';
+let _geminiKey = '';
+function saveKey(type, val) {
+  if (type === 'claude') _claudeKey = val.trim();
+  if (type === 'gemini') _geminiKey = val.trim();
+}
+
+// ── DATA LOADERS ─────────────────────────────────────
+function loadSurveys()    { try { return JSON.parse(localStorage.getItem(SURVEY_KEY)||'[]'); } catch(e) { return []; } }
+function loadInterviews() { try { return JSON.parse(localStorage.getItem(INTERVIEW_KEY)||'[]'); } catch(e) { return []; } }
+function loadOmrScans()   { try { return JSON.parse(localStorage.getItem(OMR_KEY)||'[]'); } catch(e) { return []; } }
+
+function refreshAll() {
+  const surveys    = loadSurveys();
+  const interviews = loadInterviews();
+  const omrScans   = loadOmrScans();
+  updateKPIs(surveys, interviews, omrScans);
+  updateGroupProgress(surveys, interviews);
+  updateActivityFeed(surveys, interviews, omrScans);
+  updateParticipantTable(surveys);
+  updateInterviewTable(interviews);
+  updateProgressDetail(surveys, interviews);
+  updateOmrTable(omrScans);
+  document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+}
+
+// ── OMR IMPORT ────────────────────────────────────────
+function importOmrJson(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      // Accept single scan object or array of scans
+      const scans = Array.isArray(data) ? data : [data];
+      const existing = loadOmrScans();
+      // Deduplicate by participant_id + timestamp
+      const deduped = scans.filter(s =>
+        !existing.some(ex => ex.participant_id === s.participant_id && ex.timestamp === s.timestamp));
+      if (!deduped.length) {
+        showModal('Already Imported', 'This file has already been imported (duplicate participant_id + timestamp).', [{label:'OK',cls:'btn-secondary',action:'closeModal()'}]);
+        return;
+      }
+      localStorage.setItem(OMR_KEY, JSON.stringify([...existing, ...deduped]));
+      refreshAll();
+      showModal('Import Successful', `Imported ${deduped.length} OMR scan result(s). They now appear in the scan log.`, [{label:'OK',cls:'btn-primary',action:'closeModal()'}]);
+    } catch(err) {
+      showModal('Import Failed', 'Invalid JSON file. Export the result from the OMR Scanner using the ⬇ JSON button.', [{label:'OK',cls:'btn-secondary',action:'closeModal()'}]);
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ── OMR TABLE ────────────────────────────────────────
+function updateOmrTable(scans) {
+  const tbody = document.getElementById('omr-scan-table');
+  if (!tbody) return;
+  if (!scans.length) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--muted)">No OMR results imported yet.<br/><span style="font-size:12px">Open the OMR Scanner → scan a sheet → Export JSON → Import here.</span></td></tr>';
+    return;
+  }
+  tbody.innerHTML = scans.slice().reverse().map(s => {
+    const res     = s.results || [];
+    const missing = res.filter(r => r.no_response).length;
+    const ambig   = res.filter(r => r.ambiguous).length;
+    const sc      = s.scores || {};
+    const tamVal  = sc.tam?.tam_mean  ? sc.tam.tam_mean+'/5'  : '—';
+    const susVal  = sc.sus?.score     ? sc.sus.score+'/100'   : '—';
+    const zbiVal  = sc.zbi?.total     !== undefined ? sc.zbi.total+'/88' : '—';
+    const flag    = missing > 0 || ambig > 0;
+    return `<tr>
+      <td style="font-family:monospace;font-size:12px;font-weight:700">${s.participant_id||'—'}</td>
+      <td>${s.sheet||'—'}</td>
+      <td style="font-size:11px">${s.timestamp ? new Date(s.timestamp).toLocaleString() : '—'}</td>
+      <td style="text-align:center">${res.length}</td>
+      <td style="text-align:center;color:${missing>0?'var(--danger)':'var(--muted)'}">${missing||'0'}</td>
+      <td style="text-align:center;color:${ambig>0?'var(--warn)':'var(--muted)'}">${ambig||'0'}</td>
+      <td style="text-align:center;font-weight:700;color:var(--teal)">${tamVal}</td>
+      <td style="text-align:center;font-weight:700;color:var(--teal)">${susVal}</td>
+      <td style="text-align:center;font-weight:700;color:var(--orange)">${zbiVal}</td>
+      <td><span class="status-badge ${flag?'pending':'done'}">${flag?'⚠ Review':'✓ Clean'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── OMR EXPORTS ──────────────────────────────────────
+function exportOmrCSV() {
+  const scans = loadOmrScans();
+  if (!scans.length) { showModal('No Data','No OMR results to export. Import JSON files first.',[{label:'OK',cls:'btn-secondary',action:'closeModal()'}]); return; }
+  // Flatten: one row per item per scan
+  const rows = [];
+  const hdr = ['participant_id','sheet','timestamp','page','section','code','label','response','ambiguous','confidence'];
+  rows.push(hdr.join(','));
+  scans.forEach(s => {
+    (s.results||[]).forEach(r => {
+      rows.push([
+        s.participant_id||'', s.sheet||'', s.timestamp||'',
+        r.page||'', r.section_id||'', r.code||'',
+        `"${(r.label||'').replace(/"/g,'""')}"`,
+        r.selectedValue||'', r.ambiguous?'1':'0',
+        r.maxFill !== undefined ? (r.maxFill*100).toFixed(0)+'%' : ''
+      ].join(','));
+    });
+  });
+  downloadText(rows.join('\n'), `dtam_omr_scans_${dateStr()}.csv`);
+}
+function exportOmrJSON() {
+  const scans = loadOmrScans();
+  if (!scans.length) { showModal('No Data','No OMR results to export.',[{label:'OK',cls:'btn-secondary',action:'closeModal()'}]); return; }
+  downloadText(JSON.stringify(scans, null, 2), `dtam_omr_scans_${dateStr()}.json`);
+}
+function confirmClearOmr() {
+  showModal('Clear OMR Data','This will permanently delete all imported OMR scan results. Have you exported the data?',[
+    {label:'Cancel',cls:'btn-secondary',action:'closeModal()'},
+    {label:'Yes, Clear',cls:'btn-danger',action:"doeClear('omr')"}
+  ]);
+}
+
+// ── KPIs ─────────────────────────────────────────────
+function updateKPIs(s, iv, omr) {
+  const total  = s.length + iv.length;
+  const pct    = Math.round((total / 370) * 100);
+  document.getElementById('kpi-total').textContent     = total;
+  document.getElementById('kpi-survey').textContent    = s.length;
+  document.getElementById('kpi-interview').textContent = iv.length;
+  document.getElementById('kpi-omr').textContent       = (omr||[]).length;
+  document.getElementById('kpi-pct').textContent       = pct + '%';
+}
+
+// ── GROUP PROGRESS ────────────────────────────────────
+function updateGroupProgress(surveys, interviews) {
+  const el = document.getElementById('group-progress');
+  el.innerHTML = '';
+  Object.entries(TARGETS).forEach(([group, target]) => {
+    const sc = surveys.filter(r => r.group === group).length;
+    const ic = interviews.filter(r => r.group === group).length;
+    const total = sc + ic;
+    const pct   = Math.min(100, Math.round((total / target) * 100));
+    el.innerHTML += `
+      <div class="group-card">
+        <div class="group-icon">${GROUP_ICONS[group]}</div>
+        <div class="group-name">${GROUP_LABELS[group]}</div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+        <div class="prog-text"><span>${total} collected</span><span>${target} target</span></div>
+        <div style="margin-top:6px;font-size:11px;color:var(--muted)">${sc} surveys · ${ic} interviews</div>
+      </div>`;
+  });
+}
+
+// ── ACTIVITY FEED ─────────────────────────────────────
+function updateActivityFeed(surveys, interviews, omrScans) {
+  const all = [
+    ...surveys.map(r => ({ type:'survey', group:r.group, time:r.submittedAt||r.timestamp||Date.now(), label:'Survey completed' })),
+    ...interviews.map(r => ({ type:'interview', group:r.group, time:r.endedAt||r.startedAt||Date.now(), label:'Interview session' })),
+    ...(omrScans||[]).map(r => ({ type:'system', group:r.sheet||'', time:r.timestamp ? new Date(r.timestamp).getTime() : Date.now(), label:`OMR scan imported — ${r.participant_id||'unknown'}` })),
+  ].sort((a,b) => b.time - a.time).slice(0, 10);
+
+  const feed = document.getElementById('activity-feed');
+  if (!all.length) { feed.innerHTML = '<div class="text-muted" style="padding:12px 0;font-size:13px">No activity yet.</div>'; return; }
+  feed.innerHTML = all.map(a => `
+    <div class="activity-item">
+      <div class="act-dot ${a.type}"></div>
+      <div><div class="act-text">${a.label} — <strong>${GROUP_LABELS[a.group]||a.group||'Unknown'}</strong></div>
+      <div class="act-time">${new Date(a.time).toLocaleString()}</div></div>
+    </div>`).join('');
+}
+
+// ── PARTICIPANT TABLE ──────────────────────────────────
+function updateParticipantTable(surveys) {
+  const tbody = document.getElementById('participant-table');
+  if (!surveys.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-muted" style="text-align:center;padding:20px">No survey responses found.</td></tr>'; return; }
+  tbody.innerHTML = surveys.slice().reverse().map(r => `
+    <tr>
+      <td style="font-family:monospace;font-size:11px">${(r.id||'—').slice(0,12)}</td>
+      <td>${GROUP_ICONS[r.group]||''} ${GROUP_LABELS[r.group]||r.group||'—'}</td>
+      <td>${r.lang ? r.lang.toUpperCase() : '—'}</td>
+      <td>${r.submittedAt ? new Date(r.submittedAt).toLocaleString() : (r.timestamp ? new Date(r.timestamp).toLocaleString() : '—')}</td>
+      <td><span class="status-badge done">✓ Complete</span></td>
+    </tr>`).join('');
+}
+
+// ── INTERVIEW TABLE ────────────────────────────────────
+function updateInterviewTable(interviews) {
+  const tbody = document.getElementById('interview-table');
+  if (!interviews.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-muted" style="text-align:center;padding:20px">No interview sessions found. <a href="partc_interview_v2.html" target="_blank" style="color:var(--teal)">Start an interview →</a></td></tr>';
+    return;
+  }
+  tbody.innerHTML = interviews.slice().reverse().map(r => `
+    <tr>
+      <td style="font-family:monospace;font-size:11px">${(r.id||'—').slice(0,12)}</td>
+      <td>${GROUP_ICONS[r.group]||''} ${GROUP_LABELS[r.group]||r.group||'—'}</td>
+      <td>${r.interviewer||'—'}</td>
+      <td>${r.duration ? Math.ceil(r.duration/60) + ' min' : '—'}</td>
+      <td>${r.endedAt ? new Date(r.endedAt).toLocaleString() : (r.startedAt ? new Date(r.startedAt).toLocaleString() : '—')}</td>
+      <td><span class="status-badge ${r.completed ? 'done' : 'pending'}">${r.completed ? '✓ Complete' : '⏳ In Progress'}</span></td>
+    </tr>`).join('');
+}
+
+// ── PROGRESS DETAIL ────────────────────────────────────
+function updateProgressDetail(surveys, interviews) {
+  const el = document.getElementById('progress-table-container');
+  const rows = Object.entries(TARGETS).map(([group, target]) => {
+    const sc  = surveys.filter(r => r.group === group).length;
+    const ic  = interviews.filter(r => r.group === group).length;
+    const tot = sc + ic;
+    const pct = Math.min(100, Math.round((tot / target) * 100));
+    return `<tr>
+      <td>${GROUP_ICONS[group]} ${GROUP_LABELS[group]}</td>
+      <td>${sc}</td><td>${ic}</td><td><strong>${tot}</strong></td><td>${target}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="prog-bar" style="flex:1;height:6px;margin:0"><div class="prog-fill" style="width:${pct}%"></div></div>
+          <span style="font-size:12px;color:var(--teal);font-weight:700;min-width:36px">${pct}%</span>
+        </div>
+      </td></tr>`;
+  }).join('');
+  el.innerHTML = `<table>
+    <thead><tr><th>Group</th><th>Surveys</th><th>Interviews</th><th>Total</th><th>Target</th><th>Progress</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+// ── EXPORTS ────────────────────────────────────────────
+function exportSurveyCSV() {
+  const data = loadSurveys();
+  if (!data.length) { showModal('No Data','No survey responses to export.',[]); return; }
+  const keys = ['id','group','lang','submittedAt'];
+  const rows = [keys.join(','), ...data.map(r => keys.map(k => `"${(r[k]||'').toString().replace(/"/g,'""')}"`).join(','))];
+  downloadText(rows.join('\n'), `dtam_my_surveys_${dateStr()}.csv`);
+}
+function exportInterviewCSV() {
+  const data = loadInterviews();
+  if (!data.length) { showModal('No Data','No interview sessions to export.',[]); return; }
+  const keys = ['id','group','interviewer','startedAt','endedAt','duration','completed'];
+  const rows = [keys.join(','), ...data.map(r => keys.map(k => `"${(r[k]||'').toString().replace(/"/g,'""')}"`).join(','))];
+  downloadText(rows.join('\n'), `dtam_my_interviews_${dateStr()}.csv`);
+}
+function exportInterviewJSON() {
+  const data = loadInterviews();
+  if (!data.length) { showModal('No Data','No interview sessions to export.',[]); return; }
+  downloadText(JSON.stringify(data, null, 2), `dtam_my_interviews_${dateStr()}.json`);
+}
+function downloadText(text, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type:'text/plain'}));
+  a.download = filename;
+  a.click();
+}
+function dateStr() { return new Date().toISOString().slice(0,10); }
+function openDashboard() { window.open('telerehab_dashboard.html','_blank'); }
+
+// ── CLEAR DATA ─────────────────────────────────────────
+function confirmClearSurvey() {
+  showModal('Clear Survey Data', 'This will permanently delete all survey responses. Have you exported the data?', [
+    { label:'Cancel', cls:'btn-secondary', action:'closeModal()' },
+    { label:'Yes, Clear', cls:'btn-danger', action:"doeClear('survey')" }
+  ]);
+}
+function confirmClearInterviews() {
+  showModal('Clear Interview Data', 'This will permanently delete all interview sessions. Have you exported the data?', [
+    { label:'Cancel', cls:'btn-secondary', action:'closeModal()' },
+    { label:'Yes, Clear', cls:'btn-danger', action:"doeClear('interview')" }
+  ]);
+}
+function doeClear(type) {
+  if (type === 'survey')    localStorage.removeItem(SURVEY_KEY);
+  if (type === 'interview') localStorage.removeItem(INTERVIEW_KEY);
+  if (type === 'omr')       localStorage.removeItem(OMR_KEY);
+  closeModal(); refreshAll();
+}
+
+// ── MODAL ──────────────────────────────────────────────
+function showModal(title, msg, btns) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-msg').textContent   = msg;
+  document.getElementById('modal-btns').innerHTML = btns.map(b =>
+    `<button class="btn ${b.cls}" onclick="${b.action}">${b.label}</button>`).join('');
+  document.getElementById('modal-overlay').style.display = 'flex';
+}
+function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+
+// ── NAVIGATION ─────────────────────────────────────────
+function showSection(name, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  const titles = {dashboard:'Dashboard',tools:'All Tools',progress:'Study Progress',participants:'Survey Participants',sessions:'Interview Sessions',export:'Export & Reports',settings:'Settings',omr:'OMR Scanner'};
+  document.getElementById('topbar-title').textContent = titles[name] || name;
+  if (name === 'settings') renderUsersTable();
+}
+
+// ── CLAUDE CHAT ────────────────────────────────────────
+let chatOpen = false;
+let chatHistory = [];
+const CHAT_GREETING = "Hi! I'm Claude, your DTAM-MY admin assistant. I can help you interpret data, plan interviews, draft reports, or answer study questions.";
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chat-window').style.display = chatOpen ? 'flex' : 'none';
+  document.getElementById('chat-window').style.flexDirection = 'column';
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  if (!_claudeKey) {
+    const k = prompt('Enter your Anthropic API key to enable the Claude assistant.\n\nGet a free key at: https://console.anthropic.com/settings/keys');
+    _claudeKey = (k || '').trim();
+    if (!_claudeKey) return;
+    document.getElementById('claude-key-input').value = _claudeKey;
+  }
+
+  appendChat('user', msg);
+  input.value = '';
+  document.getElementById('chat-send').disabled = true;
+  const typingId = appendChat('model', '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>', true);
+
+  const userMsg = { role:'user', content: msg };
+  chatHistory.push(userMsg);
+  const apiMsgs = chatHistory.filter((_,i) => !(i===0 && chatHistory[0].content === CHAT_GREETING));
+
+  // Include live study stats in system prompt
+  const surveys = loadSurveys();
+  const interviews = loadInterviews();
+  const statsCtx = `Current study stats: ${surveys.length} survey responses, ${interviews.length} interview sessions. ` +
+    Object.entries(TARGETS).map(([g,t]) => `${GROUP_LABELS[g]}: ${surveys.filter(r=>r.group===g).length} surveys (target ${t})`).join(', ') + '.';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'content-type':'application/json','x-api-key':_claudeKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:768,
+        system:`You are a knowledgeable, concise research assistant for the DTAM-MY PhD study at UTAR. ` +
+        `${statsCtx} ` +
+        `The study explores telerehabilitation acceptance for elderly post-stroke patients in Malaysia using 8 validated instruments ` +
+        `(TAM, UTAUT2, TUQ, MAST, SUS, WHOQOL-BREF, ZBI, ICF) across 5 stakeholder groups (target n=370). ` +
+        `Ethics: UTAR UREC (approval pending), PDPA 2010 (Act 709), ICH E6(R2) GCP. ` +
+        `PI: CHONG Yu Zheng (24UED03838), UTAR Lee Kong Chian FES. ` +
+        `IMPORTANT CONSTRAINTS: (1) You must NOT provide clinical diagnoses, medical advice, or treatment recommendations. ` +
+        `(2) All responses must comply with PDPA 2010 — do not suggest actions that would compromise participant data privacy. ` +
+        `(3) If asked about participant health data, remind the user that identifiable data must not be processed without ethics clearance. ` +
+        `(4) You may make errors — always recommend the user verify statistics and regulatory guidance from primary sources. ` +
+        `Answer concisely and practically — researchers are busy.`,
+        messages:apiMsgs
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) { if(res.status===401){_claudeKey='';} throw new Error(data?.error?.message||'API error'); }
+    const reply = data?.content?.[0]?.text || 'Sorry, no response generated.';
+    chatHistory.push({ role:'assistant', content:reply });
+    updateChat(typingId, reply);
+  } catch(e) {
+    updateChat(typingId, '⚠ ' + e.message);
+  } finally {
+    document.getElementById('chat-send').disabled = false;
+  }
+}
+
+function appendChat(role, html, isTyping=false) {
+  const msgs = document.getElementById('chat-msgs');
+  const id = 'msg-' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + (role==='user' ? 'user' : 'model');
+  div.id = id;
+  div.innerHTML = html;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return id;
+}
+function updateChat(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+  document.getElementById('chat-msgs').scrollTop = 9999;
+}
+
+// ── INIT ───────────────────────────────────────────────
+// Hide portal until auth check completes
+document.getElementById('sidebar').style.display = 'none';
+if (!checkFirstRun()) checkSession();
+setInterval(() => {
+  // Only auto-refresh if logged in
+  if (sessionStorage.getItem(SESSION_KEY)) refreshAll();
+}, 30000);
+</script>
+</body>
+</html>

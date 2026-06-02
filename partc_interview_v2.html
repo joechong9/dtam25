@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DTAM-MY v2 · Part C Qualitative Interview</title>
+<style>
+:root {
+  --navy:#1B3A6B; --teal:#0E8B8B; --lteal:#D6F0F0; --lnavy:#D8E4F0;
+  --lgrey:#F2F5F8; --orange:#E07B39; --white:#fff;
+  --success:#16a34a; --warning:#d97706; --danger:#dc2626; --muted:#6b7280;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
+body{background:var(--lgrey);color:#1a1a2e;min-height:100vh;}
+
+/* ── Topbar ── */
+.topbar{background:var(--navy);color:#fff;padding:10px 20px;
+  display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+.topbar h1{font-size:15px;letter-spacing:.4px;white-space:nowrap;}
+.topbar .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.badge{background:var(--teal);padding:3px 10px;border-radius:10px;font-size:11px;white-space:nowrap;}
+.badge-orange{background:var(--orange);}
+
+/* ── Screens ── */
+.screen{display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:20px;}
+.card{background:var(--white);border-radius:12px;
+  box-shadow:0 2px 12px rgba(0,0,0,.09);overflow:hidden;}
+.setup-card{width:100%;max-width:500px;padding:32px;}
+.setup-card .logo{text-align:center;margin-bottom:24px;}
+.setup-card .logo h2{color:var(--navy);font-size:22px;margin-bottom:4px;}
+.setup-card .logo p{color:var(--muted);font-size:13px;}
+
+/* ── Fields ── */
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.field select,.field input{width:100%;padding:9px 11px;
+  border:1.5px solid #d1d5db;border-radius:7px;font-size:13px;background:var(--lgrey);}
+.field select:focus,.field input:focus{outline:none;border-color:var(--teal);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ── Buttons ── */
+.btn{padding:9px 18px;border:none;border-radius:7px;font-size:13px;
+  font-weight:600;cursor:pointer;transition:.15s;}
+.btn-primary{background:var(--teal);color:#fff;}
+.btn-primary:hover{background:#0a7070;}
+.btn-primary:disabled{background:#9ca3af;cursor:not-allowed;}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-success{background:var(--success);color:#fff;}
+.btn-outline{background:transparent;border:1.5px solid var(--teal);color:var(--teal);}
+.btn-outline:hover{background:var(--lteal);}
+.btn-ghost{background:transparent;border:1.5px solid #d1d5db;color:var(--muted);}
+.btn-full{width:100%;padding:11px;}
+
+/* ── Consent ── */
+.consent-box{background:var(--lnavy);border-radius:8px;padding:14px;
+  font-size:13px;line-height:1.7;margin-bottom:16px;}
+.consent-check{display:flex;align-items:flex-start;gap:10px;
+  font-size:13px;margin-bottom:16px;cursor:pointer;line-height:1.5;}
+.consent-check input{margin-top:2px;width:16px;height:16px;
+  accent-color:var(--teal);flex-shrink:0;}
+
+/* ── Main Interview Layout ── */
+.interview-layout{display:grid;grid-template-columns:220px 1fr 260px;
+  gap:14px;padding:14px;min-height:calc(100vh - 48px);}
+
+/* ── Section Nav (left) ── */
+.section-nav .card-hd{background:var(--navy);color:#fff;padding:10px 14px;
+  font-size:12px;font-weight:700;letter-spacing:.3px;}
+.sec-item{padding:9px 14px;border-bottom:1px solid var(--lgrey);
+  cursor:pointer;font-size:13px;transition:.12s;display:flex;align-items:center;gap:8px;}
+.sec-item:hover{background:var(--lgrey);}
+.sec-item.active{background:var(--lteal);border-left:3px solid var(--teal);}
+.sec-item.complete{color:var(--success);}
+.sec-item .sec-label{flex:1;}
+.sec-item .sec-count{font-size:11px;color:var(--muted);background:var(--lgrey);
+  padding:1px 6px;border-radius:8px;}
+.sec-item.active .sec-count{background:var(--teal);color:#fff;}
+
+/* ── Question Panel (centre) ── */
+.q-panel .card-hd{background:var(--navy);color:#fff;padding:10px 16px;
+  font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center;}
+.q-panel .card-body{padding:16px;}
+
+.progress-row{display:flex;justify-content:space-between;font-size:11px;
+  color:var(--muted);margin-bottom:6px;}
+.progress-bar{height:5px;background:var(--lnavy);border-radius:3px;margin-bottom:14px;}
+.progress-fill{height:100%;background:var(--teal);border-radius:3px;transition:width .35s;}
+
+.section-badge{display:inline-block;background:var(--lteal);color:var(--teal);
+  font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px;margin-bottom:10px;}
+
+.q-box{background:var(--lnavy);border-left:4px solid var(--navy);
+  border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:14px;}
+.q-code{font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:700;}
+.q-text{font-size:17px;font-weight:500;line-height:1.5;color:#1a1a2e;}
+
+.probe-box{background:#fffbf5;border:1px solid #fde68a;border-radius:7px;
+  padding:10px 12px;margin-bottom:14px;}
+.probe-box summary{font-size:12px;font-weight:700;color:var(--orange);cursor:pointer;
+  list-style:none;display:flex;align-items:center;gap:6px;}
+.probe-box summary::before{content:"💡";font-size:13px;}
+.probe-text{font-size:12px;color:#92400e;margin-top:7px;line-height:1.7;}
+
+/* ── Record Zone ── */
+.record-zone{display:flex;align-items:center;gap:14px;
+  background:var(--lgrey);border-radius:10px;padding:12px 14px;margin-bottom:14px;}
+.rec-btn{width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
+  font-size:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  transition:.15s;}
+.rec-btn.idle{background:var(--white);border:2.5px solid var(--teal);}
+.rec-btn.idle:hover{background:var(--lteal);}
+.rec-btn.recording{background:var(--danger);animation:rpulse 1s infinite;}
+.rec-btn.processing{background:var(--warning);}
+@keyframes rpulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.35)}
+  50%{box-shadow:0 0 0 9px rgba(220,38,38,0)}}
+.rec-info{flex:1;}
+.rec-status{font-size:12px;color:var(--muted);margin-bottom:2px;}
+.rec-timer{font-size:22px;font-weight:700;color:var(--danger);line-height:1;}
+.rec-timer.idle{color:var(--muted);font-size:14px;}
+
+/* ── Transcript ── */
+.t-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.4px;margin-bottom:5px;}
+.transcript-area{width:100%;padding:10px 12px;border:1.5px solid #d1d5db;
+  border-radius:7px;font-size:13px;line-height:1.6;resize:vertical;
+  min-height:80px;font-family:inherit;background:var(--white);}
+.transcript-area:focus{outline:none;border-color:var(--teal);}
+.transcript-area.live{border-color:var(--teal);background:#f0fafa;}
+.notes-area{width:100%;padding:10px 12px;border:1.5px solid #d1d5db;
+  border-radius:7px;font-size:13px;line-height:1.6;resize:vertical;
+  min-height:60px;font-family:inherit;background:var(--white);}
+.notes-area:focus{outline:none;border-color:var(--orange);}
+
+.nav-row{display:flex;gap:10px;margin-top:16px;}
+.nav-row .btn{flex:1;}
+
+/* ── Right Panel ── */
+.right-panel .card{margin-bottom:12px;}
+.card-hd{background:var(--navy);color:#fff;padding:10px 14px;
+  font-size:12px;font-weight:700;letter-spacing:.3px;}
+.card-body{padding:12px;}
+
+.log-item{padding:8px 10px;border-bottom:1px solid var(--lgrey);font-size:12px;}
+.log-item:last-child{border-bottom:none;}
+.log-code{font-weight:700;color:var(--navy);}
+.log-status{float:right;font-size:10px;padding:1px 6px;border-radius:8px;font-weight:700;}
+.log-status.done{background:#dcfce7;color:var(--success);}
+.log-status.partial{background:#fff3e8;color:var(--orange);}
+.log-status.skip{background:var(--lgrey);color:var(--muted);}
+.log-text{color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ── Summary ── */
+.summary-card{width:100%;max-width:620px;padding:28px;}
+.sum-row{display:flex;justify-content:space-between;padding:9px 0;
+  border-bottom:1px solid var(--lgrey);font-size:13px;}
+.sum-row:last-child{border-bottom:none;}
+.tag{display:inline-block;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;}
+.tag-green{background:#dcfce7;color:var(--success);}
+.tag-orange{background:#fff3e8;color:var(--orange);}
+.tag-grey{background:var(--lgrey);color:var(--muted);}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+const TRANSLATIONS = {"caregiver": {"bm": {"C1.1": {"question": "Terima kasih kerana mengambil bahagian. Bolehkah anda bermula dengan menceritakan sedikit tentang bagaimana anda mula terlibat dalam menjaga orang ini?", "probe": "Sahkan persetujuan; gunakan nada mesra dan empati; catat konteks keluarga vs. profesional"}, "C1.2": {"question": "Bagaimanakah hari penjagaan biasa bagi anda?", "probe": "Soalan: Tugas fizikal, beban emosi, komitmen masa, sokongan yang diterima"}, "C2.1": {"question": "Apakah cabaran terbesar yang anda hadapi dalam membantu pesakit menghadiri sesi pemulihan?", "probe": "Soalan: Pengangkutan, komitmen kerja, kos, penentangan pesakit, keletihan"}, "C2.2": {"question": "Bagaimana perasaan anda apabila pesakit melepaskan sesi terapi? Apakah yang biasanya berlaku selepas itu?", "probe": "Soalan: Rasa bersalah, kekecewaan, akibat praktikal, komunikasi ahli terapi"}, "C2.3": {"question": "Pernahkah anda diminta membantu pesakit dengan latihan di rumah antara lawatan klinik? Bagaimana keadaannya?", "probe": "Soalan: Keyakinan, arahan yang diterima, pematuhan pesakit, kebimbangan penjaga"}, "C2.4": {"question": "Adakah anda rasa profesional penjagaan kesihatan melibatkan dan menyokong penjaga secara mencukupi dalam proses pemulihan?", "probe": "Soalan: Jurang komunikasi, latihan yang ditawarkan, perasaan dikecualikan atau terpingit"}, "C3.1": {"question": "Pernahkah anda mendengar tentang telepemuliihan — di mana ahli terapi membimbing pemulihan melalui panggilan video? Apakah yang anda tahu tentangnya?", "probe": "Soalan: Pendedahan sebelum ini, sumber maklumat, reaksi awal"}, "C3.2": {"question": "Jika ahli terapi pesakit boleh menjalankan sesi melalui panggilan video di rumah, bagaimana perasaan anda tentang idea itu?", "probe": "Soalan: Kepercayaan, kebimbangan tentang kualiti, antusias, kebimbangan praktikal"}, "C3.3": {"question": "Apakah kebimbangan yang anda ada, jika ada, tentang menggunakan teknologi untuk menyokong pemulihan pesakit di rumah?", "probe": "Soalan: Privasi, kerumitan persediaan, kebolehpercayaan peranti, penentangan pesakit, keselamatan data"}, "C3.4": {"question": "Adakah anda fikir pesakit akan selesa menyertai telepemuliihan? Apakah yang mungkin membantu atau menghalang mereka?", "probe": "Soalan: Kemampuan kognitif, gangguan pendengaran/penglihatan, motivasi, rasa malu"}, "C4.1": {"question": "Peranti dan akses internet apakah yang anda ada di rumah atau di fasiliti? Adakah anda fikir ia mencukupi untuk pemulihan berasaskan video?", "probe": "Soalan: Jenis peranti, kelajuan internet, ruang dikongsi vs. peribadi, saiz skrin untuk warga emas"}, "C4.2": {"question": "Adakah terdapat ruang peribadi yang sesuai di rumah atau di fasiliti di mana pesakit boleh menyertai sesi terapi video dengan selesa?", "probe": "Soalan: Ruang, perabot, bunyi bising persekitaran, privasi daripada orang lain"}, "C4.3": {"question": "Adakah anda boleh hadir semasa sesi telepemuliihan untuk membantu pesakit? Adakah ada masa bila itu tidak mungkin?", "probe": "Soalan: Jadual kerja, berbilang tanggungan, syif malam untuk kakitangan fasiliti"}, "C4.4": {"question": "Apakah jenis sokongan atau latihan yang anda perlukan untuk berasa yakin membantu pesakit semasa sesi telepemuliihan?", "probe": "Soalan: Panduan video, arahan bertulis, demonstrasi langsung, akses talian bantuan"}, "C5.1": {"question": "Bagaimana menurut anda menerima pemulihan di rumah, berbanding pergi ke klinik, akan mempengaruhi suasana hati dan motivasi pesakit?", "probe": "Soalan: Keselesaan, pengurangan keletihan, maruah, peningkatan kekerapan latihan"}, "C5.2": {"question": "Bagaimana kesannya kepada anda secara peribadi jika pesakit boleh menerima pemulihan di rumah?", "probe": "Soalan: Pengurangan beban pengangkutan, penjimatan masa, kelegaan kewangan, ketenteraman fikiran"}, "C5.3": {"question": "Adakah anda rasa kualiti hidup pesakit telah terjejas oleh perjalanan pemulihan semasa? Dalam hal apa?", "probe": "Soalan: Dimensi fizikal, emosi, sosial — gunakan domain WHOQOL secara tidak formal"}, "C5.4": {"question": "Jika telepemuliihan membolehkan ahli terapi menyemak pesakit secara berkala dari jauh, adakah itu akan memberi anda keyakinan yang lebih besar dalam mengurus penjagaan di rumah?", "probe": "Soalan: Ketenangan, akauntabiliti, peningkatan komunikasi"}, "C6.1": {"question": "Jika anda ingin mereka bentuk sistem telepemuliihan yang berfungsi baik untuk penjaga, apakah tiga ciri paling penting?", "probe": "Soalan: Kesederhanaan, sokongan Bahasa Malaysia, peringatan, laporan kemajuan, butang kecemasan"}, "C6.2": {"question": "Apakah kebimbangan yang anda ingin penyelidik atau pembangun atasi sebelum anda akan berasa selesa menggunakan sistem telepemuliihan di rumah?", "probe": "Soalan: Privasi data, kos, sokongan teknikal, kejelasan penyeliaan klinikal"}, "C6.3": {"question": "Adakah ada perkara lain yang ingin anda kongsi tentang pengalaman penjagaan anda atau apa yang anda inginkan daripada perkhidmatan telepemuliihan?", "probe": "Ungkapan bebas — jangan pimpin atau ganggu"}}, "zh": {"C1.1": {"question": "感谢您的参与。您能先告诉我您是如何开始照顾这位患者的吗？", "probe": "确认同意；使用温暖、富有同理心的语气；记录家庭或专业背景"}, "C1.2": {"question": "您典型的一天护理工作是什么样的？", "probe": "追问：体力任务、情感负担、时间投入、获得的支持"}, "C2.1": {"question": "在帮助患者参加康复训练方面，您面临的最大挑战是什么？", "probe": "追问：交通、工作承诺、费用、患者抗拒、疲劳"}, "C2.2": {"question": "当患者错过治疗课程时，您有何感受？之后通常会发生什么？", "probe": "追问：愧疚、沮丧、实际影响、与治疗师的沟通"}, "C2.3": {"question": "您是否曾被要求在诊疗间歇期间协助患者在家进行锻炼？效果如何？", "probe": "追问：信心、获得的指导、患者配合度、护理员焦虑"}, "C2.4": {"question": "您认为医疗专业人员是否充分让护理员参与并在康复过程中给予支持？", "probe": "追问：沟通不足、提供的培训、感到被排除或不知所措"}, "C3.1": {"question": "您是否听说过远程康复——即治疗师通过视频通话指导康复训练？您对此了解多少？", "probe": "追问：之前的接触、信息来源、初步反应"}, "C3.2": {"question": "如果患者的治疗师可以通过视频通话在家进行课程，您对这个想法有何看法？", "probe": "追问：信任、对质量的担忧、热情、实际顾虑"}, "C3.3": {"question": "关于在家使用技术支持患者康复，您有何顾虑（如有）？", "probe": "追问：隐私、设置复杂性、设备可靠性、患者抗拒、数据安全"}, "C3.4": {"question": "您认为患者会愿意参与远程康复吗？什么可能有助于或阻碍他们？", "probe": "追问：认知能力、听力/视力问题、积极性、羞涩"}, "C4.1": {"question": "您家里或机构里有哪些设备和网络接入？您认为它们是否足以支持视频康复？", "probe": "追问：设备类型、网速、共享或私人空间、老年人屏幕尺寸"}, "C4.2": {"question": "家里或机构里是否有合适的私人空间，让患者能舒适地参与视频治疗课程？", "probe": "追问：空间、家具、环境噪音、与他人的隐私"}, "C4.3": {"question": "您能在远程康复课程期间在场协助患者吗？有没有无法做到的时候？", "probe": "追问：工作时间表、多个被照顾者、机构工作人员的夜班"}, "C4.4": {"question": "您需要什么样的支持或培训，才能有信心在远程康复课程中协助患者？", "probe": "追问：视频指南、书面说明、现场演示、客服热线"}, "C5.1": {"question": "与前往诊所相比，您认为在家接受康复会如何影响患者的情绪和积极性？", "probe": "追问：舒适度、减少疲劳、尊严、练习频率增加"}, "C5.2": {"question": "如果患者可以在家接受康复治疗，这对您个人有何影响？", "probe": "追问：减少接送负担、节省时间、经济减压、心安"}, "C5.3": {"question": "您认为患者的生活质量是否受到目前康复历程的影响？体现在哪些方面？", "probe": "追问：身体、情感、社会层面 - 非正式使用WHOQOL领域"}, "C5.4": {"question": "如果远程康复让治疗师能够定期远程检查患者，这会让您在家管理护理时更有信心吗？", "probe": "追问：安心感、问责制、沟通改善"}, "C6.1": {"question": "如果您来设计一个适合护理员使用的远程康复系统，最重要的三个功能是什么？", "probe": "追问：简洁性、中文支持、提醒、进度报告、紧急按钮"}, "C6.2": {"question": "在您愿意在家使用远程康复系统之前，您希望研究人员或开发人员解决哪些问题？", "probe": "追问：数据隐私、费用、技术支持、临床监督清晰度"}, "C6.3": {"question": "关于您的护理经历或您对远程康复服务的期望，还有什么想分享的吗？", "probe": "自由表达 - 不要引导或打断"}}, "ta": {"C1.1": {"question": "பங்கேற்பதற்கு நன்றி. இந்த நபரை கவனிப்பதில் நீங்கள் எவ்வாறு ஈடுபட்டீர்கள் என்று சிறிது சொல்ல முடியுமா?", "probe": "ஒப்புதலை உறுதி செய்யவும்; வெப்பமான, அனுதாப நிலைப்பாட்டை பயன்படுத்தவும்; குடும்பம் எதிரான தொழில்முறை சூழலை குறிப்பிடவும்"}, "C1.2": {"question": "உங்களுக்கான வழக்கமான பராமரிப்பு நாள் எப்படி இருக்கும்?", "probe": "ஆய்வு: உடல் பணிகள், உணர்ச்சி சுமை, நேர அர்ப்பணிப்பு, பெறப்பட்ட ஆதரவு"}, "C2.1": {"question": "நோயாளர் மறுவாழ்வு அமர்வுகளில் கலந்துகொள்ள உதவுவதில் நீங்கள் எதிர்கொள்ளும் மிகப்பெரிய சவால்கள் என்ன?", "probe": "ஆய்வு: போக்குவரத்து, வேலை கடமைகள், செலவு, நோயாளர் எதிர்ப்பு, சோர்வு"}, "C2.2": {"question": "நோயாளர் சிகிச்சை அமர்வை தவறவிடும்போது நீங்கள் எப்படி உணர்கிறீர்கள்? அதற்குப் பிறகு என்ன நடக்கும்?", "probe": "ஆய்வு: குற்ற உணர்வு, விரக்தி, நடைமுறை விளைவுகள், சிகிச்சையாளர் தொடர்பு"}, "C2.3": {"question": "கிளினிக் வருகைகளுக்கு இடையே வீட்டில் உடற்பயிற்சிகளில் நோயாளருக்கு உதவுமாறு கேட்கப்பட்டீர்களா? அது எப்படி சென்றது?", "probe": "ஆய்வு: நம்பிக்கை, பெறப்பட்ட அறிவுறுத்தல்கள், நோயாளர் இணக்கம், பராமரிப்பாளர் கவலை"}, "C2.4": {"question": "சுகாதார நிபுணர்கள் மறுவாழ்வு செயல்பாட்டில் பராமரிப்பாளர்களை போதுமான அளவு ஈடுபடுத்தி ஆதரிக்கிறார்கள் என்று நீங்கள் உணர்கிறீர்களா?", "probe": "ஆய்வு: தொடர்பு இடைவெளிகள், வழங்கப்பட்ட பயிற்சி, விலக்கப்பட்ட அல்லது அதிகமாக சுமையை உணர்தல்"}, "C3.1": {"question": "தொலை-மறுவாழ்வு பற்றி கேள்விப்பட்டீர்களா - அதாவது சிகிச்சையாளர் வீடியோ அழைப்பு மூலம் மறுவாழ்வை வழிகாட்டுவது? அதைப் பற்றி என்ன தெரியும்?", "probe": "ஆய்வு: முந்தைய வெளிப்பாடு, தகவல் மூலங்கள், ஆரம்ப எதிர்வினை"}, "C3.2": {"question": "நோயாளரின் சிகிச்சையாளர் வீட்டில் வீடியோ அழைப்பு மூலம் அமர்வுகளை நடத்த முடிந்தால், அந்த யோசனை பற்றி நீங்கள் எப்படி உணர்கிறீர்கள்?", "probe": "ஆய்வு: நம்பிக்கை, தரம் பற்றிய கவலை, ஆர்வம், நடைமுறை கவலைகள்"}, "C3.3": {"question": "வீட்டில் நோயாளரின் மறுவாழ்வை ஆதரிக்க தொழில்நுட்பத்தை பயன்படுத்துவது பற்றி என்ன கவலைகள் உள்ளன?", "probe": "ஆய்வு: தனியுரிமை, அமைப்பின் சிக்கல், சாதன நம்பகத்தன்மை, நோயாளர் எதிர்ப்பு, தரவு பாதுகாப்பு"}, "C3.4": {"question": "நோயாளர் தொலை-மறுவாழ்வில் பங்கேற்பதில் வசதியாக இருப்பார் என்று நினைக்கிறீர்களா? அவர்களுக்கு என்ன உதவலாம் அல்லது தடைசெய்யலாம்?", "probe": "ஆய்வு: அறிவுசார் திறன், கேட்கும்/பார்க்கும் திறன் குறைபாடு, ஊக்கம், வெட்கம்"}, "C4.1": {"question": "வீட்டில் அல்லது வசதியில் என்ன சாதனங்கள் மற்றும் இணைய அணுகல் உள்ளது? வீடியோ அடிப்படையிலான மறுவாழ்வுக்கு போதுமானதாக இருக்கும் என்று நினைக்கிறீர்களா?", "probe": "ஆய்வு: சாதன வகை, இணைய வேகம், பகிரப்பட்ட எதிரான தனிப்பட்ட இடம், முதியோருக்கான திரை அளவு"}, "C4.2": {"question": "வீட்டில் அல்லது வசதியில் நோயாளர் வீடியோ சிகிச்சை அமர்வுகளில் வசதியாக பங்கேற்கும் தனியுரிமையான இடம் உள்ளதா?", "probe": "ஆய்வு: இடம், மரச்சாமான்கள், சுற்றுப்புற சத்தம், மற்றவர்களிடமிருந்து தனியுரிமை"}, "C4.3": {"question": "தொலை-மறுவாழ்வு அமர்வுகளில் நோயாளருக்கு உதவ நீங்கள் இருக்க முடியுமா? அது சாத்தியமாகாத நேரங்கள் உள்ளதா?", "probe": "ஆய்வு: வேலை அட்டவணை, பல சார்பாளர்கள், வசதி பணியாளர்களுக்கான இரவு ஷிப்ட்"}, "C4.4": {"question": "தொலை-மறுவாழ்வு அமர்வுகளில் நோயாளருக்கு உதவ நம்பிக்கையாக உணர என்ன ஆதரவு அல்லது பயிற்சி தேவை?", "probe": "ஆய்வு: வீடியோ வழிகாட்டிகள், எழுத்தலான அறிவுறுத்தல்கள், நேரடி விளக்கப்படம், உதவி உதவி எண் அணுகல்"}, "C5.1": {"question": "கிளினிக்கிற்கு பயணிப்பதற்கு பதிலாக வீட்டில் மறுவாழ்வு பெறுவது நோயாளரின் மனநிலை மற்றும் ஊக்கத்தை எவ்வாறு பாதிக்கும் என்று நினைக்கிறீர்கள்?", "probe": "ஆய்வு: வசதி, சோர்வு குறைப்பு, கண்ணியம், பயிற்சியின் அதிகரித்த அதிர்வெண்"}, "C5.2": {"question": "நோயாளர் வீட்டில் மறுவாழ்வு பெற முடிந்தால் தனிப்பட்ட முறையில் உங்களை எவ்வாறு பாதிக்கும்?", "probe": "ஆய்வு: போக்குவரத்து சுமை குறைப்பு, நேர சேமிப்பு, நிதி ஆறுதல், மனசமாதானம்"}, "C5.3": {"question": "தற்போதைய மறுவாழ்வு பயணத்தால் நோயாளரின் வாழ்க்கைத் தரம் பாதிக்கப்பட்டதாக உணர்கிறீர்களா? எவ்வகைகளில்?", "probe": "ஆய்வு: உடல், உணர்ச்சி, சமூக பரிமாணங்கள் - WHOQOL பகுதிகளை முறைசாரா முறையில் பயன்படுத்தவும்"}, "C5.4": {"question": "தொலை-மறுவாழ்வு சிகிச்சையாளர் தொலைவிலிருந்து நோயாளரை தொடர்ந்து சரிபார்க்க அனுமதித்தால், வீட்டில் பராமரிப்பை நிர்வகிப்பதில் உங்களுக்கு அதிக நம்பிக்கை வருமா?", "probe": "ஆய்வு: நம்பிக்கை, பொறுப்புணர்வு, தொடர்பு மேம்பாடு"}, "C6.1": {"question": "பராமரிப்பாளர்களுக்கு நன்றாக செயல்படும் தொலை-மறுவாழ்வு அமைப்பை நீங்கள் வடிவமைக்க வேண்டும் என்றால், மூன்று மிக முக்கியமான அம்சங்கள் என்னவாக இருக்கும்?", "probe": "ஆய்வு: எளிமை, தமிழ் மொழி ஆதரவு, நினைவூட்டல்கள், முன்னேற்ற அறிக்கைகள், அவசர பொத்தான்"}, "C6.2": {"question": "வீட்டில் தொலை-மறுவாழ்வு அமைப்பை பயன்படுத்துவதில் வசதியாக உணர ஆராய்ச்சியாளர்கள் அல்லது டெவலப்பர்கள் என்ன கவலைகளை தீர்க்க வேண்டும்?", "probe": "ஆய்வு: தரவு தனியுரிமை, செலவு, தொழில்நுட்ப ஆதரவு, மருத்துவ மேற்பார்வை தெளிவு"}, "C6.3": {"question": "உங்கள் பராமரிப்பு அனுபவம் அல்லது தொலை-மறுவாழ்வு சேவையிலிருந்து நீங்கள் என்ன விரும்புவீர்கள் என்பது பற்றி வேறு ஏதாவது பகிர விரும்புகிறீர்களா?", "probe": "சுதந்திரமான வெளிப்பாடு - வழிகாட்ட வேண்டாம் அல்லது குறுக்கிட வேண்டாம்"}}}, "allied": {"bm": {"C1.1": {"question": "Bolehkah anda menerangkan secara ringkas peranan semasa anda dan jenis pesakit yang biasanya anda tangani?", "probe": "Wujudkan konteks; perhatikan demografi pesakit dan tetapan"}, "C1.2": {"question": "Dalam minggu biasa, berapa bahagian pesakit anda adalah warga emas atau individu pasca-strok?", "probe": "Kaji: Kekerapan, intensiti beban kes dengan pesakit strok warga emas"}, "C2.1": {"question": "Apakah cabaran paling signifikan yang anda hadapi dalam menyampaikan perkhidmatan pemulihan kepada pesakit warga emas pasca-strok?", "probe": "Kaji: Kehadiran, pematuhan, kekangan sumber, halangan komunikasi"}, "C2.2": {"question": "Berapa kerapkah pesakit tidak hadir atau menghentikan sesi, dan apakah sebab utamanya?", "probe": "Kaji: Pengangkutan, kos, ketersediaan penjaga, motivasi, komorbiditi"}, "C2.3": {"question": "Adakah anda rasa sistem pemulihan semasa menangani keperluan pesakit warga emas di Malaysia dengan mencukupi?", "probe": "Kaji: Jurang perkhidmatan — bandar vs. luar bandar, kerajaan vs. swasta"}, "C2.4": {"question": "Apakah impak ketidakhadiran atau keciciran pesakit terhadap beban kerja klinikal dan hasil pesakit anda?", "probe": "Kaji: Beban penjadualan semula, kemunduran klinikal, kekecewaan"}, "C3.1": {"question": "Pernahkah anda menyampaikan sebarang bentuk telerehabilitation atau terapi jauh? Sila terangkan pengalaman tersebut.", "probe": "Kaji: Platform yang digunakan, respons pesakit, hasil, kepuasan"}, "C3.2": {"question": "Penilaian klinikal atau intervensi apakah yang anda rasa boleh disampaikan dengan berkesan dari jauh untuk pesakit strok?", "probe": "Kaji: ROM, gait, latihan ADL, tugas kognitif, imbangan — yang mana boleh atau tidak?"}, "C3.3": {"question": "Aspek pemulihan bersemuka yang manakah paling sukar untuk direplikasi dari jauh?", "probe": "Kaji: Terapi manual sentuhan, maklum balas taktil, pembetulan masa nyata"}, "C3.4": {"question": "Bagaimanakah pesakit warga emas anda umumnya bertindak balas terhadap pemulihan berbantukan teknologi?", "probe": "Kaji: Semangat, penolakan, kebimbangan, keluk pembelajaran, penglibatan penjaga"}, "C4.1": {"question": "Pada pendapat anda, apakah faktor paling kritikal yang perlu dinilai apabila menilai teknologi telerehabilitation untuk digunakan dengan pesakit warga emas strok?", "probe": "Kaji: Keselamatan, kebolehgunaan, keberkesanan klinikal, kos, kesesuaian budaya, bahasa"}, "C4.2": {"question": "Adakah anda biasa dengan rangka kerja sedia ada untuk menilai teknologi telehealth (cth. MAST, TAM)? Apakah hadnya dalam konteks Malaysia?", "probe": "Kaji: Jurang relevansi budaya, kekurangan luas kejuruteraan, kekangan sumber"}, "C4.3": {"question": "Ciri-ciri reka bentuk kejuruteraan atau sistem apakah yang anda anggap penting dalam platform telerehabilitation yang direka untuk pesakit warga emas pasca-strok?", "probe": "Kaji: Kesederhanaan UI, ciri kebolehaksesan, teks besar, panduan audio, sokongan Bahasa Malaysia"}, "C4.4": {"question": "Bagaimanakah model penilaian harus mengambil kira perbezaan sumber antara tetapan penjagaan kesihatan bandar dan luar bandar?", "probe": "Kaji: Sambungan, ketersediaan peranti, ketumpatan profesional penjagaan kesihatan"}, "C4.5": {"question": "Adakah alat sokongan keputusan berasaskan pembelajaran mesin yang mengesyorkan penyelesaian telerehabilitation yang sesuai berguna dalam amalan klinikal anda?", "probe": "Kaji: Kepercayaan terhadap cadangan AI, keperluan penolakan ahli klinikal, kebolehjelasan model"}, "C5.1": {"question": "Apakah halangan organisasi atau institusi yang akan menghalang tempat kerja anda daripada menggunakan telerehabilitation?", "probe": "Kaji: Dasar, pembayaran balik, infrastruktur, kelulusan pentadbiran, liabiliti"}, "C5.2": {"question": "Apakah latihan atau sokongan yang anda perlukan untuk menyampaikan perkhidmatan telerehabilitation dengan yakin?", "probe": "Kaji: Latihan teknikal, protokol klinikal, bimbingan, mata CPD"}, "C5.3": {"question": "Apakah peranan yang perlu dimainkan oleh Kementerian Kesihatan dalam memudahkan penerimaan telerehabilitation di Malaysia?", "probe": "Kaji: Rangka kerja dasar, pembiayaan, garis panduan nasional, program perintis"}, "C5.4": {"question": "Bagaimanakah telerehabilitation boleh direka untuk memastikan akses saksama bagi pesakit warga emas bandar dan luar bandar?", "probe": "Kaji: Keupayaan luar talian, susulan berasaskan SMS, sokongan pekerja kesihatan komuniti"}, "C6.1": {"question": "Apakah nasihat yang anda berikan kepada jurutera atau penyelidik yang membangunkan model penilaian teknologi telerehabilitation untuk konteks Malaysia?", "probe": "Kaji terbuka — benarkan pendapat pakar penuh tanpa memimpin"}, "C6.2": {"question": "Adakah ukuran hasil atau petunjuk klinikal utama yang anda percaya harus dimasukkan dalam pengesahan model telerehabilitation untuk pesakit strok warga emas?", "probe": "Kaji: FIM, Indeks Barthel, Skala Imbangan Berg, QoL Khusus Strok, WHOQOL-BREF"}, "C6.3": {"question": "Adakah terdapat perkara lain yang ingin anda kongsikan tentang peranan telerehabilitation dalam sistem penjagaan kesihatan masa depan Malaysia?", "probe": "Ekspresi bebas — tidak memimpin"}}, "zh": {"C1.1": {"question": "您能简要描述您目前的职责以及您通常处理的患者类型吗？", "probe": "建立背景；记录患者人口统计和工作环境"}, "C1.2": {"question": "在典型的一周内，您的患者中有多少比例是老年人或中风后个体？", "probe": "探查：老年中风患者的频率、强度和病例负担"}, "C2.1": {"question": "您在向老年中风后患者提供康复服务时面临的最重大挑战是什么？", "probe": "探查：出勤率、依从性、资源限制、沟通障碍"}, "C2.2": {"question": "患者多久缺席或中断疗程，主要原因是什么？", "probe": "探查：交通、费用、护理者可用性、动力、合并症"}, "C2.3": {"question": "您是否认为目前的康复系统充分满足了马来西亚老年患者的需求？", "probe": "探查：服务差距——城市与农村、政府与私立"}, "C2.4": {"question": "患者缺席或退出对您的临床工作量和患者结局有何影响？", "probe": "探查：重新安排负担、临床挫折、沮丧"}, "C3.1": {"question": "您曾经提供过任何形式的远程康复或远程治疗吗？请描述该经历。", "probe": "探查：使用的平台、患者反应、结果、满意度"}, "C3.2": {"question": "您认为哪些临床评估或干预措施可以有效地远程提供给中风患者？", "probe": "探查：ROM、步态、ADL训练、认知任务、平衡——哪些可行或不可行？"}, "C3.3": {"question": "面对面康复的哪些方面最难远程复制？", "probe": "探查：徒手治疗、触觉反馈、实时纠正"}, "C3.4": {"question": "您的老年患者通常如何回应技术辅助康复？", "probe": "探查：热情、抵触、焦虑、学习曲线、护理者参与"}, "C4.1": {"question": "在您看来，评估用于老年中风患者的远程康复技术时，最关键的因素是什么？", "probe": "探查：安全性、可用性、临床效果、成本、文化适应性、语言"}, "C4.2": {"question": "您是否熟悉评估远程医疗技术的现有框架（如MAST、TAM）？在马来西亚背景下，它们的局限性是什么？", "probe": "探查：文化相关性差距、缺乏工程广度、资源限制"}, "C4.3": {"question": "您认为专为老年中风后患者设计的远程康复平台必须具备哪些工程或系统设计特征？", "probe": "探查：UI简洁性、无障碍功能、大字体、语音指导、马来语支持"}, "C4.4": {"question": "评估模型应如何考虑城市和农村医疗环境之间的资源差异？", "probe": "探查：连接性、设备可用性、医疗专业人员密度"}, "C4.5": {"question": "基于机器学习的决策支持工具（推荐合适的远程康复解决方案）在您的临床实践中是否有用？", "probe": "探查：对AI建议的信任、临床医生否决的需要、模型可解释性"}, "C5.1": {"question": "哪些组织或机构障碍会阻止您的工作单位采用远程康复？", "probe": "探查：政策、报销、基础设施、行政审批、责任"}, "C5.2": {"question": "您需要什么培训或支持才能自信地提供远程康复服务？", "probe": "探查：技术培训、临床协议、指导、CPD积分"}, "C5.3": {"question": "卫生部应在促进马来西亚远程康复采用方面发挥什么作用？", "probe": "探查：政策框架、资助、国家指南、试点项目"}, "C5.4": {"question": "如何设计远程康复以确保城市和农村老年患者的公平访问？", "probe": "探查：离线功能、短信随访、社区卫生工作者支持"}, "C6.1": {"question": "您会为正在为马来西亚背景开发远程康复技术评估模型的工程师或研究员提供什么建议？", "probe": "开放探查——允许完整专家意见，不加引导"}, "C6.2": {"question": "是否有任何关键结局指标或临床指标，您认为应纳入老年中风患者远程康复模型的验证中？", "probe": "探查：FIM、Barthel指数、Berg平衡量表、中风特异性生活质量、WHOQOL-BREF"}, "C6.3": {"question": "关于远程康复在马来西亚未来医疗体系中的作用，您还有什么要分享的吗？", "probe": "自由表达——不加引导"}}, "ta": {"C1.1": {"question": "உங்கள் தற்போதைய பணியையும் நீங்கள் வழக்கமாக பணிபுரியும் நோயாளிகளின் வகையையும் சுருக்கமாக விவரிக்க முடியுமா?", "probe": "சூழலை நிறுவுதல்; நோயாளி மக்களியல் மற்றும் அமைப்பை குறிப்பிடுதல்"}, "C1.2": {"question": "ஒரு வழக்கமான வாரத்தில், உங்கள் நோயாளிகளில் எத்தனை சதவீதம் முதியோர் அல்லது பக்கவாதத்திற்குப் பிறகான நபர்கள்?", "probe": "ஆராய்: முதியோர் பக்கவாத நோயாளிகளுடன் வழக்கு சுமையின் அதிர்வெண், தீவிரம்"}, "C2.1": {"question": "முதியோர் பக்கவாத நோயாளிகளுக்கு மறுவாழ்வு சேவைகளை வழங்குவதில் நீங்கள் சந்திக்கும் மிக முக்கியமான சவால்கள் என்ன?", "probe": "ஆராய்: வருகை, இணக்கம், வள கட்டுப்பாடுகள், தொடர்பு தடைகள்"}, "C2.2": {"question": "நோயாளிகள் எத்தனை அடிக்கடி அமர்வுகளை தவிர்க்கிறார்கள் அல்லது நிறுத்துகிறார்கள், முதன்மை காரணங்கள் என்ன?", "probe": "ஆராய்: போக்குவரத்து, செலவு, பராமரிப்பாளர் கிடைப்பு, உந்துதல், கூட்டு நோய்கள்"}, "C2.3": {"question": "மலேசியாவில் முதியோர் நோயாளிகளின் தேவைகளை தற்போதைய மறுவாழ்வு அமைப்பு போதுமான அளவில் நிவர்த்தி செய்கிறதா என நீங்கள் நினைக்கிறீர்களா?", "probe": "ஆராய்: சேவை இடைவெளிகள் — நகர்ப்புறம் vs. கிராமப்புறம், அரசு vs. தனியார்"}, "C2.4": {"question": "நோயாளிகள் வராமல் இருப்பது அல்லது வெளியேறுவது உங்கள் மருத்துவ பணிப்பளு மற்றும் நோயாளி முடிவுகளில் என்ன தாக்கத்தை ஏற்படுத்துகிறது?", "probe": "ஆராய்: மறுதிட்டமிடல் சுமை, மருத்துவ பின்னடைவுகள், விரக்தி"}, "C3.1": {"question": "எந்த வடிவிலும் தொலை-மறுவாழ்வு அல்லது தொலை சிகிச்சை வழங்கியிருக்கிறீர்களா? அந்த அனுபவத்தை விவரிக்கவும்.", "probe": "ஆராய்: பயன்படுத்திய தளம், நோயாளி பதில், முடிவுகள், திருப்தி"}, "C3.2": {"question": "பக்கவாத நோயாளிகளுக்கு தொலைவிலிருந்து எந்த மருத்துவ மதிப்பீடுகள் அல்லது தலையீடுகள் திறம்பட வழங்க முடியும் என நினைக்கிறீர்கள்?", "probe": "ஆராய்: ROM, நடை, ADL பயிற்சி, அறிவாற்றல் பணிகள், சமநிலை — எவை சாத்தியம் அல்லது இல்லையா?"}, "C3.3": {"question": "நேரடி மறுவாழ்வின் எந்த அம்சங்களை தொலைவிலிருந்து நகலெடுப்பது மிகவும் கடினமாக உள்ளது?", "probe": "ஆராய்: கைமுறை சிகிச்சை, தொட்டுணரும் கருத்து, நேரடி திருத்தம்"}, "C3.4": {"question": "உங்கள் முதியோர் நோயாளிகள் பொதுவாக தொழில்நுட்ப உதவி மறுவாழ்வுக்கு எவ்வாறு பதிலளிக்கிறார்கள்?", "probe": "ஆராய்: ஆர்வம், எதிர்ப்பு, பதட்டம், கற்றல் வளைவு, பராமரிப்பாளர் ஈடுபாடு"}, "C4.1": {"question": "உங்கள் கருத்துப்படி, முதியோர் பக்கவாத நோயாளிகளுக்கான தொலை-மறுவாழ்வு தொழில்நுட்பத்தை மதிப்பிடும் போது மதிப்பிடப்பட வேண்டிய மிக முக்கியமான காரணிகள் என்ன?", "probe": "ஆராய்: பாதுகாப்பு, பயன்பாட்டு திறன், மருத்துவ செயல்திறன், செலவு, கலாச்சார பொருத்தம், மொழி"}, "C4.2": {"question": "டெலிஹெல்த் தொழில்நுட்பங்களை மதிப்பிடுவதற்கான ஏதாவது கட்டமைப்புகளை (எ.கா. MAST, TAM) அறிவீர்களா? மலேசிய சூழலில் அவற்றின் வரம்புகள் என்ன?", "probe": "ஆராய்: கலாச்சார தொடர்புடையத்தில் இடைவெளிகள், பொறியியல் விரிவின்மை, வள கட்டுப்பாடுகள்"}, "C4.3": {"question": "முதியோர் பக்கவாத நோயாளிகளுக்காக வடிவமைக்கப்பட்ட தொலை-மறுவாழ்வு தளத்தில் அத்தியாவசியமான பொறியியல் அல்லது அமைப்பு வடிவமைப்பு அம்சங்கள் என்ன என நீங்கள் கருதுகிறீர்கள்?", "probe": "ஆராய்: UI எளிமை, அணுகல் அம்சங்கள், பெரிய உரை, ஒலி வழிகாட்டுதல், மலாய் மொழி ஆதரவு"}, "C4.4": {"question": "நகர்ப்புற மற்றும் கிராமப்புற சுகாதார அமைப்புகளுக்கிடையே வள வேறுபாடுகளை மதிப்பீட்டு மாதிரி எவ்வாறு கணக்கில் எடுக்க வேண்டும்?", "probe": "ஆராய்: இணைப்பு, சாதன கிடைப்பு, சுகாதார நிபுணர் அடர்த்தி"}, "C4.5": {"question": "பொருத்தமான தொலை-மறுவாழ்வு தீர்வுகளை பரிந்துரைக்கும் இயந்திர கற்றல் அடிப்படையிலான முடிவு-ஆதரவு கருவி உங்கள் மருத்துவ நடைமுறையில் பயனுள்ளதா?", "probe": "ஆராய்: AI பரிந்துரைகளில் நம்பிக்கை, மருத்துவர் மீட்டெடுப்பு தேவை, மாதிரி விளக்கமளிக்கும் திறன்"}, "C5.1": {"question": "உங்கள் பணியிடம் தொலை-மறுவாழ்வை ஏற்கவிடாமல் தடுக்கும் நிறுவன அல்லது கட்டமைப்பு தடைகள் என்ன?", "probe": "ஆராய்: கொள்கை, திருப்பிச் செலுத்துதல், உள்கட்டமைப்பு, நிர்வாக அனுமதி, பொறுப்பு"}, "C5.2": {"question": "தொலை-மறுவாழ்வு சேவைகளை நம்பிக்கையுடன் வழங்க என்ன பயிற்சி அல்லது ஆதரவு தேவை?", "probe": "ஆராய்: தொழில்நுட்ப பயிற்சி, மருத்துவ நெறிமுறைகள், வழிகாட்டுதல், CPD புள்ளிகள்"}, "C5.3": {"question": "மலேசியாவில் தொலை-மறுவாழ்வின் ஏற்பை எளிதாக்குவதில் சுகாதார அமைச்சு என்ன பங்கு வகிக்க வேண்டும்?", "probe": "ஆராய்: கொள்கை கட்டமைப்புகள், நிதி, தேசிய வழிகாட்டுதல்கள், முன்னோடி திட்டங்கள்"}, "C5.4": {"question": "நகர்ப்புற மற்றும் கிராமப்புற முதியோர் நோயாளிகள் இருவருக்கும் நியாயமான அணுகலை உறுதி செய்ய தொலை-மறுவாழ்வை எவ்வாறு வடிவமைக்கலாம்?", "probe": "ஆராய்: ஆஃப்லைன் திறன், SMS அடிப்படையிலான தொடர்பு, சமூக சுகாதார ஊழியர் ஆதரவு"}, "C6.1": {"question": "மலேசிய சூழலுக்கான தொலை-மறுவாழ்வு தொழில்நுட்ப மதிப்பீட்டு மாதிரியை உருவாக்கும் பொறியாளர் அல்லது ஆராய்ச்சியாளருக்கு என்ன ஆலோசனை வழங்குவீர்கள்?", "probe": "திறந்த ஆராய்வு — வழிநடத்தாமல் முழு நிபுணர் கருத்தை அனுமதிக்கவும்"}, "C6.2": {"question": "முதியோர் பக்கவாத நோயாளிகளுக்கான தொலை-மறுவாழ்வு மாதிரியை சரிபார்ப்பதில் சேர்க்கப்பட வேண்டும் என நம்பும் முக்கிய முடிவு அளவீடுகள் அல்லது மருத்துவ குறிகாட்டிகள் ஏதாவது உள்ளனவா?", "probe": "ஆராய்: FIM, Barthel குறியீடு, Berg சமநிலை அளவுகோல், பக்கவாத-குறிப்பிட்ட QoL, WHOQOL-BREF"}, "C6.3": {"question": "மலேசியாவின் எதிர்கால சுகாதார அமைப்பில் தொலை-மறுவாழ்வின் பங்கு பற்றி வேறு ஏதாவது பகிர்ந்துகொள்ள விரும்புகிறீர்களா?", "probe": "சுதந்திர வெளிப்பாடு — வழிநடத்தாதீர்கள்"}}}, "policymaker": {"bm": {"C1.1": {"question": "Bolehkah anda mulakan dengan menghuraikan peranan anda dan bagaimana kerja anda bersilang dengan dasar kesihatan digital atau telehealth di Malaysia?", "probe": "Perhatikan kesenioriti, kesan langsung dasar, dan tahun penglibatan"}, "C1.2": {"question": "Dari perspektif dasar kebangsaan, bagaimana anda mencirikan kesediaan Malaysia yang terkini untuk telepemulihan sebagai mod penyampaian penjagaan kesihatan arus perdana?", "probe": "Soalan: Infrastruktur, peraturan, tenaga kerja, kesediaan awam - yang mana paling maju/paling ketinggalan?"}, "C2.1": {"question": "Apakah jurang kawal selia atau undang-undang yang paling ketara yang kini menghalang penyebaran telepemulihan skala besar yang selamat di Malaysia?", "probe": "Soalan: Liabiliti, pelesenan antara negeri, rangka kerja persetujuan, protokol kecemasan, kedaulatan data"}, "C2.2": {"question": "Sejauh mana Akta Perlindungan Data Peribadi semasa (PDPA 2010) dalam melindungi data kesihatan pesakit dalam konteks telepemulihan?", "probe": "Soalan: Jurang dalam peruntukan khusus kesihatan, penguatkuasaan, aliran data rentas sempadan"}, "C2.3": {"question": "Adakah terdapat rancangan dalam KKM atau agensi berkaitan untuk mengemas kini Garis Panduan Telemedicine 2015 bagi menangani khusus telepemulihan untuk populasi kronik dan warga emas?", "probe": "Soalan: Garis masa, proses perundingan pihak berkepentingan, halangan kepada semakan"}, "C2.4": {"question": "Bagaimana akauntabiliti mediko-undang-undang harus diagihkan apabila peristiwa klinikal buruk berlaku semasa sesi pemulihan jarak jauh?", "probe": "Soalan: Ahli terapi, pembekal platform, penjaga, kerajaan - model tanggungjawab bersama"}, "C3.1": {"question": "Mekanisme pembiayaan apa yang kini wujud atau sedang dipertimbangkan untuk menyokong perkhidmatan telepemulihan bagi pesakit warga emas di bawah sistem penjagaan kesihatan awam?", "probe": "Soalan: Integrasi MySejahtera, model insurans gaya PhilHealth, subsidi B40, peruntukan belanjawan KKM"}, "C3.2": {"question": "Bagaimana anda menilai keberkesanan kos jangka panjang telepemulihan berbanding pemulihan konvensional di klinik untuk pesakit warga emas pasca-strok?", "probe": "Soalan: Kos per tahun hayat yang diselaraskan mengikut kualiti (QALY), pengelakan kemasukan hospital, produktiviti penjaga"}, "C3.3": {"question": "Apakah pendirian KKM mengenai pembayaran balik perkhidmatan telepemulihan di bawah rangka kerja pembiayaan kesihatan kebangsaan?", "probe": "Soalan: Jadual fi, ujian min, pariti dengan penjagaan bersemuka, penjajaran industri insurans"}, "C3.4": {"question": "Bagaimana perkongsian awam-swasta (PPP) boleh distrukturkan untuk memastikan akses yang saksama kepada telepemulihan tanpa menswastakan penjagaan warga emas yang penting?", "probe": "Soalan: Model konsesi, penjagaan kawal selia, kawalan harga, mandat perkhidmatan luar bandar"}, "C4.1": {"question": "Apakah langkah dasar khusus yang diperlukan untuk memastikan pesakit warga emas di kawasan luar bandar dan kurang mendapat perkhidmatan dapat manfaat yang sama daripada telepemulihan?", "probe": "Soalan: Infrastruktur JKJAV, klinik kesihatan komuniti, program eDesa, jalur lebar MCMC"}, "C4.2": {"question": "Bagaimana kerajaan harus menangani jurang literasi digital dalam kalangan warga emas Malaysia dan penjaga mereka untuk menyokong penggunaan telepemulihan?", "probe": "Soalan: Program Rakan Digital, latihan pekerja kesihatan komuniti, perkongsian NGO"}, "C4.3": {"question": "Bagaimana rangka kerja dasar Penuaan di Tempat Malaysia kini menyokong atau menghalang penggunaan telepemulihan berasaskan rumah?", "probe": "Soalan: Integrasi dengan Jabatan Kebajikan Masyarakat, pembiayaan penjagaan warga emas, insurans penjagaan jangka panjang"}, "C4.4": {"question": "Pertimbangan apa yang harus membimbing reka bentuk sistem telepemulihan untuk memastikan ia sesuai secara budaya dan mudah diakses secara linguistik bagi warga emas Malaysia yang berbilang etnik?", "probe": "Soalan: Bahasa Malaysia, dialek Cina, Tamil, Iban/Kadazan - penyetempatan antara muka, kepekaan budaya dalam kandungan terapeutik"}, "C5.1": {"question": "Pada pendapat anda, apakah domain paling kritikal yang harus diliputi oleh rangka kerja penilaian kebangsaan untuk teknologi telepemulihan?", "probe": "Soalan: Keberkesanan klinikal, kebolehgunaan, keberkesanan kos, keselamatan, ekuiti, kemampanan, kebolehskalaan - yang mana harus diberi berat tertinggi?"}, "C5.2": {"question": "Bagaimana rangka kerja Penilaian Teknologi Kesihatan Malaysia (MaHTAS) sedia ada menangani teknologi kesihatan digital dan dipacu AI? Adakah terdapat jurang khusus untuk telepemulihan?", "probe": "Soalan: Kelajuan penilaian, kepakaran kejuruteraan dalam MaHTAS, pengawasan pasca-pasaran"}, "C5.3": {"question": "Adakah alat penilaian yang disahkan dan tersedia awam - dibangunkan melalui penyelidikan pelbagai pihak berkepentingan - akan diterima pakai atau dirujuk dalam keputusan perolehan atau dasar KKM?", "probe": "Soalan: Syarat untuk penerimaan pakai, standard pengesahan minimum, laluan pengesahan"}, "C5.4": {"question": "Bagaimana dapatan penyelidikan akademik, seperti kajian PhD mengenai telepemulihan, harus diterjemahkan secara sistematik kepada dasar kesihatan yang boleh diambil tindakan di Malaysia?", "probe": "Soalan: Mekanisme antara muka penyelidikan-dasar, KKIA, CPRC, taklimat parlimen, kotak pasir dasar"}, "C5.5": {"question": "Apakah peranan yang harus dimainkan oleh kecerdasan buatan dan pembelajaran mesin dalam model penilaian telepemulihan kebangsaan, dan struktur tadbir urus apa yang harus mengawasinya?", "probe": "Soalan: Akauntabiliti algoritma, pengauditan berat sebelah, penolakan doktor, pematuhan PDPA, lembaga etika AI"}, "C6.1": {"question": "Jika anda ingin mengenal pasti tindakan dasar tunggal yang paling penting yang harus diambil Malaysia dalam dua tahun akan datang untuk memajukan telepemulihan bagi pesakit warga emas, apakah itu?", "probe": "Benarkan pendapat pakar tanpa sekatan; jangan cadangkan pilihan"}, "C6.2": {"question": "Mekanisme penyelarasan antara kementerian atau antara agensi mana yang paling berkesan dalam memacu pendekatan seluruh kerajaan terhadap telepemulihan?", "probe": "Soalan: KKM, MCMC, MOSTI, MOF, Jabatan Kebajikan Masyarakat - jurang penyelarasan, penetapan agensi utama"}, "C6.3": {"question": "Bagaimana Malaysia harus meletakkan telepemulihan dalam konteks cita-cita ekonomi digital yang lebih luas dan Dasar Revolusi Industri Keempat (4IR) Kebangsaan?", "probe": "Soalan: Penjagaan kesihatan sebagai sektor 4IR, sasaran MyDIGITAL, implikasi pelancongan kesihatan"}, "C6.4": {"question": "Adakah terdapat perkara lain - dari sudut dasar, kawal selia, atau strategik - yang anda percaya adalah kritikal bagi penyelidik dan jurutera yang membangunkan teknologi telepemulihan di Malaysia untuk difahami?", "probe": "Soalan terbuka akhir - benarkan ekspresi penuh; rekod dengan teliti"}}, "zh": {"C1.1": {"question": "您能先描述一下您的职务以及您的工作如何与马来西亚的数字健康或远程医疗政策相交叉吗？", "probe": "记录资历、政策影响的直接性和参与年数"}, "C1.2": {"question": "从国家政策角度来看，您如何描述马来西亚当前对远程康复作为主流医疗服务模式的准备情况？", "probe": "追问：基础设施、法规、劳动力、公众准备情况——哪方面最先进/最滞后？"}, "C2.1": {"question": "目前阻碍马来西亚安全大规模远程康复部署的最重大监管或法律缺口是什么？", "probe": "追问：责任、跨州执照、同意框架、紧急协议、数据主权"}, "C2.2": {"question": "现行个人数据保护法（PDPA 2010）在保护远程康复背景下的患者健康数据方面有多充分？", "probe": "追问：健康专项条款的缺口、执法、跨境数据流动"}, "C2.3": {"question": "卫生部或相关机构是否有计划更新2015年远程医疗指南以专门解决慢性病和老年群体的远程康复问题？", "probe": "追问：时间表、利益相关方咨询流程、修订障碍"}, "C2.4": {"question": "当远程康复课程中发生不良临床事件时，应如何分配医疗法律责任？", "probe": "追问：治疗师、平台提供商、照顾者、政府——共同责任模式"}, "C3.1": {"question": "目前存在或正在考虑哪些资金机制，以支持公共医疗体系下老年患者的远程康复服务？", "probe": "追问：MySejahtera整合、菲律宾健保式保险模式、B40补贴、卫生部预算分配"}, "C3.2": {"question": "您如何评估远程康复与中风后老年患者传统诊所康复的长期成本效益比较？", "probe": "追问：每质量调整生命年（QALY）成本、避免住院、照顾者生产力"}, "C3.3": {"question": "卫生部对在国家卫生筹资框架下报销远程康复服务的立场是什么？", "probe": "追问：收费标准、经济状况调查、与面对面护理的平等性、保险行业协调"}, "C3.4": {"question": "如何构建公私合作（PPP）以确保远程康复的公平获取，同时不将老年人必要医疗服务私有化？", "probe": "追问：特许经营模式、监管保障、价格管控、农村服务授权"}, "C4.1": {"question": "需要哪些具体政策措施才能确保农村和服务不足地区的老年患者能够平等受益于远程康复？", "probe": "追问：JKJAV基础设施、社区卫生中心、eDesa计划、MCMC宽带"}, "C4.2": {"question": "政府应如何弥补马来西亚老年人及其照顾者的数字素养差距以支持远程康复推广？", "probe": "追问：Rakan Digital计划、社区卫生工作者培训、NGO合作"}, "C4.3": {"question": "马来西亚的就地养老政策框架目前如何支持或阻碍居家远程康复的采用？", "probe": "追问：与社会福利部的整合、老年护理资金、长期护理保险"}, "C4.4": {"question": "设计远程康复系统时应考虑哪些因素，以确保其在文化上适当且语言上对马来西亚多民族老年人群体易于获取？", "probe": "追问：马来语、华语方言、泰米尔语、伊班语/卡达山语——界面本地化、治疗内容的文化敏感性"}, "C5.1": {"question": "在您看来，远程康复技术国家评估框架最应涵盖哪些关键领域？", "probe": "追问：临床效果、可用性、成本效益、安全性、公平性、可持续性、可扩展性——哪方面权重应最高？"}, "C5.2": {"question": "现有马来西亚卫生技术评估（MaHTAS）框架如何处理数字和AI驱动的健康技术？远程康复是否存在特定缺口？", "probe": "追问：评估速度、MaHTAS内的工程专业知识、上市后监测"}, "C5.3": {"question": "通过多利益相关方研究开发的公开可用、经过验证的评估工具是否会在卫生部采购或政策决策中被采用或参考？", "probe": "追问：采用条件、最低验证标准、认可途径"}, "C5.4": {"question": "远程康复博士研究等学术研究成果应如何系统地转化为马来西亚可操作的卫生政策？", "probe": "追问：研究-政策接口机制、KKIA、CPRC、议会简报、政策沙盒"}, "C5.5": {"question": "人工智能和机器学习在国家远程康复评估模型中应发挥什么作用，应设立哪些治理结构加以监督？", "probe": "追问：算法问责、偏见审计、临床医生否决权、PDPA合规、AI伦理委员会"}, "C6.1": {"question": "如果您要确定马来西亚未来两年应采取的最重要的单一政策行动以推进老年患者远程康复，那会是什么？", "probe": "允许不受约束的专家意见；不要提示选项"}, "C6.2": {"question": "哪些部委间或机构间协调机制最能有效推动全政府方法实施远程康复？", "probe": "追问：卫生部、MCMC、MOSTI、财政部、社会福利部——协调缺口、牵头机构指定"}, "C6.3": {"question": "马来西亚应如何在更广泛的数字经济抱负和国家第四次工业革命（4IR）政策背景下定位远程康复？", "probe": "追问：医疗作为4IR领域、MyDIGITAL目标、医疗旅游影响"}, "C6.4": {"question": "从政策、监管或战略角度，您认为在马来西亚开发远程康复技术的研究人员和工程师有哪些关键信息需要了解？", "probe": "最终开放性追问——允许充分表达；仔细记录"}}, "ta": {"C1.1": {"question": "உங்கள் பங்கு மற்றும் மலேசியாவில் டிஜிட்டல் சுகாதாரம் அல்லது டெலிஹெல்த் கொள்கையுடன் உங்கள் வேலை எவ்வாறு கலந்திருக்கிறது என்பதை விவரிப்பதன் மூலம் தொடங்க முடியுமா?", "probe": "மூப்புநிலை, கொள்கை தாக்கத்தின் நேரடித்தன்மை மற்றும் ஈடுபாட்டு ஆண்டுகளை குறிப்பிடவும்"}, "C1.2": {"question": "தேசிய கொள்கை கண்ணோட்டத்திலிருந்து, ஒரு முக்கிய சுகாதார சேவை வழங்கல் முறையாக தொலை-மறுவாழ்வுக்கான மலேசியாவின் தற்போதைய தயார்நிலையை எவ்வாறு வகைப்படுத்துவீர்கள்?", "probe": "ஆய்வு: உள்கட்டமைப்பு, கட்டுப்பாடு, தொழிலாளர்கள், பொது தயார்நிலை - எது மிகவும் மேம்பட்டது/பின்தங்கியது?"}, "C2.1": {"question": "மலேசியாவில் பாதுகாப்பான, பெரிய அளவிலான தொலை-மறுவாழ்வு பயன்படுத்தலை தடுக்கும் மிக முக்கியமான கட்டுப்பாட்டு அல்லது சட்ட இடைவெளிகள் என்ன?", "probe": "ஆய்வு: பொறுப்பு, மாநிலங்களுக்கிடையிலான உரிமம், ஒப்புதல் கட்டமைப்புகள், அவசர நெறிமுறைகள், தரவு இறையாண்மை"}, "C2.2": {"question": "தொலை-மறுவாழ்வு சூழலில் நோயாளி சுகாதார தரவை பாதுகாப்பதில் தற்போதைய தனிப்பட்ட தரவு பாதுகாப்பு சட்டம் (PDPA 2010) எவ்வளவு போதுமானது?", "probe": "ஆய்வு: சுகாதார-குறிப்பிட்ட விதிகளில் இடைவெளிகள், செயல்பாடு, எல்லை கடந்த தரவு ஓட்டம்"}, "C2.3": {"question": "சுகாதார அமைச்சகம் அல்லது தொடர்புடைய நிறுவனங்களில் நாள்பட்ட மற்றும் வயதான மக்களுக்கான தொலை-மறுவாழ்வை குறிப்பாக தீர்க்க 2015 டெலிமெடிசின் வழிகாட்டுதல்களை புதுப்பிக்க திட்டங்கள் உள்ளதா?", "probe": "ஆய்வு: கால அட்டவணை, பங்குதாரர் ஆலோசனை செயல்முறைகள், திருத்தத்திற்கான தடைகள்"}, "C2.4": {"question": "தொலைதூர மறுவாழ்வு அமர்வின் போது பாதகமான மருத்துவ நிகழ்வு ஏற்படும்போது மருத்துவ-சட்ட பொறுப்பு எவ்வாறு ஒதுக்கப்பட வேண்டும்?", "probe": "ஆய்வு: சிகிச்சையாளர், தள வழங்குநர், பராமரிப்பாளர், அரசாங்கம் - பகிரப்பட்ட பொறுப்பு மாதிரிகள்"}, "C3.1": {"question": "பொது சுகாதார அமைப்பின் கீழ் வயதான நோயாளிகளுக்கான தொலை-மறுவாழ்வு சேவைகளை ஆதரிக்க தற்போது என்ன நிதி வழிமுறைகள் உள்ளன அல்லது கருத்தில் கொள்ளப்படுகின்றன?", "probe": "ஆய்வு: MySejahtera ஒருங்கிணைப்பு, பிலிப்பைன் காப்பீட்டு மாதிரிகள், B40 மானியங்கள், சுகாதார அமைச்சகம் பட்ஜெட் ஒதுக்கீடு"}, "C3.2": {"question": "பக்கவாதம் வந்த வயதான நோயாளிகளுக்கான வழக்கமான கிளினிக் மறுவாழ்வுடன் ஒப்பிடும்போது தொலை-மறுவாழ்வின் நீண்ட கால செலவு-செயல்திறனை எவ்வாறு மதிப்பிடுகிறீர்கள்?", "probe": "ஆய்வு: தரம்-சரிசெய்யப்பட்ட வாழ்க்கை ஆண்டிற்கான செலவு (QALY), மருத்துவமனை தவிர்க்கல், பராமரிப்பாளர் உற்பத்தித்திறன்"}, "C3.3": {"question": "தேசிய சுகாதார நிதி கட்டமைப்பின் கீழ் தொலை-மறுவாழ்வு சேவைகளுக்கு திருப்பிச்செலுத்துவது குறித்த சுகாதார அமைச்சகத்தின் நிலைப்பாடு என்ன?", "probe": "ஆய்வு: கட்டண அட்டவணை, வழிமுறை சோதனை, நேரில் பராமரிப்புடன் சமத்துவம், காப்பீட்டு துறை ஒத்திசைவு"}, "C3.4": {"question": "வயதான சுகாதாரத்தை தனியார்மயமாக்காமல் தொலை-மறுவாழ்வுக்கு சமன்பாட்டான அணுகலை உறுதிசெய்ய பொது-தனியார் கூட்டாண்மைகள் (PPP) எவ்வாறு கட்டமைக்கப்பட முடியும்?", "probe": "ஆய்வு: ஒப்பந்த மாதிரிகள், கட்டுப்பாட்டு பாதுகாப்புகள், விலை கட்டுப்பாடுகள், கிராமப்புற சேவை ஆணைகள்"}, "C4.1": {"question": "கிராமப்புற மற்றும் சேவை குறைவாக உள்ள பகுதிகளில் வயதான நோயாளிகள் தொலை-மறுவாழ்வில் இருந்து சமனாக பயன் பெற என்ன குறிப்பிட்ட கொள்கை நடவடிக்கைகள் தேவை?", "probe": "ஆய்வு: JKJAV உள்கட்டமைப்பு, சமுதாய சுகாதார மையங்கள், eDesa திட்டம், MCMC அகலப்பட்டை"}, "C4.2": {"question": "தொலை-மறுவாழ்வை ஏற்றுக்கொள்வதை ஆதரிக்க மலேசிய வயதானவர்கள் மற்றும் அவர்களின் பராமரிப்பாளர்களிடையே டிஜிட்டல் கல்வியறிவு இடைவெளியை அரசாங்கம் எவ்வாறு தீர்க்க வேண்டும்?", "probe": "ஆய்வு: Rakan Digital திட்டம், சமுதாய சுகாதார பணியாளர் பயிற்சி, NGO கூட்டாண்மைகள்"}, "C4.3": {"question": "மலேசியாவின் இடத்திலேயே வயதாவது கொள்கை கட்டமைப்பு தற்போது வீட்டு அடிப்படையிலான தொலை-மறுவாழ்வை எவ்வாறு ஆதரிக்கிறது அல்லது தடுக்கிறது?", "probe": "ஆய்வு: சமூக நலன்புரி திணைக்களத்துடன் ஒருங்கிணைப்பு, வயதான பராமரிப்பு நிதி, நீண்டகால பராமரிப்பு காப்பீடு"}, "C4.4": {"question": "மலேசியாவின் பல இனம் உள்ள வயதான மக்களுக்கு கலாச்சார ரீதியாக பொருத்தமான மற்றும் மொழி ரீதியாக அணுகக்கூடிய தொலை-மறுவாழ்வு அமைப்பை வடிவமைக்க என்ன கருத்தில் கொள்ளல்கள் வழிகாட்ட வேண்டும்?", "probe": "ஆய்வு: பஹாசா மலேசியா, சீன வழிகோட்டைகள், தமிழ், இபான்/கடசான் - இடைமுக உள்ளூர்மயமாக்கல், சிகிச்சை உள்ளடக்கத்தில் கலாச்சார உணர்திறன்"}, "C5.1": {"question": "உங்கள் கருத்தில், தொலை-மறுவாழ்வு தொழில்நுட்பங்களுக்கான தேசிய மதிப்பீட்டு கட்டமைப்பு உள்ளடக்க வேண்டிய மிக முக்கியமான துறைகள் என்ன?", "probe": "ஆய்வு: மருத்துவ செயல்திறன், பயன்படுத்தல் எளிமை, செலவு-செயல்திறன், பாதுகாப்பு, சமத்துவம், நிலைத்தன்மை, அளவீட்டுத்தன்மை - எதற்கு அதிக எடை வேண்டும்?"}, "C5.2": {"question": "ஏற்கனவே உள்ள மலேசியா சுகாதார தொழில்நுட்ப மதிப்பீடு (MaHTAS) கட்டமைப்பு டிஜிட்டல் மற்றும் AI-இயக்கப்பட்ட சுகாதார தொழில்நுட்பங்களை எவ்வாறு கையாள்கிறது? தொலை-மறுவாழ்வுக்கு குறிப்பிட்ட இடைவெளிகள் உள்ளதா?", "probe": "ஆய்வு: மதிப்பீட்டு வேகம், MaHTAS-இல் பொறியியல் நிபுணத்துவம், சந்தைக்கு பிந்தைய கண்காணிப்பு"}, "C5.3": {"question": "பல-பங்குதாரர் ஆராய்ச்சி மூலம் உருவாக்கப்பட்ட பொதுவில் கிடைக்கக்கூடிய, சரிபார்க்கப்பட்ட மதிப்பீட்டு கருவி சுகாதார அமைச்சகத்தின் கொள்முதல் அல்லது கொள்கை முடிவுகளில் ஏற்றுக்கொள்ளப்படுமா அல்லது குறிப்பிடப்படுமா?", "probe": "ஆய்வு: ஏற்றுக்கொள்ளலுக்கான நிலைமைகள், குறைந்தபட்ச சரிபார்ப்பு தரநிலைகள், அங்கீகார வழி"}, "C5.4": {"question": "தொலை-மறுவாழ்வு பற்றிய பிஎச்டி ஆய்வுகள் போன்ற கல்வி ஆராய்ச்சி கண்டுபிடிப்புகள் மலேசியாவில் செயல்படத்தக்க சுகாதார கொள்கையாக முறையாக எவ்வாறு மொழிபெயர்க்கப்பட வேண்டும்?", "probe": "ஆய்வு: ஆராய்ச்சி-கொள்கை இடைமுக வழிமுறைகள், KKIA, CPRC, நாடாளுமன்ற கோப்புகள், கொள்கை மணல்தொட்டி"}, "C5.5": {"question": "தேசிய தொலை-மறுவாழ்வு மதிப்பீட்டு மாதிரியில் செயற்கை நுண்ணறிவு மற்றும் இயந்திர கற்றல் என்ன பங்கு வகிக்க வேண்டும், மேலும் அதை கண்காணிக்க என்ன ஆட்சி கட்டமைப்புகள் வேண்டும்?", "probe": "ஆய்வு: வழிமுறை பொறுப்புணர்வு, சார்புத் தணிக்கை, மருத்துவர் மீட்டெடுப்பு, PDPA இணக்கம், AI நெறிமுறை குழு"}, "C6.1": {"question": "வயதான நோயாளிகளுக்கான தொலை-மறுவாழ்வை மேம்படுத்த அடுத்த இரண்டு ஆண்டுகளில் மலேசியா எடுக்க வேண்டிய ஒரே ஒரு மிக முக்கியமான கொள்கை நடவடிக்கையை நீங்கள் கண்டறிய வேண்டும் என்றால், அது என்னவாக இருக்கும்?", "probe": "கட்டுப்பாடற்ற நிபுணர் கருத்தை அனுமதிக்கவும்; விருப்பங்களை வழங்காதீர்கள்"}, "C6.2": {"question": "தொலை-மறுவாழ்வுக்கு முழு-அரசாங்க அணுகுமுறையை இயக்க எந்த அமைச்சகங்களுக்கிடையிலான அல்லது நிறுவனங்களுக்கிடையிலான ஒருங்கிணைப்பு வழிமுறைகள் மிகவும் பயனுள்ளதாக இருக்கும்?", "probe": "ஆய்வு: சுகாதார அமைச்சகம், MCMC, MOSTI, நிதி அமைச்சகம், சமூக நலன்புரி திணைக்களம் - ஒருங்கிணைப்பு இடைவெளிகள், முன்னணி நிறுவன நியமனம்"}, "C6.3": {"question": "மலேசியா தனது பரந்த டிஜிட்டல் பொருளாதார லட்சியங்கள் மற்றும் தேசிய நான்காம் தொழில் புரட்சி (4IR) கொள்கையின் சூழலில் தொலை-மறுவாழ்வை எவ்வாறு நிலைப்படுத்த வேண்டும்?", "probe": "ஆய்வு: 4IR துறையாக சுகாதாரம், MyDIGITAL இலக்குகள், சுகாதார சுற்றுலா தாக்கங்கள்"}, "C6.4": {"question": "மலேசியாவில் தொலை-மறுவாழ்வு தொழில்நுட்பங்களை உருவாக்கும் ஆராய்ச்சியாளர்கள் மற்றும் பொறியியலாளர்களுக்கு கொள்கை, கட்டுப்பாட்டு அல்லது மூலோபாய கண்ணோட்டத்திலிருந்து முக்கியமானது என்று நீங்கள் நம்புவது வேறு ஏதாவது உள்ளதா?", "probe": "இறுதி திறந்த ஆய்வு - முழு வெளிப்பாட்டை அனுமதிக்கவும்; கவனமாக பதிவு செய்யவும்"}}}, "elderly": {"bm": {"C1.1": {"question": "Terima kasih kerana bersetuju berbual dengan saya. Sebelum kita mulakan, bolehkah saya mengesahkan bahawa anda selesa untuk meneruskan dan memahami bahawa perbualan ini akan dirakam hanya untuk tujuan penyelidikan?", "probe": "Sahkan persetujuan lisan; pastikan kerahsiaan"}, "C1.2": {"question": "Bolehkah anda menceritakan secara ringkas rutin harian anda dan bagaimana hari biasa anda kelihatan sejak strok anda?", "probe": "Pemanasan; menentukan tahap aktiviti asas dan konteks"}, "C2.1": {"question": "Bolehkah anda menceritakan tentang perjalanan pemulihan anda sekarang - berapa lama anda telah hadir, dan seberapa kerap anda pergi?", "probe": "Soalan: Sebarang gangguan? Masalah pengangkutan?"}, "C2.2": {"question": "Apakah yang paling mencabar bagi anda untuk menghadiri sesi pemulihan di klinik atau hospital?", "probe": "Soalan: Halangan fizikal, kewangan, logistik, atau emosi"}, "C2.3": {"question": "Pernahkah anda melepaskan sesi kerana kesukaran perjalanan atau sebab lain? Apa yang berlaku?", "probe": "Soalan: Kekerapan, sebab, kesan kepada pemulihan"}, "C2.4": {"question": "Bagaimana anda menggambarkan sokongan yang anda terima daripada keluarga atau penjaga anda dalam menghadiri pemulihan?", "probe": "Soalan: Siapa yang menemani mereka? Bagaimana jika sokongan tidak tersedia?"}, "C3.1": {"question": "Adakah anda menggunakan telefon pintar, tablet, atau komputer sekarang? Bolehkah anda menerangkan cara anda menggunakannya?", "probe": "Soalan: WhatsApp, panggilan video, aplikasi kesihatan, perbankan?"}, "C3.2": {"question": "Pernahkah anda menggunakan panggilan video (cth., WhatsApp, Zoom, FaceTime)? Bagaimana pengalaman itu bagi anda?", "probe": "Soalan: Tahap keselesaan, kesukaran, bantuan yang diperlukan"}, "C3.3": {"question": "Bagaimana perasaan anda tentang menerima panduan pemulihan melalui skrin berbanding bersemuka?", "probe": "Soalan: Kebimbangan tentang keberkesanan, pilihan, kepercayaan?"}, "C3.4": {"question": "Apakah kebimbangan yang anda ada, jika ada, tentang menggunakan teknologi untuk kesihatan anda?", "probe": "Soalan: Privasi, kerumitan, kebolehpercayaan, kos data"}, "C4.1": {"question": "Jika ahli terapi anda boleh menyelia latihan pemulihan anda melalui panggilan video dari rumah anda, bagaimana perasaan anda tentang itu?", "probe": "Soalan: Kepercayaan terhadap kualiti, motivasi, penglibatan"}, "C4.2": {"question": "Apakah ciri-ciri yang paling penting bagi anda dalam sistem telepemulihan? (cth., video yang jelas, butang mudah, peringatan)", "probe": "Soalan: Keperluan deria (penglihatan, pendengaran), beban kognitif"}, "C4.3": {"question": "Adakah anda berasa selesa menunjukkan latihan anda di kamera? Apakah yang mungkin memudahkan atau menyukarkan?", "probe": "Soalan: Privasi di rumah, ketersediaan ruang, rasa malu"}, "C4.4": {"question": "Adakah anda rasa menerima pemulihan di rumah akan mempengaruhi pemulihan anda secara positif, negatif, atau sama sahaja?", "probe": "Soalan: Motivasi, disiplin, akauntabiliti tanpa kehadiran ahli terapi"}, "C5.1": {"question": "Dengan cara apa strok anda telah mempengaruhi kualiti hidup anda - secara fizikal, emosi, dan sosial?", "probe": "Soalan: Kebebasan, hubungan, kesihatan emosi, hobi"}, "C5.2": {"question": "Adakah anda rasa pemulihan semasa anda menyokong kehidupan harian dan kebebasan anda dengan secukupnya?", "probe": "Soalan: Jurang dalam penjagaan, keperluan yang tidak dipenuhi, cadangan"}, "C5.3": {"question": "Betapa pentingnya bagi anda untuk kekal berhubung dengan ahli terapi dan pasukan penjagaan kesihatan anda secara kerap?", "probe": "Soalan: Kekerapan hubungan yang diperlukan, mod yang diutamakan"}, "C5.4": {"question": "Jika telepemulihan membantu anda pulih lebih cepat atau mengekalkan kebebasan anda lebih lama, bagaimana kesan itu kepada kehidupan anda secara keseluruhan?", "probe": "Soalan: Beban keluarga, maruah peribadi, kesejahteraan emosi"}, "C6.1": {"question": "Adakah ada perkara lain tentang telepemulihan atau pengalaman penjagaan kesihatan anda yang ingin anda kongsi?", "probe": "Soalan terbuka - jangan pimpin; benarkan ekspresi bebas"}, "C6.2": {"question": "Apakah nasihat yang anda berikan kepada penyelidik atau pembangun yang mereka bentuk sistem telepemulihan khusus untuk pesakit strok warga emas seperti anda?", "probe": "Soalan: Keutamaan reka bentuk, pilihan bahasa, ciri-ciri sesuai budaya"}, "C6.3": {"question": "Jika sistem ini tersedia di Malaysia dan disyorkan oleh doktor anda, sejauh mana anda akan menggunakannya? Apakah yang akan membuatkan anda lebih berkemungkinan mencubanya?", "probe": "Soalan: Kepercayaan, kos, sokongan penjaga, kesederhanaan"}}, "zh": {"C1.1": {"question": "感谢您同意与我交谈。在开始之前，请允许我确认您是否愿意继续，并了解此次对话将仅为研究目的而录音？", "probe": "确认口头同意；保证保密性"}, "C1.2": {"question": "您能简要描述一下中风后您的日常生活是什么样的吗？", "probe": "热身；建立基本活动水平和背景"}, "C2.1": {"question": "您能告诉我您目前的康复历程吗——您接受康复多久了，多久去一次？", "probe": "追问：是否有中断？交通问题？"}, "C2.2": {"question": "您在到诊所或医院参加康复课程时，最大的挑战是什么？", "probe": "追问：身体、经济、后勤或情感障碍"}, "C2.3": {"question": "您是否曾因出行困难或其他原因而错过课程？发生了什么？", "probe": "追问：频率、原因、对康复的影响"}, "C2.4": {"question": "您如何描述家人或照顾者在您参加康复方面给予您的支持？", "probe": "追问：谁陪同他们？如果没有支持怎么办？"}, "C3.1": {"question": "您目前使用智能手机、平板电脑或电脑吗？您能描述一下您是如何使用它的吗？", "probe": "追问：WhatsApp、视频通话、健康应用、网上银行？"}, "C3.2": {"question": "您曾经使用过视频通话（如WhatsApp、Zoom、FaceTime）吗？那次体验对您来说怎么样？", "probe": "追问：舒适度、困难、所需帮助"}, "C3.3": {"question": "您对通过屏幕而非面对面接受康复指导有何看法？", "probe": "追问：对效果的担忧、偏好、信任？"}, "C3.4": {"question": "关于使用技术管理健康，您有何顾虑（如有）？", "probe": "追问：隐私、复杂性、可靠性、数据费用"}, "C4.1": {"question": "如果您的治疗师可以通过视频通话从您家监督您的康复训练，您对此有何感受？", "probe": "追问：对质量的信任、积极性、参与感"}, "C4.2": {"question": "远程康复系统中哪些功能对您最重要？（如清晰的视频、简单的按钮、提醒）", "probe": "追问：感官需求（视力、听力）、认知负荷"}, "C4.3": {"question": "您愿意在摄像头前展示您的训练动作吗？什么会让它更容易或更难？", "probe": "追问：家中隐私、空间可用性、尴尬感"}, "C4.4": {"question": "您认为在家接受康复会对您的康复产生积极、消极还是同等的影响？", "probe": "追问：积极性、自律性、没有治疗师在场时的问责制"}, "C5.1": {"question": "中风在哪些方面影响了您的生活质量——身体、情感和社会层面？", "probe": "追问：独立性、人际关系、情感健康、爱好"}, "C5.2": {"question": "您认为目前的康复是否充分支持您的日常生活和独立性？", "probe": "追问：护理缺口、未满足的需求、建议"}, "C5.3": {"question": "定期与治疗师和医疗团队保持联系对您有多重要？", "probe": "追问：需要的联系频率、首选方式"}, "C5.4": {"question": "如果远程康复帮助您更快康复或更长时间保持独立，这对您的整体生活有什么影响？", "probe": "追问：家庭负担、个人尊严、情感幸福感"}, "C6.1": {"question": "关于远程康复或您的医疗体验，还有什么您想分享的吗？", "probe": "开放性追问——不要引导；允许自由表达"}, "C6.2": {"question": "您对专门为老年中风患者设计远程康复系统的研究人员或开发人员有什么建议？", "probe": "追问：设计优先事项、语言偏好、文化适当性功能"}, "C6.3": {"question": "如果该系统在马来西亚可用且由您的医生推荐，您使用它的可能性有多大？什么会让您更愿意尝试？", "probe": "追问：信任、费用、照顾者支持、简洁性"}}, "ta": {"C1.1": {"question": "என்னுடன் பேச ஒப்புக்கொண்டதற்கு நன்றி. தொடங்குவதற்கு முன், இந்த உரையாடல் ஆராய்ச்சி நோக்கங்களுக்கு மட்டுமே பதிவு செய்யப்படும் என்பதை புரிந்துகொண்டு தொடர வசதியாக இருக்கிறீர்களா என்பதை உறுதி செய்யலாமா?", "probe": "வாய்மொழி ஒப்புதல் உறுதி செய்யவும்; இரகசியத்தன்மையை உறுதிப்படுத்தவும்"}, "C1.2": {"question": "உங்கள் பக்கவாதத்திற்கு பிறகு உங்கள் தினசரி வழக்கம் மற்றும் வழக்கமான நாள் எப்படி இருக்கும் என்பதை சுருக்கமாக விவரிக்க முடியுமா?", "probe": "வெப்பமடைதல்; அடிப்படை செயல்பாட்டு நிலை மற்றும் சூழலை நிறுவுகிறது"}, "C2.1": {"question": "உங்கள் தற்போதைய மறுவாழ்வு பயணம் பற்றி சொல்ல முடியுமா - எவ்வளவு காலமாக செல்கிறீர்கள், எவ்வளவு அடிக்கடி போகிறீர்கள்?", "probe": "ஆய்வு: ஏதேனும் குறுக்கீடுகள்? போக்குவரத்து சிக்கல்கள்?"}, "C2.2": {"question": "கிளினிக் அல்லது மருத்துவமனையில் மறுவாழ்வு அமர்வுகளில் கலந்துகொள்வதில் மிகவும் சவாலானது என்ன?", "probe": "ஆய்வு: உடல், நிதி, தளவாட அல்லது உணர்ச்சி தடைகள்"}, "C2.3": {"question": "பயண சிரமங்கள் அல்லது பிற காரணங்களால் அமர்வை தவறவிட்டீர்களா? என்ன நடந்தது?", "probe": "ஆய்வு: அதிர்வெண், காரணம், மீட்பில் தாக்கம்"}, "C2.4": {"question": "மறுவாழ்வுக்கு செல்வதில் உங்கள் குடும்பம் அல்லது பராமரிப்பாளர்களிடமிருந்து நீங்கள் பெறும் ஆதரவை எவ்வாறு விவரிக்கிறீர்கள்?", "probe": "ஆய்வு: யார் அவர்களுடன் வருகிறார்கள்? ஆதரவு இல்லாவிட்டால் என்ன?"}, "C3.1": {"question": "நீங்கள் தற்போது ஸ்மார்ட்போன், டேப்லெட், அல்லது கணினி பயன்படுத்துகிறீர்களா? எவ்வாறு பயன்படுத்துகிறீர்கள் என்பதை விவரிக்க முடியுமா?", "probe": "ஆய்வு: WhatsApp, வீடியோ அழைப்புகள், சுகாதார செயலிகள், வங்கி?"}, "C3.2": {"question": "வீடியோ அழைப்பை (WhatsApp, Zoom, FaceTime போன்றவை) பயன்படுத்தியிருக்கிறீர்களா? அந்த அனுபவம் எப்படி இருந்தது?", "probe": "ஆய்வு: வசதி நிலை, சிரமங்கள், தேவையான உதவி"}, "C3.3": {"question": "நேரில் சந்திப்பதற்கு பதிலாக திரை மூலம் மறுவாழ்வு வழிகாட்டுதல் பெறுவது பற்றி எப்படி உணர்கிறீர்கள்?", "probe": "ஆய்வு: செயல்திறன் பற்றிய கவலைகள், விருப்பம், நம்பிக்கை?"}, "C3.4": {"question": "உங்கள் சுகாதாரத்திற்கு தொழில்நுட்பத்தை பயன்படுத்துவது பற்றி என்ன கவலைகள் உள்ளன?", "probe": "ஆய்வு: தனியுரிமை, சிக்கல், நம்பகத்தன்மை, தரவு செலவு"}, "C4.1": {"question": "உங்கள் சிகிச்சையாளர் வீட்டிலிருந்து வீடியோ அழைப்பு மூலம் உங்கள் மறுவாழ்வு உடற்பயிற்சிகளை மேற்பார்வை செய்யலாம் என்றால், நீங்கள் எப்படி உணர்வீர்கள்?", "probe": "ஆய்வு: தரத்தில் நம்பிக்கை, ஊக்கம், ஈடுபாடு"}, "C4.2": {"question": "தொலை-மறுவாழ்வு அமைப்பில் எந்த அம்சங்கள் உங்களுக்கு மிக முக்கியமாக இருக்கும்? (தெளிவான வீடியோ, எளிய பொத்தான்கள், நினைவூட்டல்கள் போன்றவை)", "probe": "ஆய்வு: உணர்வு தேவைகள் (பார்வை, கேட்கும் திறன்), அறிவாற்றல் சுமை"}, "C4.3": {"question": "கேமராவில் உங்கள் உடற்பயிற்சிகளை காட்டுவதில் வசதியாக உணர்வீர்களா? அதை எளிதாக்குவது அல்லது கடினமாக்குவது என்ன?", "probe": "ஆய்வு: வீட்டில் தனியுரிமை, இட கிடைக்கும் தன்மை, வெட்கம்"}, "C4.4": {"question": "வீட்டில் மறுவாழ்வு பெறுவது உங்கள் மீட்பை நேர்மறையாக, எதிர்மறையாக, அல்லது சமனாக பாதிக்கும் என்று நினைக்கிறீர்களா?", "probe": "ஆய்வு: ஊக்கம், தன்ஒழுக்கம், சிகிச்சையாளர் இல்லாமல் பொறுப்புணர்வு"}, "C5.1": {"question": "உங்கள் பக்கவாதம் உங்கள் வாழ்க்கைத் தரத்தை எந்த வழிகளில் பாதித்தது - உடல், உணர்ச்சி மற்றும் சமூக ரீதியாக?", "probe": "ஆய்வு: சுதந்திரம், உறவுகள், உணர்ச்சி ஆரோக்கியம், பொழுதுபோக்குகள்"}, "C5.2": {"question": "உங்கள் தற்போதைய மறுவாழ்வு உங்கள் தினசரி வாழ்க்கையையும் சுதந்திரத்தையும் போதுமான அளவு ஆதரிக்கிறது என்று உணர்கிறீர்களா?", "probe": "ஆய்வு: பராமரிப்பு இடைவெளிகள், நிறைவேறாத தேவைகள், பரிந்துரைகள்"}, "C5.3": {"question": "உங்கள் சிகிச்சையாளர் மற்றும் சுகாதார குழுவுடன் தொடர்ந்து தொடர்பில் இருப்பது உங்களுக்கு எவ்வளவு முக்கியம்?", "probe": "ஆய்வு: தேவையான தொடர்பு அதிர்வெண், விரும்பிய முறை"}, "C5.4": {"question": "தொலை-மறுவாழ்வு உங்களை வேகமாக மீட்க அல்லது உங்கள் சுதந்திரத்தை நீண்ட காலம் பராமரிக்க உதவினால், அது உங்கள் வாழ்க்கையை மொத்தத்தில் எவ்வாறு பாதிக்கும்?", "probe": "ஆய்வு: குடும்ப சுமை, தனிப்பட்ட கண்ணியம், உணர்ச்சி நலன்"}, "C6.1": {"question": "தொலை-மறுவாழ்வு அல்லது உங்கள் சுகாதார அனுபவம் பற்றி வேறு ஏதாவது பகிர விரும்புகிறீர்களா?", "probe": "திறந்த ஆய்வு - வழிகாட்ட வேண்டாம்; சுதந்திரமான வெளிப்பாட்டை அனுமதிக்கவும்"}, "C6.2": {"question": "உங்களைப் போன்ற வயதான பக்கவாத நோயாளிகளுக்கு குறிப்பாக தொலை-மறுவாழ்வு அமைப்பை வடிவமைக்கும் ஆராய்ச்சியாளர்கள் அல்லது டெவலப்பர்களுக்கு என்ன அறிவுரை கூறுவீர்கள்?", "probe": "ஆய்வு: வடிவமைப்பு முன்னுரிமைகள், மொழி விருப்பம், கலாச்சார ரீதியாக பொருத்தமான அம்சங்கள்"}, "C6.3": {"question": "இந்த அமைப்பு மலேசியாவில் கிடைக்கும் பட்சத்தில் மற்றும் உங்கள் மருத்துவர் பரிந்துரைத்தால், நீங்கள் அதை பயன்படுத்துவதற்கான வாய்ப்பு எவ்வளவு? எது உங்களை முயற்சிக்க தூண்டும்?", "probe": "ஆய்வு: நம்பிக்கை, செலவு, பராமரிப்பாளர் ஆதரவு, எளிமை"}}}};
+
+// ══════════════════════════════════════════════════════════════════
+//  QUESTION BANK — Part C, all 4 groups
+// ══════════════════════════════════════════════════════════════════
+const QB = {
+  caregiver: {
+    label: "Caregiver / Family",
+    duration: "25–35 min",
+    method: "Braun & Clarke (2006) thematic analysis",
+    sections: [
+      { id:"C1", title:"Opening & Rapport Building", questions:[
+        { code:"C1.1", text:"Thank you for taking part. Could you start by telling me a little about how you became involved in caring for this person?", probe:"Confirm consent; use warm, empathetic tone; note family vs. professional context" },
+        { code:"C1.2", text:"What does a typical day of caregiving look like for you?", probe:"Probe: Physical tasks, emotional load, time commitment, support received" },
+      ]},
+      { id:"C2", title:"Caregiving Challenges & Rehabilitation Experience", questions:[
+        { code:"C2.1", text:"What are the biggest challenges you face in helping the patient attend rehabilitation sessions?", probe:"Probe: Transport, work commitments, cost, patient resistance, fatigue" },
+        { code:"C2.2", text:"How do you feel when the patient misses a therapy session? What usually happens after?", probe:"Probe: Guilt, frustration, practical consequences, therapist communication" },
+        { code:"C2.3", text:"Have you ever been asked to assist the patient with exercises at home between clinic visits? How did that go?", probe:"Probe: Confidence, instructions received, patient compliance, caregiver anxiety" },
+        { code:"C2.4", text:"Do you feel that healthcare professionals adequately involve and support caregivers in the rehabilitation process?", probe:"Probe: Communication gaps, training offered, feeling excluded or overwhelmed" },
+      ]},
+      { id:"C3", title:"Awareness & Perceptions of Telerehabilitation", questions:[
+        { code:"C3.1", text:"Have you ever heard of telerehabilitation — where a therapist guides rehabilitation through a video call? What do you know about it?", probe:"Probe: Prior exposure, sources of information, initial reaction" },
+        { code:"C3.2", text:"If the patient's therapist could conduct sessions via video call at home, how do you feel about that idea?", probe:"Probe: Trust, concern about quality, enthusiasm, practical concerns" },
+        { code:"C3.3", text:"What worries, if any, do you have about using technology to support the patient's rehabilitation at home?", probe:"Probe: Privacy, complexity of setup, device reliability, patient resistance, data security" },
+        { code:"C3.4", text:"Do you think the patient would be comfortable participating in telerehabilitation? What might help or hinder them?", probe:"Probe: Cognitive ability, hearing/vision impairment, motivation, embarrassment" },
+      ]},
+      { id:"C4", title:"Practical Feasibility at Home or Facility", questions:[
+        { code:"C4.1", text:"What devices and internet access do you have at home or at the facility? Do you think they would be sufficient for video-based rehabilitation?", probe:"Probe: Device type, internet speed, shared vs. private space, screen size for elderly" },
+        { code:"C4.2", text:"Is there a suitable private space at home or in the facility where the patient could comfortably participate in video therapy sessions?", probe:"Probe: Space, furniture, ambient noise, privacy from others" },
+        { code:"C4.3", text:"Would you be able to be present during telerehabilitation sessions to assist the patient? Are there times when that would not be possible?", probe:"Probe: Work schedule, multiple dependents, night shifts for facility staff" },
+        { code:"C4.4", text:"What kind of support or training would you need to feel confident assisting the patient during telerehabilitation sessions?", probe:"Probe: Video guides, written instructions, live demonstration, helpline access" },
+      ]},
+      { id:"C5", title:"Impact on Patient & Caregiver Wellbeing", questions:[
+        { code:"C5.1", text:"How do you think receiving rehabilitation at home, rather than travelling to a clinic, would affect the patient's mood and motivation?", probe:"Probe: Comfort, reduced fatigue, dignity, increased frequency of practice" },
+        { code:"C5.2", text:"How would it affect you personally if the patient could receive rehabilitation at home?", probe:"Probe: Reduced transport burden, time savings, financial relief, peace of mind" },
+        { code:"C5.3", text:"Do you feel that the patient's quality of life has been affected by the current rehabilitation journey? In what ways?", probe:"Probe: Physical, emotional, social dimensions — use WHOQOL domains informally" },
+        { code:"C5.4", text:"If telerehabilitation allowed the therapist to check in on the patient regularly from a distance, would that give you greater confidence in managing care at home?", probe:"Probe: Reassurance, accountability, communication improvement" },
+      ]},
+      { id:"C6", title:"Closing & Recommendations", questions:[
+        { code:"C6.1", text:"If you were to design a telerehabilitation system that works well for caregivers, what would be the three most important features?", probe:"Probe: Simplicity, Bahasa Malaysia support, reminders, progress reports, emergency button" },
+        { code:"C6.2", text:"What concerns would you want researchers or developers to address before you would feel comfortable using a telerehabilitation system at home?", probe:"Probe: Data privacy, cost, technical support, clinical supervision clarity" },
+        { code:"C6.3", text:"Is there anything else you would like to share about your caregiving experience or what you would want from a telerehabilitation service?", probe:"Free expression — do not lead or interrupt" },
+      ]},
+    ]
+  },
+  allied: {
+    label: "Allied Health (PT/OT)",
+    duration: "30–40 min",
+    method: "Braun & Clarke (2006) thematic analysis; triangulate with Elderly group",
+    sections: [
+      { id:"C1", title:"Opening & Professional Context", questions:[
+        { code:"C1.1", text:"Could you briefly describe your current role and the types of patients you typically work with?", probe:"Establish context; note patient demographics and setting" },
+        { code:"C1.2", text:"In a typical week, what proportion of your patients are elderly or post-stroke individuals?", probe:"Probe: Frequency, intensity of case load with elderly stroke patients" },
+      ]},
+      { id:"C2", title:"Current Challenges in Rehabilitation Delivery", questions:[
+        { code:"C2.1", text:"What are the most significant challenges you face in delivering rehabilitation services to elderly post-stroke patients?", probe:"Probe: Attendance, compliance, resource constraints, communication barriers" },
+        { code:"C2.2", text:"How often do patients miss or discontinue sessions, and what are the primary reasons?", probe:"Probe: Transport, cost, caregiver availability, motivation, comorbidities" },
+        { code:"C2.3", text:"Do you feel that the current rehabilitation system adequately addresses the needs of elderly patients in Malaysia?", probe:"Probe: Gaps in service — urban vs. rural, government vs. private" },
+        { code:"C2.4", text:"What impact do patient no-shows or dropouts have on your clinical workload and patient outcomes?", probe:"Probe: Rescheduling burden, clinical setbacks, frustration" },
+      ]},
+      { id:"C3", title:"Experience with Telerehabilitation", questions:[
+        { code:"C3.1", text:"Have you ever delivered any form of telerehabilitation or remote therapy? Please describe that experience.", probe:"Probe: Platform used, patient response, outcomes, satisfaction" },
+        { code:"C3.2", text:"What clinical assessments or interventions do you feel can be effectively delivered remotely for stroke patients?", probe:"Probe: ROM, gait, ADL training, cognitive tasks, balance — which are feasible or not?" },
+        { code:"C3.3", text:"What aspects of in-person rehabilitation are most difficult to replicate remotely?", probe:"Probe: Hands-on manual therapy, tactile feedback, real-time correction" },
+        { code:"C3.4", text:"How do your elderly patients generally respond to technology-assisted rehabilitation?", probe:"Probe: Enthusiasm, resistance, anxiety, learning curve, caregiver involvement" },
+      ]},
+      { id:"C4", title:"Assessment Model & Framework Perspectives", questions:[
+        { code:"C4.1", text:"In your opinion, what are the most critical factors that should be assessed when evaluating a telerehabilitation technology for use with elderly stroke patients?", probe:"Probe: Safety, usability, clinical effectiveness, cost, cultural fit, language" },
+        { code:"C4.2", text:"Are you familiar with any existing frameworks for assessing telehealth technologies (e.g., MAST, TAM)? What are their limitations in the Malaysian context?", probe:"Probe: Gaps in cultural relevance, lack of engineering breadth, resource constraints" },
+        { code:"C4.3", text:"What engineering or system design features would you consider essential in a telerehabilitation platform designed for elderly post-stroke patients?", probe:"Probe: UI simplicity, accessibility features, large text, audio guidance, Bahasa Malaysia support" },
+        { code:"C4.4", text:"How should the assessment model account for differences in resources between urban and rural healthcare settings?", probe:"Probe: Connectivity, device availability, healthcare professional density" },
+        { code:"C4.5", text:"Would a machine-learning-based decision-support tool that recommends suitable telerehabilitation solutions be useful in your clinical practice?", probe:"Probe: Trust in AI recommendations, need for clinician override, explainability of model" },
+      ]},
+      { id:"C5", title:"Implementation Barriers & Facilitators", questions:[
+        { code:"C5.1", text:"What organisational or institutional barriers would prevent your workplace from adopting telerehabilitation?", probe:"Probe: Policy, reimbursement, infrastructure, administrative approval, liability" },
+        { code:"C5.2", text:"What training or support would you need to confidently deliver telerehabilitation services?", probe:"Probe: Technical training, clinical protocols, mentorship, CPD points" },
+        { code:"C5.3", text:"What role should the Ministry of Health play in facilitating the adoption of telerehabilitation in Malaysia?", probe:"Probe: Policy frameworks, funding, national guidelines, pilot programmes" },
+        { code:"C5.4", text:"How could telerehabilitation be designed to ensure equitable access for both urban and rural elderly patients?", probe:"Probe: Offline capability, SMS-based follow-up, community health worker support" },
+      ]},
+      { id:"C6", title:"Closing & Recommendations", questions:[
+        { code:"C6.1", text:"What advice would you give to an engineer or researcher developing a telerehabilitation technology assessment model for the Malaysian context?", probe:"Open probe — allow full expert opinion without leading" },
+        { code:"C6.2", text:"Are there any key outcome measures or clinical indicators that you believe should be included in validating a telerehabilitation model for elderly stroke patients?", probe:"Probe: FIM, Barthel Index, Berg Balance Scale, Stroke-specific QoL, WHOQOL-BREF" },
+        { code:"C6.3", text:"Is there anything else you would like to share about the role of telerehabilitation in Malaysia's future healthcare system?", probe:"Free expression — do not lead" },
+      ]},
+    ]
+  },
+  policymaker: {
+    label: "Policy-Maker (MOH)",
+    duration: "40–50 min",
+    method: "Senior expert interview; Braun & Clarke (2006) thematic analysis",
+    sections: [
+      { id:"C1", title:"Opening & Policy Context", questions:[
+        { code:"C1.1", text:"Could you describe your role and how your work intersects with digital health or telehealth policy in Malaysia?", probe:"Note seniority, directness of policy influence, years of involvement" },
+        { code:"C1.2", text:"From a national policy perspective, how would you characterise Malaysia's current readiness for telerehabilitation as a mainstream healthcare delivery mode?", probe:"Probe: Infrastructure, regulation, workforce, public readiness — which is most advanced/lagging?" },
+      ]},
+      { id:"C2", title:"Regulatory & Legal Landscape", questions:[
+        { code:"C2.1", text:"What are the most significant regulatory or legal gaps that currently prevent safe, large-scale telerehabilitation deployment in Malaysia?", probe:"Probe: Liability, cross-state licensure, consent frameworks, emergency protocols, data sovereignty" },
+        { code:"C2.2", text:"How adequate is the current Personal Data Protection Act (PDPA 2010) in protecting patient health data within a telerehabilitation context?", probe:"Probe: Gaps in health-specific provisions, enforcement, cross-border data flow" },
+        { code:"C2.3", text:"Are there plans within MOH or related agencies to update the 2015 Telemedicine Guidelines to specifically address telerehabilitation for chronic and elderly populations?", probe:"Probe: Timeline, stakeholder consultation processes, barriers to revision" },
+        { code:"C2.4", text:"How should medico-legal accountability be assigned when an adverse clinical event occurs during a remote rehabilitation session?", probe:"Probe: Therapist, platform provider, caregiver, government — shared responsibility models" },
+      ]},
+      { id:"C3", title:"Health Financing & Economic Sustainability", questions:[
+        { code:"C3.1", text:"What funding mechanisms currently exist or are being considered to support telerehabilitation services for elderly patients under the public healthcare system?", probe:"Probe: MySejahtera integration, insurance models, B40 subsidies, KKM budget allocation" },
+        { code:"C3.2", text:"How do you assess the long-term cost-effectiveness of telerehabilitation compared to conventional in-clinic rehabilitation for post-stroke elderly patients?", probe:"Probe: Cost per QALY, hospitalisation avoidance, caregiver productivity" },
+        { code:"C3.3", text:"What is the MOH's position on reimbursing telerehabilitation services under the national health financing framework?", probe:"Probe: Fee schedule, means testing, parity with in-person care, insurance alignment" },
+        { code:"C3.4", text:"How can public-private partnerships (PPPs) be structured to ensure equitable access to telerehabilitation without privatising essential elderly healthcare?", probe:"Probe: Concession models, regulatory safeguards, price controls, rural service mandates" },
+      ]},
+      { id:"C4", title:"Equity, Inclusion & Ageing-in-Place", questions:[
+        { code:"C4.1", text:"What specific policy measures are needed to ensure that elderly patients in rural and underserved areas can benefit equally from telerehabilitation?", probe:"Probe: JKJAV infrastructure, community health centres, MCMC broadband expansion" },
+        { code:"C4.2", text:"How should the government address the digital literacy gap among elderly Malaysians and their caregivers to support telerehabilitation adoption?", probe:"Probe: Rakan Digital programme, community health worker training, NGO partnerships" },
+        { code:"C4.3", text:"How does Malaysia's Ageing-in-Place policy framework currently support or hinder the adoption of home-based telerehabilitation?", probe:"Probe: Integration with Jabatan Kebajikan Masyarakat, aged-care funding, long-term care insurance" },
+        { code:"C4.4", text:"What considerations should guide the design of a telerehabilitation system to ensure it is culturally appropriate and linguistically accessible for Malaysia's multi-ethnic elderly population?", probe:"Probe: Bahasa Malaysia, Chinese dialects, Tamil — interface localisation, cultural sensitivity" },
+      ]},
+      { id:"C5", title:"Technology Assessment & Research-Policy Translation", questions:[
+        { code:"C5.1", text:"In your opinion, what are the most critical domains that a national assessment framework for telerehabilitation technologies should cover?", probe:"Probe: Clinical effectiveness, usability, cost, safety, equity, sustainability, scalability — which should be weighted highest?" },
+        { code:"C5.2", text:"How does the existing Malaysian Health Technology Assessment (MaHTAS) framework handle digital and AI-driven health technologies? Are there gaps specific to telerehabilitation?", probe:"Probe: Speed of assessment, engineering expertise within MaHTAS, post-market surveillance" },
+        { code:"C5.3", text:"Would a publicly available, validated assessment tool — developed through multi-stakeholder research — be adopted or referenced in MOH procurement or policy decisions?", probe:"Probe: Conditions for adoption, minimum validation standards, endorsement pathway" },
+        { code:"C5.4", text:"How should academic research findings, such as those from PhD studies on telerehabilitation, be systematically translated into actionable health policy in Malaysia?", probe:"Probe: Research-policy interface mechanisms, KKIA, CPRC, parliamentary briefings, policy sandboxes" },
+        { code:"C5.5", text:"What role should artificial intelligence and machine learning play in a national telerehabilitation assessment model, and what governance structures should oversee it?", probe:"Probe: Algorithmic accountability, bias auditing, clinician override, PDPA compliance, AI ethics board" },
+      ]},
+      { id:"C6", title:"Strategic Priorities & Closing Recommendations", questions:[
+        { code:"C6.1", text:"If you were to identify the single most important policy action Malaysia should take in the next two years to advance telerehabilitation for elderly patients, what would it be?", probe:"Allow unconstrained expert opinion; do not prompt with options" },
+        { code:"C6.2", text:"What inter-ministry or inter-agency coordination mechanisms would be most effective in driving a whole-of-government approach to telerehabilitation?", probe:"Probe: MOH, MCMC, MOSTI, MOF, Jabatan Kebajikan Masyarakat — coordination gaps, lead agency designation" },
+        { code:"C6.3", text:"How should Malaysia position telerehabilitation within the context of its broader digital economy ambitions and the National Fourth Industrial Revolution (4IR) Policy?", probe:"Probe: Healthcare as a 4IR sector, MyDIGITAL targets, health tourism implications" },
+        { code:"C6.4", text:"Is there anything further — from a policy, regulatory, or strategic standpoint — that you believe is critical for researchers and engineers developing telerehabilitation technologies in Malaysia to understand?", probe:"Final open probe — allow full expression; record carefully" },
+      ]},
+    ]
+  },
+  elderly: {
+    label: "Elderly (Post-Stroke)",
+    duration: "30–45 min",
+    method: "Braun & Clarke (2006) thematic analysis; triangulate with Allied Health group",
+    sections: [
+      { id:"C1", title:"Opening & Rapport Building", questions:[
+        { code:"C1.1", text:"Thank you for agreeing to speak with me. Before we begin, may I confirm that you are comfortable to proceed and understand that this conversation will be recorded only for research purposes?", probe:"Confirm verbal consent; reassure confidentiality" },
+        { code:"C1.2", text:"Could you briefly describe your daily routine and what a typical day looks like for you since your stroke?", probe:"Warm-up; establishes baseline activity level and context" },
+      ]},
+      { id:"C2", title:"Daily Life & Rehabilitation Experience", questions:[
+        { code:"C2.1", text:"Can you tell me about your current rehabilitation journey — how long have you been attending, and how often do you go?", probe:"Probe: Any disruptions? Transport issues?" },
+        { code:"C2.2", text:"What do you find most challenging about attending rehabilitation sessions at the clinic or hospital?", probe:"Probe: Physical, financial, logistical, or emotional barriers" },
+        { code:"C2.3", text:"Have you ever missed a session due to difficulties in travelling or other reasons? What happened?", probe:"Probe: Frequency, reason, impact on recovery" },
+        { code:"C2.4", text:"How would you describe the support you receive from your family or caregivers in attending rehabilitation?", probe:"Probe: Who accompanies them? What if support was unavailable?" },
+      ]},
+      { id:"C3", title:"Technology Familiarity & Readiness", questions:[
+        { code:"C3.1", text:"Do you currently use a smartphone, tablet, or computer? Can you describe how you use it?", probe:"Probe: WhatsApp, video calls, health apps, banking?" },
+        { code:"C3.2", text:"Have you ever used video calling (e.g., WhatsApp, Zoom, FaceTime)? How was that experience for you?", probe:"Probe: Comfort level, difficulties, assistance needed" },
+        { code:"C3.3", text:"How do you feel about receiving rehabilitation guidance through a screen rather than face-to-face?", probe:"Probe: Concerns about effectiveness, preference, trust?" },
+        { code:"C3.4", text:"What concerns, if any, do you have about using technology for your health?", probe:"Probe: Privacy, complexity, reliability, cost of data" },
+      ]},
+      { id:"C4", title:"Perceptions of Telerehabilitation", questions:[
+        { code:"C4.1", text:"If your therapist could supervise your rehabilitation exercises through a video call from your home, how would you feel about that?", probe:"Probe: Trust in quality, motivation, engagement" },
+        { code:"C4.2", text:"What features would be most important to you in a telerehabilitation system? (e.g., clear video, simple buttons, reminders)", probe:"Probe: Sensory needs (vision, hearing), cognitive load" },
+        { code:"C4.3", text:"Would you feel comfortable demonstrating your exercises on camera? What might make it easier or harder?", probe:"Probe: Privacy at home, space availability, embarrassment" },
+        { code:"C4.4", text:"Do you think receiving rehabilitation at home would affect your recovery positively, negatively, or equally?", probe:"Probe: Motivation, discipline, accountability without therapist presence" },
+      ]},
+      { id:"C5", title:"Quality of Life & Wellbeing", questions:[
+        { code:"C5.1", text:"In what ways has your stroke affected your quality of life — physically, emotionally, and socially?", probe:"Probe: Independence, relationships, emotional health, hobbies" },
+        { code:"C5.2", text:"Do you feel that your current rehabilitation adequately supports your daily life and independence?", probe:"Probe: Gaps in care, unmet needs, suggestions" },
+        { code:"C5.3", text:"How important is it to you to remain connected with your therapist and healthcare team regularly?", probe:"Probe: Frequency of contact needed, preferred mode" },
+        { code:"C5.4", text:"If telerehabilitation helped you recover faster or maintain your independence longer, how would that affect your life overall?", probe:"Probe: Family burden, personal dignity, emotional wellbeing" },
+      ]},
+      { id:"C6", title:"Closing & Feedback", questions:[
+        { code:"C6.1", text:"Is there anything else about telerehabilitation or your healthcare experience that you would like to share?", probe:"Open probe — do not lead; allow free expression" },
+        { code:"C6.2", text:"What advice would you give to researchers or developers designing a telerehabilitation system specifically for elderly stroke patients like yourself?", probe:"Probe: Design priorities, language preference, culturally appropriate features" },
+        { code:"C6.3", text:"If this system were available in Malaysia and recommended by your doctor, how likely would you be to use it? What would make you more likely to try it?", probe:"Probe: Trust, cost, caregiver support, simplicity" },
+      ]},
+    ]
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════════
+let S = {
+  screen: "setup",   // setup | consent | interview | summary
+  group: "caregiver",
+  lang: "en",
+  researcherId: "",
+  participantId: "",
+  site: "urban",
+  sessionId: "",
+  consentChecked: false,
+
+  secIdx: 0,
+  qIdx: 0,
+
+  // responses[code] = { transcript, notes, recSecs, status }
+  responses: {},
+
+  recState: "idle",   // idle | recording | processing | done
+  recSecs: 0,
+  recTimer: null,
+};
+
+// helpers
+function allQuestions() {
+  return QB[S.group].sections.flatMap(s => s.questions);
+}
+function currentSection() { return QB[S.group].sections[S.secIdx]; }
+function currentQuestion() { return currentSection().questions[S.qIdx]; }
+function totalQ() { return allQuestions().length; }
+function completedQ() { return Object.values(S.responses).filter(r => r.status==="done").length; }
+function globalIdx() {
+  let n = 0;
+  for (let i=0; i<S.secIdx; i++) n += QB[S.group].sections[i].questions.length;
+  return n + S.qIdx;
+}
+function fmtTime(s) {
+  return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+}
+function genSessionId() {
+  return "DTAM-"+S.group.substring(0,3).toUpperCase()+"-"+Date.now().toString(36).toUpperCase();
+}
+
+// response accessors
+function getR(code) { return S.responses[code] || {transcript:"",notes:"",recSecs:0,status:"skip"}; }
+function setR(code, patch) {
+  S.responses[code] = Object.assign(getR(code), patch);
+}
+
+// ── Translation helper ──
+function getTranslatedQ(code, field) {
+  if (S.lang === 'en') return null;
+  try { return TRANSLATIONS[S.group][S.lang][code][field] || null; }
+  catch(e) { return null; }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════════════════
+function render() {
+  const el = document.getElementById("root");
+  if (S.screen === "setup")     el.innerHTML = renderSetup();
+  if (S.screen === "consent")   el.innerHTML = renderConsent();
+  if (S.screen === "interview") el.innerHTML = renderInterview();
+  if (S.screen === "summary")   el.innerHTML = renderSummary();
+  attachEvents();
+}
+
+function renderSetup() {
+  return `
+<div class="screen">
+  <div class="card setup-card">
+    <div class="logo">
+      <h2>🏥 DTAM-MY</h2>
+      <p>Part C — Qualitative Interview</p>
+      <p style="font-size:11px;color:#9ca3af;margin-top:3px">UTAR · 24UED03838</p>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Researcher ID</label>
+        <input id="f_rid" value="${S.researcherId}" placeholder="e.g. R001"/>
+      </div>
+      <div class="field">
+        <label>Participant ID</label>
+        <input id="f_pid" value="${S.participantId}" placeholder="e.g. CG-001"/>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Stakeholder Group</label>
+      <select id="f_group">
+        <option value="caregiver"   ${S.group==="caregiver"?"selected":""}>Caregiver / Family (21 questions)</option>
+        <option value="allied"      ${S.group==="allied"?"selected":""}>Allied Health — PT / OT (22 questions)</option>
+        <option value="policymaker" ${S.group==="policymaker"?"selected":""}>Policy-Maker — MOH (22 questions)</option>
+        <option value="elderly"     ${S.group==="elderly"?"selected":""}>Elderly Post-Stroke (18 questions)</option>
+      </select>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Interview Language</label>
+        <select id="f_lang">
+          <option value="en" ${S.lang==="en"?"selected":""}>English</option>
+          <option value="bm" ${S.lang==="bm"?"selected":""}>Bahasa Malaysia</option>
+          <option value="zh" ${S.lang==="zh"?"selected":""}>中文</option>
+          <option value="ta" ${S.lang==="ta"?"selected":""}>தமிழ்</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Site</label>
+        <select id="f_site">
+          <option value="urban"  ${S.site==="urban"?"selected":""}>Urban</option>
+          <option value="rural"  ${S.site==="rural"?"selected":""}>Rural</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-full" id="btn_setup_next"
+      ${(!S.researcherId || !S.participantId)?"disabled":""}>
+      Proceed to Consent →
+    </button>
+  </div>
+</div>`;
+}
+
+function renderConsent() {
+  const grp = QB[S.group];
+  return `
+<div class="screen">
+  <div class="card setup-card">
+    <h3 style="color:var(--navy);margin-bottom:14px">📋 Consent & Session Initialisation</h3>
+    <div class="consent-box">
+      <strong>Research Study:</strong> DTAM-MY Telerehabilitation Assessment — UTAR PhD Research (24UED03838)<br/><br/>
+      <strong>Group:</strong> ${grp.label} &nbsp;·&nbsp; <strong>Estimated Duration:</strong> ${grp.duration}<br/>
+      <strong>Analysis Method:</strong> ${grp.method}<br/><br/>
+      <strong>PDPA 2010 Notice:</strong> This session will be audio-recorded solely for research transcription.
+      Recordings are stored on Malaysian-territory servers (AES-256 encrypted), retained for 5 years
+      post-publication, then securely deleted. Participation is voluntary; withdrawal is permitted at any time.
+    </div>
+    <label class="consent-check">
+      <input type="checkbox" id="cb_consent" ${S.consentChecked?"checked":""}/>
+      Participant has been read the information sheet, has had the opportunity to ask questions,
+      and verbally consents to audio recording. Researcher: <strong style="margin-left:4px">${S.researcherId}</strong>
+    </label>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
+      Session ID: <strong>${genSessionId()}</strong><br/>
+      Participant: <strong>${S.participantId}</strong> · ${S.group} · ${S.lang.toUpperCase()} · ${S.site}
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" id="btn_consent_back" style="flex:1">← Back</button>
+      <button class="btn btn-primary" id="btn_consent_next" style="flex:2"
+        ${!S.consentChecked?"disabled":""}>Begin Interview →</button>
+    </div>
+  </div>
+</div>`;
+}
+
+function renderInterview() {
+  const sec = currentSection();
+  const q   = currentQuestion();
+  const r   = getR(q.code);
+  const gi  = globalIdx();
+  const tot = totalQ();
+  const grp = QB[S.group];
+
+  return `
+<div>
+  <div class="topbar">
+    <h1>DTAM-MY · Part C Interview</h1>
+    <div class="right">
+      <span class="badge">${S.sessionId}</span>
+      <span class="badge badge-orange">${grp.label}</span>
+      <span style="font-size:11px">${S.participantId} · ${S.lang.toUpperCase()} · ${S.site}</span>
+      <button class="badge" id="btn_toggle_bilingual" style="cursor:pointer;background:${S.showBilingual?'var(--orange)':'var(--teal)'}">
+        ${S.showBilingual ? 'EN+LANG ✓' : 'Show EN'}
+      </button>
+    </div>
+  </div>
+
+  <div class="interview-layout">
+
+    <!-- LEFT: Section nav -->
+    <div>
+      <div class="card">
+        <div class="card-hd">Sections (C1–C6)</div>
+        ${grp.sections.map((s, si) => {
+          const done = s.questions.filter(q2 => getR(q2.code).status==="done").length;
+          const isActive = si === S.secIdx;
+          const isComplete = done === s.questions.length;
+          return `<div class="sec-item ${isActive?"active":""} ${isComplete?"complete":""}"
+            data-si="${si}">
+            <span class="sec-label">${s.id}: ${s.title.split(" ").slice(0,3).join(" ")}…</span>
+            <span class="sec-count">${done}/${s.questions.length}</span>
+          </div>`;
+        }).join("")}
+      </div>
+      <div style="margin-top:10px;padding:10px 12px;background:var(--white);border-radius:8px;
+        font-size:12px;color:var(--muted)">
+        <div style="margin-bottom:6px;font-weight:700;color:var(--navy)">Session Info</div>
+        ${[["Researcher",S.researcherId],["Participant",S.participantId],
+           ["Group",S.group],["Language",S.lang.toUpperCase()],
+           ["Site",S.site],["Duration",grp.duration]
+          ].map(([k,v])=>`<div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span>${k}</span><strong>${v}</strong></div>`).join("")}
+      </div>
+    </div>
+
+    <!-- CENTRE: Question panel -->
+    <div class="q-panel card">
+      <div class="card-hd">
+        <span>${sec.id}: ${sec.title}</span>
+        <span style="font-size:12px;font-weight:400">${gi+1} / ${tot}</span>
+      </div>
+      <div class="card-body">
+        <div class="progress-row">
+          <span>Overall Progress</span><span>${Math.round((gi/tot)*100)}%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${(gi/tot)*100}%"></div></div>
+
+        <span class="section-badge">${q.code} · ${sec.title}</span>
+
+        <div class="q-box">
+          <div class="q-code">${q.code}</div>
+          <div class="q-text">${getTranslatedQ(q.code, 'question') || q.text}</div>
+        </div>
+
+        ${S.showBilingual && S.lang !== 'en' ? `<div style="font-size:12px;color:var(--muted);padding:6px 10px;background:#f9fafb;border-radius:6px;margin-bottom:10px;line-height:1.5"><strong style="color:var(--navy)">EN:</strong> ${q.text}</div>` : ''}
+        <details class="probe-box">
+          <summary>Key Probes</summary>
+          <div class="probe-text">${getTranslatedQ(q.code, 'probe') || q.probe}</div>
+        </details>
+
+        <!-- Record zone -->
+        <div class="record-zone">
+          <button class="rec-btn ${S.recState}" id="btn_rec">
+            ${S.recState==="recording"?"⏹":S.recState==="processing"?"⏳":"🎙"}
+          </button>
+          <div class="rec-info">
+            <div class="rec-status">
+              ${S.recState==="idle"?"Tap 🎙 to begin recording":
+                S.recState==="recording"?"Recording… tap ⏹ to stop":
+                S.recState==="processing"?"Transcribing…":
+                "Recording complete — edit transcript below if needed"}
+            </div>
+            <div class="rec-timer ${S.recState==="idle"?"idle":""}">${S.recState==="idle"?"00:00":fmtTime(S.recSecs)}</div>
+          </div>
+          ${S.recState==="done" || r.recSecs > 0 ? `<span style="font-size:11px;color:var(--muted)">
+            Recorded<br/><strong>${fmtTime(r.recSecs||S.recSecs)}</strong></span>` : ""}
+        </div>
+
+        <!-- Transcript -->
+        <div class="t-label" style="margin-bottom:5px">Transcript (edit to correct errors)</div>
+        <textarea class="transcript-area ${S.recState==='done'?'live':''}" id="ta_transcript"
+          placeholder="Transcript will appear here after recording — or type directly…"
+          rows="5">${r.transcript}</textarea>
+
+        <!-- Researcher notes -->
+        <div class="t-label" style="margin-top:12px;margin-bottom:5px;color:var(--orange)">
+          Researcher Notes / Observations
+        </div>
+        <textarea class="notes-area" id="ta_notes"
+          placeholder="Probe responses used, non-verbal cues, follow-up needed…"
+          rows="3">${r.notes}</textarea>
+
+        <div class="nav-row">
+          <button class="btn btn-ghost" id="btn_prev" ${gi===0?"disabled":""}>← Prev</button>
+          <button class="btn btn-outline" id="btn_skip">Skip</button>
+          <button class="btn btn-primary" id="btn_save">
+            ${gi===tot-1?"Save & Finish ✓":"Save & Next →"}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Log -->
+    <div class="right-panel">
+      <div class="card">
+        <div class="card-hd">Completed (${completedQ()} / ${tot})</div>
+        <div style="max-height:300px;overflow-y:auto">
+          ${allQuestions().map(q2 => {
+            const r2 = getR(q2.code);
+            const label = r2.status==="done"?"done":r2.status==="skip"&&r2.transcript?"partial":"skip";
+            const labelText = label==="done"?"✓ Done":label==="partial"?"~ Partial":"— Skip";
+            const tq = (S.lang !== 'en' && TRANSLATIONS[S.group] && TRANSLATIONS[S.group][S.lang] && TRANSLATIONS[S.group][S.lang][q2.code]) ? TRANSLATIONS[S.group][S.lang][q2.code].question : q2.text;
+            return `<div class="log-item">
+              <span class="log-code">${q2.code}</span>
+              <span class="log-status ${label}">${labelText}</span>
+              <div class="log-text">${r2.transcript ? r2.transcript.substring(0,55)+'…' : tq.substring(0,55)+'…'}</div>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">STT Engine</div>
+        <div class="card-body">
+          ${[
+            ["Engine", "Web Speech API (built-in)"],
+            ["Language", `${LANG_MAP[S.lang]||"en-US"}`],
+            ["Mode", "Continuous · Interim results"],
+            ["Data", "On-device — no cloud"],
+            ["Browser", "Chrome / Edge required"],
+          ].map(([k,v])=>`<div style="display:flex;justify-content:space-between;
+            font-size:12px;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid var(--lgrey)">
+            <span style="color:var(--muted)">${k}</span><strong>${v}</strong></div>`).join("")}
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6">
+            Transcript updates live as you speak. Tap ⏹ to stop; edit any errors in the box below.
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd">Interview Tips</div>
+        <div class="card-body">
+          <ul style="font-size:12px;color:var(--muted);padding-left:16px;line-height:1.9">
+            <li>Allow 10–15 s silence after question before probing</li>
+            <li>Use probes sparingly — avoid leading</li>
+            <li>Note non-verbal cues in Researcher Notes</li>
+            <li>Save frequently; data persists in session</li>
+            <li>Tamil: add extra time allowance (${S.lang==="ta"?"⚠ Active":"N/A"})</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>`;
+}
+
+function renderSummary() {
+  const grp = QB[S.group];
+  const qs = allQuestions();
+  const done = qs.filter(q => getR(q.code).status==="done").length;
+  const partial = qs.filter(q => { const r=getR(q.code); return r.status!=="done" && r.transcript; }).length;
+  const skipped = qs.length - done - partial;
+  return `
+<div class="screen">
+  <div class="card summary-card">
+    <h3 style="color:var(--navy);margin-bottom:4px">✅ Interview Complete</h3>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:18px">
+      ${S.sessionId} · ${S.participantId} · ${grp.label}
+    </p>
+    <div class="sum-row"><span>Total Questions</span><strong>${qs.length}</strong></div>
+    <div class="sum-row"><span>Fully Completed</span><span class="tag tag-green">${done}</span></div>
+    <div class="sum-row"><span>Partial (transcript only)</span><span class="tag tag-orange">${partial}</span></div>
+    <div class="sum-row"><span>Skipped</span><span class="tag tag-grey">${skipped}</span></div>
+    <div class="sum-row"><span>Analysis Method</span><span style="font-size:12px">${grp.method}</span></div>
+
+    <div style="margin-top:16px;border-top:1px solid var(--lgrey);padding-top:14px;
+      max-height:260px;overflow-y:auto">
+      ${grp.sections.map(sec => `
+        <div style="margin-bottom:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">
+            ${sec.id}: ${sec.title}
+          </div>
+          ${sec.questions.map(q => {
+            const r = getR(q.code);
+            const badge = r.status==="done"
+              ? '<span class="tag tag-green">Done</span>'
+              : r.transcript
+                ? '<span class="tag tag-orange">Partial</span>'
+                : '<span class="tag tag-grey">Skip</span>';
+            return `<div style="display:flex;gap:8px;align-items:flex-start;
+              padding:5px 0;border-bottom:1px solid var(--lgrey);font-size:12px">
+              <strong style="min-width:40px">${q.code}</strong>
+              <span style="flex:1;color:var(--muted)">${r.transcript
+                ? r.transcript.substring(0,70)+(r.transcript.length>70?"…":"")
+                : "(no transcript)"}</span>
+              ${badge}
+            </div>`;
+          }).join("")}
+        </div>`).join("")}
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:18px">
+      <button class="btn btn-success" id="btn_export" style="flex:1">
+        Export JSON
+      </button>
+      <button class="btn btn-outline" id="btn_new_session" style="flex:1">
+        New Session
+      </button>
+    </div>
+    <button class="btn btn-ghost" id="btn_back_interview"
+      style="width:100%;margin-top:8px">← Back to Interview</button>
+  </div>
+</div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  EVENTS
+// ══════════════════════════════════════════════════════════════════
+function attachEvents() {
+  // ── Setup ──
+  const f_rid   = document.getElementById("f_rid");
+  const f_pid   = document.getElementById("f_pid");
+  const f_group = document.getElementById("f_group");
+  const f_lang  = document.getElementById("f_lang");
+  const f_site  = document.getElementById("f_site");
+  const btn_sn  = document.getElementById("btn_setup_next");
+
+  function syncSetup() {
+    if (f_rid)   S.researcherId = f_rid.value.trim();
+    if (f_pid)   S.participantId = f_pid.value.trim();
+    if (f_group) S.group = f_group.value;
+    if (f_lang)  S.lang  = f_lang.value;
+    if (f_site)  S.site  = f_site.value;
+    if (btn_sn)  btn_sn.disabled = !(S.researcherId && S.participantId);
+  }
+  [f_rid,f_pid,f_group,f_lang,f_site].forEach(el => el && el.addEventListener("input", () => { syncSetup(); }));
+  if (btn_sn) btn_sn.addEventListener("click", () => { syncSetup(); S.screen="consent"; render(); });
+
+  // ── Consent ──
+  const cb = document.getElementById("cb_consent");
+  const btn_cn = document.getElementById("btn_consent_next");
+  const btn_cb = document.getElementById("btn_consent_back");
+  if (cb) cb.addEventListener("change", () => {
+    S.consentChecked = cb.checked;
+    if (btn_cn) btn_cn.disabled = !S.consentChecked;
+  });
+  if (btn_cn) btn_cn.addEventListener("click", () => {
+    S.sessionId = genSessionId();
+    S.secIdx = 0; S.qIdx = 0; S.responses = {};
+    S.recState = "idle"; S.recSecs = 0;
+    S.screen = "interview"; render();
+  });
+  if (btn_cb) btn_cb.addEventListener("click", () => { S.screen="setup"; render(); });
+
+  // ── Section nav items ──
+  document.querySelectorAll(".sec-item[data-si]").forEach(el => {
+    el.addEventListener("click", () => {
+      saveCurrentResponse();
+      S.secIdx = parseInt(el.dataset.si);
+      S.qIdx = 0;
+      stopRec();
+      render();
+    });
+  });
+
+  // ── Record ──
+  const btn_bil = document.getElementById('btn_toggle_bilingual');
+  if (btn_bil) btn_bil.addEventListener('click', () => { S.showBilingual = !S.showBilingual; render(); });
+
+  const btn_rec = document.getElementById("btn_rec");
+  if (btn_rec) btn_rec.addEventListener("click", () => {
+    if (S.recState === "idle" || S.recState === "done") startRec();
+    else if (S.recState === "recording") stopRec();
+  });
+
+  // ── Navigation ──
+  const btn_prev = document.getElementById("btn_prev");
+  const btn_skip = document.getElementById("btn_skip");
+  const btn_save = document.getElementById("btn_save");
+
+  if (btn_prev) btn_prev.addEventListener("click", () => {
+    saveCurrentResponse();
+    stopRec();
+    navigateQ(-1);
+  });
+  if (btn_skip) btn_skip.addEventListener("click", () => {
+    const q = currentQuestion();
+    setR(q.code, { status: "skip" });
+    stopRec();
+    const gi = globalIdx();
+    const tot = totalQ();
+    if (gi === tot - 1) { S.screen="summary"; render(); return; }
+    navigateQ(1);
+  });
+  if (btn_save) btn_save.addEventListener("click", () => {
+    saveCurrentResponse(true);
+    stopRec();
+    const gi = globalIdx();
+    const tot = totalQ();
+    if (gi === tot - 1) { S.screen="summary"; render(); return; }
+    navigateQ(1);
+  });
+
+  // ── Summary ──
+  const btn_exp = document.getElementById("btn_export");
+  const btn_ns  = document.getElementById("btn_new_session");
+  const btn_bi  = document.getElementById("btn_back_interview");
+
+  if (btn_exp) btn_exp.addEventListener("click", exportSession);
+  if (btn_ns)  btn_ns.addEventListener("click",  () => {
+    S.screen="setup"; S.participantId=""; S.consentChecked=false;
+    S.responses={}; S.recState="idle"; S.recSecs=0;
+    render();
+  });
+  if (btn_bi) btn_bi.addEventListener("click", () => { S.screen="interview"; render(); });
+}
+
+function saveCurrentResponse(asDone=false) {
+  const q = currentQuestion();
+  const ta = document.getElementById("ta_transcript");
+  const tn = document.getElementById("ta_notes");
+  const transcript = ta ? ta.value : getR(q.code).transcript;
+  const notes      = tn ? tn.value : getR(q.code).notes;
+  const status     = asDone ? "done" : (transcript ? "partial" : "skip");
+  setR(q.code, { transcript, notes, status,
+    recSecs: S.recState==="done" ? S.recSecs : (getR(q.code).recSecs||0) });
+}
+
+function navigateQ(dir) {
+  const sections = QB[S.group].sections;
+  let si = S.secIdx, qi = S.qIdx + dir;
+  if (qi < 0) {
+    si = Math.max(0, si - 1);
+    qi = sections[si].questions.length - 1;
+  } else if (qi >= sections[si].questions.length) {
+    si = Math.min(sections.length - 1, si + 1);
+    qi = 0;
+  }
+  S.secIdx = si; S.qIdx = qi;
+  S.recState = "idle"; S.recSecs = 0;
+  render();
+}
+
+// ── Web Speech API transcription ──
+const LANG_MAP = { en:"en-US", bm:"ms-MY", zh:"zh-CN", ta:"ta-IN" };
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+let _recog = null;
+let _recInterval = null;
+let _interimEl = null;   // live interim display
+let _finalBuf  = "";     // accumulated final text this session
+
+function sttSupported() { return !!SpeechRec; }
+
+function startRec() {
+  if (!sttSupported()) {
+    alert("Speech recognition is not supported in this browser.\nUse Chrome or Edge for embedded transcription.");
+    return;
+  }
+
+  S.recState = "recording"; S.recSecs = 0;
+  _finalBuf = (document.getElementById("ta_transcript")?.value || "").trim();
+
+  // Timer
+  clearInterval(_recInterval);
+  _recInterval = setInterval(() => {
+    S.recSecs++;
+    const rt = document.querySelector(".rec-timer");
+    if (rt) { rt.classList.remove("idle"); rt.textContent = fmtTime(S.recSecs); }
+  }, 1000);
+
+  // Recogniser
+  _recog = new SpeechRec();
+  _recog.lang = LANG_MAP[S.lang] || "en-US";
+  _recog.continuous      = true;
+  _recog.interimResults  = true;
+  _recog.maxAlternatives = 1;
+
+  _recog.onstart = () => {
+    const rs = document.querySelector(".rec-status");
+    if (rs) rs.textContent = "🔴 Listening… tap ⏹ to stop";
+    const btn = document.getElementById("btn_rec");
+    if (btn) { btn.className = "rec-btn recording"; btn.textContent = "⏹"; }
+  };
+
+  _recog.onresult = (e) => {
+    let interim = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) {
+        _finalBuf += (_finalBuf ? " " : "") + t.trim();
+      } else {
+        interim = t;
+      }
+    }
+    const ta = document.getElementById("ta_transcript");
+    if (ta) {
+      ta.value = _finalBuf + (interim ? " " + interim : "");
+      ta.classList.add("live");
+      ta.scrollTop = ta.scrollHeight;
+    }
+    const rs = document.querySelector(".rec-status");
+    if (rs) rs.textContent = interim
+      ? `🔴 Hearing: "${interim.substring(0,60)}${interim.length>60?"…":""}"`
+      : "🔴 Listening…";
+  };
+
+  _recog.onerror = (e) => {
+    const msgs = {
+      "no-speech":         "No speech detected — tap 🎙 to try again.",
+      "audio-capture":     "Microphone not found. Check browser permissions.",
+      "not-allowed":       "Microphone access denied. Allow microphone in browser settings.",
+      "network":           "Network error — speech recognition requires an internet connection on some browsers.",
+      "language-not-supported": `Language '${LANG_MAP[S.lang]}' not supported on this device. Try English.`,
+    };
+    const rs = document.querySelector(".rec-status");
+    if (rs) rs.textContent = msgs[e.error] || `Error: ${e.error}`;
+    _finishRec();
+  };
+
+  _recog.onend = () => {
+    // Auto-restart if still in recording state (recognition times out ~60s on some browsers)
+    if (S.recState === "recording") {
+      try { _recog.start(); } catch(e) { _finishRec(); }
+    }
+  };
+
+  try {
+    _recog.start();
+  } catch(e) {
+    const rs = document.querySelector(".rec-status");
+    if (rs) rs.textContent = "Could not start microphone: " + e.message;
+    S.recState = "idle";
+  }
+}
+
+function stopRec() {
+  clearInterval(_recInterval);
+  if (S.recState === "recording") {
+    S.recState = "processing";
+    const rs = document.querySelector(".rec-status");
+    if (rs) rs.textContent = "Finalising transcript…";
+    const btn = document.getElementById("btn_rec");
+    if (btn) { btn.className = "rec-btn processing"; btn.textContent = "⏳"; }
+    if (_recog) {
+      try { _recog.stop(); } catch(e) {}
+    }
+    // Give recogniser 800ms to flush final result, then finish
+    setTimeout(_finishRec, 800);
+  } else {
+    S.recState = "idle";
+    if (_recog) { try { _recog.abort(); } catch(e) {} _recog = null; }
+  }
+}
+
+function _finishRec() {
+  clearInterval(_recInterval);
+  if (_recog) { try { _recog.abort(); } catch(e) {} _recog = null; }
+  S.recState = "done";
+
+  const ta = document.getElementById("ta_transcript");
+  if (ta) {
+    // Ensure final buffer is flushed to textarea
+    if (_finalBuf && !ta.value.trim()) ta.value = _finalBuf;
+    ta.classList.add("live");
+  }
+  const btn = document.getElementById("btn_rec");
+  if (btn) { btn.className = "rec-btn idle"; btn.textContent = "🎙"; }
+  const rs = document.querySelector(".rec-status");
+  if (rs) rs.textContent = "✅ Transcription done — edit below if needed. Tap 🎙 to continue recording.";
+}
+
+// ── Export ──
+function exportSession() {
+  const qs = allQuestions();
+  const payload = {
+    meta: {
+      sessionId: S.sessionId,
+      participantId: S.participantId,
+      researcherId: S.researcherId,
+      group: S.group,
+      language: S.lang,
+      site: S.site,
+      exportedAt: new Date().toISOString(),
+      totalQ: qs.length,
+      completed: qs.filter(q => getR(q.code).status==="done").length,
+    },
+    responses: qs.map(q => {
+      const r = getR(q.code);
+      return {
+        code: q.code,
+        question: q.text,
+        probe: q.probe,
+        transcript: r.transcript,
+        researcherNotes: r.notes,
+        recordedSecs: r.recSecs || 0,
+        status: r.status,
+      };
+    })
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${S.sessionId}.json`;
+  a.click();
+}
+
+// ── Boot ──
+render();
+</script>
+</body>
+</html>

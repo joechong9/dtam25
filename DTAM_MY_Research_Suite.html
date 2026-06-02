@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DTAM-MY Research Suite</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f1f5f9;color:#1e293b;font-size:14px;line-height:1.5}
+a{color:inherit}
+header{background:#1B3A6B;color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.hdr-inner{max-width:1200px;margin:0 auto;padding:12px 16px}
+.hdr-row{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+.hdr-title{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.hdr-sub{font-size:11px;color:#93c5fd;margin-top:2px}
+.hdr-meta{font-size:11px;color:#93c5fd;text-align:right}
+.hdr-meta em{color:#86efac;font-style:normal;font-weight:600}
+.tab-row{display:flex;gap:2px;margin-top:8px}
+.tab{padding:7px 14px;font-size:12px;font-weight:500;border:none;cursor:pointer;border-radius:5px 5px 0 0;background:transparent;color:#93c5fd;transition:all .15s}
+.tab:hover{background:rgba(255,255,255,.12);color:#fff}
+.tab.on{background:#f1f5f9;color:#1B3A6B;font-weight:600}
+main{max-width:1200px;margin:0 auto;padding:20px 16px}
+.page{display:none}.page.on{display:block}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:10px}
+.card-pad{padding:16px}
+h2{font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+h3{font-size:13px;font-weight:600;color:#1e293b}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:680px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.hdr-meta{display:none}}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
+.bg-green{background:#dcfce7;color:#15803d}
+.bg-blue{background:#dbeafe;color:#1d4ed8}
+.bg-amber{background:#fef3c7;color:#b45309}
+.bg-slate{background:#f1f5f9;color:#475569}
+.pbar-wrap{background:#e2e8f0;border-radius:4px;height:7px;overflow:hidden;margin:4px 0 6px}
+.pbar{height:100%;border-radius:4px;transition:width .4s}
+.btn-pill{padding:5px 11px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s}
+.btn-pill:hover{background:#f8fafc}
+.btn-pill.on{background:#334155;color:#fff;border-color:#334155}
+.accd-hdr{width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 15px;background:none;border:none;cursor:pointer;text-align:left;transition:background .1s}
+.accd-hdr:hover{background:#f8fafc}
+.accd-body{padding:14px 16px;border-top:1px solid #f1f5f9}
+.caret{color:#94a3b8;font-size:11px;flex-shrink:0;margin-left:8px}
+.q-row{display:flex;align-items:flex-start;gap:10px;padding:9px 15px;border-bottom:1px solid #f8fafc}
+.q-row:last-child{border-bottom:none}
+.q-id{font-family:monospace;font-size:11px;color:#94a3b8;width:26px;flex-shrink:0;padding-top:1px}
+.q-text{flex:1;font-size:13px;color:#374151}
+.q-scale{flex-shrink:0;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;color:#fff}
+.mono{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:11px}
+pre.prose{white-space:pre-wrap;font-family:inherit;font-size:13px;color:#374151;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead{background:#f8fafc}
+th{padding:8px 12px;font-weight:600;color:#475569;text-align:left;border-bottom:2px solid #e2e8f0}
+td{padding:7px 12px;border-bottom:1px solid #f1f5f9}
+tr:hover td{background:#f8fafc}
+.fw-card{border-radius:8px;border:2px solid #e2e8f0;padding:13px;cursor:pointer;transition:all .2s;background:#fff;text-align:left;width:100%;display:block}
+.fw-card:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.1)}
+.fw-card.on{border-color:var(--fc);background:var(--fc);color:#fff}
+.detail{border-radius:8px;overflow:hidden;border:2px solid var(--dc);margin-top:2px}
+.detail-hdr{padding:14px 18px;color:#fff;background:var(--dc)}
+.detail-body{padding:18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:680px){.detail-body{grid-template-columns:1fr}}
+.sdg-card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px}
+.fml{background:#f8fafc;border-radius:5px;padding:8px 10px;font-family:monospace;font-size:11px;color:#374151;margin:5px 0}
+.check-circle{display:inline-flex;width:20px;height:20px;border-radius:50%;color:#fff;font-size:11px;align-items:center;justify-content:center;flex-shrink:0}
+/* SVG bar chart */
+.bar-chart-wrap{width:100%;overflow:visible}
+.bar-label{font-size:10px;fill:#64748b}
+.bar-val{font-size:11px;fill:#1e293b;font-weight:600}
+/* group pill strip */
+.strip{padding:4px 16px 10px;display:flex;gap:3px;flex-wrap:wrap;background:#fff;border-bottom:1px solid #f1f5f9}
+/* responsive note */
+.note{font-size:11px;color:#94a3b8;margin-top:8px;padding:0 2px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr-inner">
+    <div class="hdr-row">
+      <div>
+        <div class="hdr-title">DTAM-MY Research Suite</div>
+        <div class="hdr-sub">Digital Telerehabilitation Assessment Model &middot; Malaysia &middot; UTAR PhD &middot; YZ 24UED03838</div>
+      </div>
+      <div class="hdr-meta">
+        GCP Compliance: <em>19/22 (86%)</em><br>
+        n&nbsp;=&nbsp;370 &middot; 5 stakeholder groups &middot; 4 languages
+      </div>
+    </div>
+    <div class="tab-row">
+      <button class="tab on" onclick="showTab('dash',this)">Research Dashboard</button>
+      <button class="tab" onclick="showTab('q',this)">Questionnaire Preview</button>
+      <button class="tab" onclick="showTab('proto',this)">Protocol Viewer</button>
+      <button class="tab" onclick="showTab('fw',this)">DTAM-MY Framework</button>
+    </div>
+  </div>
+</header>
+<main>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="page-dash" class="page on">
+  <h2>Phase Progress</h2>
+  <div id="phases"></div>
+
+  <div class="grid2" style="margin-top:16px">
+    <div>
+      <h2>Sample Size Targets (n=370)</h2>
+      <div class="card card-pad">
+        <svg id="barchart" class="bar-chart-wrap" height="190"></svg>
+      </div>
+    </div>
+    <div>
+      <h2>Advisory &amp; Pending Items</h2>
+      <div class="card" id="advisory"></div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px">
+    <h2>Completed Deliverables (20)</h2>
+    <div class="grid3" id="deliverables"></div>
+  </div>
+
+  <div style="margin-top:16px">
+    <h2>GCP Compliance &mdash; 19/22 items (86%)</h2>
+    <div class="card card-pad">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <div style="flex:1;background:#e2e8f0;border-radius:4px;height:16px;overflow:hidden">
+          <div style="width:86%;height:100%;background:#0E8B8B;border-radius:4px"></div>
+        </div>
+        <span style="font-weight:700;color:#0E8B8B">86%</span>
+      </div>
+      <div style="display:flex;gap:16px;font-size:11px;color:#64748b">
+        <span>&#9989; 19 Compliant</span>
+        <span>&#9203; 3 Procedural (pending submission)</span>
+      </div>
+      <button class="btn-pill" style="margin-top:10px;font-size:12px" onclick="toggleGCP(this)">Show full 22-item GCP Matrix &#9660;</button>
+      <div id="gcp-matrix" style="display:none;margin-top:12px;overflow:auto">
+        <table id="gcp-table"></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== QUESTIONNAIRE ===== -->
+<div id="page-q" class="page">
+  <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:12px">
+    <div>
+      <h2>Stakeholder Group</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:6px" id="grp-btns"></div>
+    </div>
+    <div>
+      <h2>Language</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:6px" id="lang-btns"></div>
+    </div>
+  </div>
+  <div id="q-header" class="card card-pad" style="margin-bottom:10px"></div>
+  <div id="q-sections"></div>
+  <div class="note">Representative sample items only. Full questionnaires are in the 16 DOCX language files.</div>
+</div>
+
+<!-- ===== PROTOCOL ===== -->
+<div id="page-proto" class="page">
+  <div class="card card-pad" style="background:#1B3A6B;color:#fff;margin-bottom:10px">
+    <div style="font-weight:700;font-size:15px">Master Research Protocol v2.0</div>
+    <div style="font-size:11px;color:#bfdbfe;margin-top:4px">Development of Digital Healthcare Telerehabilitation Technology Assessments Model and System for Enhancement of Elderly Quality-of-Life</div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:11px;color:#93c5fd">
+      <span>YZ &middot; 24UED03838 &middot; UTAR</span>
+      <span>11 sections</span><span>GCP 19/22 (86%)</span><span>n=370</span>
+    </div>
+  </div>
+  <button class="accd-hdr card" onclick="toggleProtoGCP(this)" style="margin-bottom:10px">
+    <span style="font-weight:600;font-size:13px">GCP Compliance Matrix (22 items)</span>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span class="badge bg-green">19 &#10003;</span>
+      <span class="badge bg-amber">3 &#9651;</span>
+      <span class="caret">&#9660;</span>
+    </div>
+  </button>
+  <div id="proto-gcp" style="display:none;margin-bottom:10px" class="card">
+    <table id="proto-gcp-table"></table>
+  </div>
+  <div id="proto-sections"></div>
+</div>
+
+<!-- ===== FRAMEWORK ===== -->
+<div id="page-fw" class="page">
+  <div style="background:linear-gradient(135deg,#1B3A6B,#0E8B8B);border-radius:8px;padding:16px;color:#fff;margin-bottom:14px">
+    <div style="font-weight:700;font-size:17px">DTAM-MY Framework</div>
+    <div style="font-size:11px;color:#bfdbfe;margin-top:3px">Digital Telerehabilitation Assessment Model &mdash; Malaysia</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+      <span style="background:rgba(255,255,255,.2);border-radius:4px;padding:3px 9px;font-size:11px">8 theoretical frameworks</span>
+      <span style="background:rgba(255,255,255,.2);border-radius:4px;padding:3px 9px;font-size:11px">5 stakeholder groups</span>
+      <span style="background:rgba(255,255,255,.2);border-radius:4px;padding:3px 9px;font-size:11px">6 DTAM-MY domains</span>
+      <span style="background:rgba(255,255,255,.2);border-radius:4px;padding:3px 9px;font-size:11px">4 SDG indicators</span>
+    </div>
+  </div>
+  <h2>Filter by Stakeholder Group</h2>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px" id="fw-filter-btns"></div>
+  <div class="grid4" id="fw-cards"></div>
+  <div id="fw-detail" style="margin-top:10px"></div>
+  <div style="margin-top:16px">
+    <h2>Instrument &times; Stakeholder Group Matrix</h2>
+    <div class="card" style="overflow:auto"><table id="fw-matrix"></table></div>
+  </div>
+  <div style="margin-top:16px">
+    <h2>SDG Indicators (Advisory A1)</h2>
+    <div class="grid2" id="sdg-cards"></div>
+  </div>
+</div>
+
+</main>
+<script>
+// ---- DATA ----
+var PHASES=[
+  {name:'Ph 1 · Ethics & Design',pct:90,status:'active',note:'Protocol v2.0 · GCP 86% · Dossier ready'},
+  {name:'Ph 2 · Questionnaires',pct:100,status:'done',note:'16 docs · 3 OMR sheets · 4 languages'},
+  {name:'Ph 3 · App Development',pct:80,status:'active',note:'PWA + APK done · Backend hosting TBD'},
+  {name:'Ph 4 · Pilot Study',pct:0,status:'pending',note:'n=70 · pending ethics clearance (UREC)'},
+  {name:'Ph 5 · Data Collection',pct:0,status:'pending',note:'n=370 · 5 stakeholder groups'},
+  {name:'Ph 6 · Analytics',pct:0,status:'pending',note:'EFA · PLS-SEM · WHOQOL change'},
+  {name:'Ph 7 · ML Pipeline',pct:0,status:'pending',note:'React + Node.js + PostgreSQL'},
+  {name:'Ph 8 · Submission',pct:0,status:'pending',note:'Dissertation write-up & defence'},
+];
+var SAMPLES=[
+  {g:'Allied Health',n:100,c:'#0E8B8B'},
+  {g:'Caregiver',n:100,c:'#1B3A6B'},
+  {g:'Elderly',n:100,c:'#E07B39'},
+  {g:'Policy-Makers',n:20,c:'#6B5B3A'},
+  {g:'Gen. Public',n:50,c:'#3A6B5B'},
+];
+var ADVISORY=[
+  {id:'A1',label:'SDG Alignment',desc:'4 quantified indicators (TAI/DEGR/APES/CAE)',done:true},
+  {id:'A2',label:'Pilot n=70',desc:'42 urban + 28 rural; effective completers = 45',done:true},
+  {id:'A3',label:'FHIR R4',desc:'5 interfaces · Domain 6 added to DTAM-MY',done:true},
+  {id:'P1',label:'UREC Reference',desc:'Pending ethics submission',done:false},
+  {id:'P2',label:'MREC Registration',desc:'Follows UREC approval',done:false},
+  {id:'P3',label:'OSF Pre-registration',desc:'Before data collection',done:false},
+];
+var DELIVERABLES=[
+  'Allied Health Questionnaire (EN/BM/ZH/TA)','Caregiver Questionnaire (EN/BM/ZH/TA)',
+  'Policy-Maker Questionnaire (EN/BM/ZH/TA)','Elderly Questionnaire (EN/BM/ZH/TA)',
+  'Caregiver OMR Answer Sheet (PDF+DOCX)','Policy-Maker OMR Answer Sheet',
+  'Allied Health OMR Answer Sheet','Master Research Protocol v2.0',
+  'Ethics Dossier (UREC-ready)','DTAM-MY PWA + Android APK',
+  'Part C Interview App','Admin Portal','App Development Design Doc',
+  'Implementation Guide','Verbal Interview Architecture',
+  'FHIR R4 Interface Spec (5 interfaces)','GCP Audit Matrix (22-item)',
+  'Sample Size Calculations','SDG Indicator Formulas','Research Dashboard',
+];
+var GCP_ITEMS=[
+  {id:'GCP-01',desc:'ICH E6(R2) Protocol Structure',ok:true},
+  {id:'GCP-02',desc:'Declaration of Helsinki',ok:true},
+  {id:'GCP-03',desc:'Belmont Principles',ok:true},
+  {id:'GCP-04',desc:'CIOMS Guidelines 2016',ok:true},
+  {id:'GCP-05',desc:'PDPA 2010 Compliance',ok:true},
+  {id:'GCP-06',desc:'National Digital Health Blueprint',ok:true},
+  {id:'GCP-07',desc:'UTAR UREC Ethics Policy',ok:true},
+  {id:'GCP-08',desc:'Informed Consent Process',ok:true},
+  {id:'GCP-09',desc:'Participant Information Sheet',ok:true},
+  {id:'GCP-10',desc:'Data Anonymisation Protocol',ok:true},
+  {id:'GCP-11',desc:'Secure Data Storage (AES-256)',ok:true},
+  {id:'GCP-12',desc:'SAE/AE Definitions & Timelines',ok:true},
+  {id:'GCP-13',desc:'Distress Protocol (7 steps)',ok:true},
+  {id:'GCP-14',desc:'Stopping Rules',ok:true},
+  {id:'GCP-15',desc:'Statistical Analysis Plan',ok:true},
+  {id:'GCP-16',desc:'EFA/PLS-SEM Methodology',ok:true},
+  {id:'GCP-17',desc:'Sample Size Justification',ok:true},
+  {id:'GCP-18',desc:'Instrument Validation (CVI, alpha)',ok:true},
+  {id:'GCP-19',desc:'Amendment Log & Version Control',ok:true},
+  {id:'GCP-20',desc:'UREC Ethics Reference Number',ok:false},
+  {id:'GCP-21',desc:'MREC Malaysia Registration',ok:false},
+  {id:'GCP-22',desc:'OSF Pre-registration',ok:false},
+];
+var PROTO=[
+  {num:'1',title:'Background and Rationale',body:'Malaysia faces a significant stroke rehabilitation gap: 40,000+ new strokes annually, with 60% requiring long-term rehabilitation. Telerehabilitation offers scalable access particularly for rural and elderly populations.\n\nThis study develops DTAM-MY (Digital Telerehabilitation Assessment Model - Malaysia) to evaluate technology acceptance, usability, and quality-of-life impact across five stakeholder groups.\n\nTheoretical anchors: MAST (Kidholm et al., 2012), TAM (Davis, 1989), UTAUT2 (Venkatesh et al., 2012), TUQ (Parmanto et al., 2016), ICF (WHO, 2001), SUS (Brooke, 1996), WHOQOL-BREF (WHO, 1996), ZBI (Zarit et al., 1980).\n\nPolicy anchors: National Digital Health Blueprint 2023-2030, PDPA 2010 (Act 709), 12th Malaysia Plan.'},
+  {num:'2',title:'Research Objectives (SMART)',body:'O1 - Develop and validate DTAM-MY instrument suite (n=370, S-CVI >=0.80) by Month 18.\nO2 - Measure technology acceptance (TAM, UTAUT2) across Allied Health (n=100), Caregiver (n=100), Policy-Maker (n=20), General Public (n=50) by Month 24.\nO3 - Assess elderly post-stroke QoL change (WHOQOL-BREF, >=10% domain change, p less than 0.05) over 12 weeks (n=100) by Month 30.\nO4 - Evaluate system usability (SUS >=70; TUQ mean >=3.5/5) with Allied Health and Elderly by Month 24.\nO5 - Specify FHIR R4 interoperability (5 interfaces) and deliver Phase 3 ML pipeline by Month 36.'},
+  {num:'3',title:'Study Design',body:'Mixed-methods convergent parallel design:\n\nQUANTITATIVE ARM - Cross-sectional survey (Allied Health, Caregiver, Policy-Maker, General Public) + Longitudinal pre/post (Elderly, 12 weeks). Analysis: EFA, PLS-SEM, WHOQOL-BREF domain change, SUS scoring.\n\nQUALITATIVE ARM - Semi-structured interviews (purposive sample, 8-12 per group) + Part C verbal interview app for cognitive impairment accommodation.\n\nPILOT STUDY - n=70 (42 urban + 28 rural), 8-week timeline. Tests instrument reliability, validity (CVI), and logistics.\n\nPLATFORM - LimeSurvey CE + REDCap (clinical) + KoBoToolbox (rural/offline). PDPA-compliant hosting: Exabytes MY or Azure Malaysia West.'},
+  {num:'4',title:'Participant Selection',body:'INCLUSION (Elderly):\n- Age >=60; diagnosed ischaemic or haemorrhagic stroke (ICD-10 I60-I69)\n- >=3 months post-stroke; receiving/referred for outpatient rehabilitation\n- Able to provide informed consent (self or LAR); Malaysian resident\n\nEXCLUSION (Elderly):\n- Severe aphasia precluding questionnaire completion without accommodation\n- Active uncontrolled psychiatric disorder\n- No internet access and no caregiver to assist\n\nALLIED HEALTH: Registered physiotherapist or OT; >=1 year experience; working in Malaysian facility.\n\nPOLICY-MAKER: Government official/regulator with health/digital policy portfolio; purposive via MOH, MOSTI, MCMC.\n\nWITHDRAWAL: Participants may withdraw at any time. Data retained unless deletion requested (PDPA s.30).'},
+  {num:'5',title:'GCP Compliance - 19/22 (86%)',body:'COMPLIANT (19 items): GCP-01 through GCP-19 covering protocol structure, ethics alignment, consent, data protection, SAE definitions, distress protocol, stopping rules, statistical methods, and amendment tracking.\n\nPENDING (3 items):\n- GCP-20: UREC Ethics Reference Number - pending submission\n- GCP-21: MREC Malaysia Registration - follows UREC\n- GCP-22: OSF Pre-registration - before data collection'},
+  {num:'6',title:'Safety, Adverse Events and Stopping Rules',body:'SAE DEFINITION: Death, life-threatening condition, hospitalisation, significant disability, or congenital anomaly. Reporting: within 24 hours to UREC.\n\nAE DEFINITION: Any untoward event not meeting SAE criteria. Reporting: within 7 days.\n\nDISTRESS PROTOCOL (7 steps):\n1. Interviewer pauses; assesses distress level\n2. Offers to stop or pause the session\n3. Provides written crisis contact (Befrienders 03-7627 2929; MIASA 03-2780 6803)\n4. Notifies PI within 1 hour\n5. PI documents event; assesses AE/SAE classification\n6. Refers to clinical team if required\n7. 48-hour follow-up contact\n\nSTOPPING RULES: Study halts if >=3 SAEs causally related to participation; DSMB recommendation; UREC/MREC directive.'},
+  {num:'7',title:'Data Management and Statistical Analysis',body:'STORAGE: PostgreSQL (Exabytes MY or Azure Malaysia West, Malaysian territory). AES-256 at rest; TLS 1.3 in transit. Retained 7 years post-publication.\n\nSTATISTICAL PLAN:\n- Descriptive: Mean, SD, frequency, IQR\n- Reliability: Cronbach alpha >=0.70; McDonald omega\n- Validity: S-CVI >=0.80; I-CVI >=0.78; EFA (varimax, n>=100)\n- UTAUT2: PLS-SEM; AVE >=0.50; HTMT less than 0.85; R-squared >=0.20\n- QoL change: Paired t-test or Wilcoxon; domain change >=10%; p less than 0.05\n- Missing data: MCAR test (Little); MI if MAR; listwise if MCAR less than 5%\n\nPIPELINE: LimeSurvey -> REDCap -> PostgreSQL -> R/Python -> SPSS validation -> ML (Phase 7)'},
+  {num:'8',title:'Instruments and Theoretical Framework',body:'INSTRUMENT SUITE (8 frameworks):\n- MAST (7 domains): All 5 groups; S-CVI >=0.80; >=6/7 domain coverage\n- TAM (Davis, 1989): AH, CG, PM, GP; alpha >=0.70; 2-factor EFA\n- UTAUT2 (Venkatesh et al., 2012): AH, CG; PLS-SEM; AVE >=0.50\n- TUQ (Parmanto et al., 2016): Elderly, AH; subscale mean >=3.5/5\n- ICF (WHO, 2001): Elderly, CG; >=2 urban + >=2 rural sites\n- SUS (Brooke, 1996): Elderly, AH; >=70 Acceptable; >=85 Excellent\n- WHOQOL-BREF (WHO, 1996): Elderly; 4 domains; 12-week change\n- ZBI (Zarit et al., 1980): Caregiver; burden cross-tabs\n\nLANGUAGES: English (EN), Bahasa Malaysia (BM), Simplified Chinese (ZH), Tamil (TA)\nTRANSLATION: Forward-back translation; bilingual expert panel; pilot cognitive testing'},
+  {num:'9',title:'Engineering Deliverables and Interoperability',body:'PHASE 3 DELIVERABLES (completed):\n- DTAM-MY PWA (React + Node.js + PostgreSQL)\n- Android APK (Capacitor)\n- Admin Portal\n- Part C Verbal Interview App\n\nFHIR R4 INTERFACES (5):\n1. Patient Identity / MySejahtera - Patient resource; NRIC mapping\n2. Outcome Export / KKM MyHEALTH - Observation resource; LOINC codes\n3. HIS Referral - ServiceRequest; ICD-10 stroke codes; HL7 v2.5 bridge\n4. ML I/O - Custom FHIR extension; QuestionnaireResponse; JSON payload\n5. Audit Trail - AuditEvent resource; ATNA profile; immutable log\n\nDOMAIN 6 - System Interoperability (added per Advisory A3):\nExpert panel CVI >=0.80 (n=5 HIT experts) validates all 5 interfaces.'},
+  {num:'10',title:'Model Validation Plan',body:'STAGE 1 - Content Validity (pilot n=70):\n- Expert panel (n=10): I-CVI >=0.78 per item; S-CVI >=0.80\n- Cognitive interviews (n=8): Think-aloud; Flesch-Kincaid <=8th grade\n\nSTAGE 2 - Construct Validity (full n=370):\n- EFA (AH, CG; n=100 each): Factor loadings >=0.40; 5:1 item-to-respondent\n- PLS-SEM (UTAUT2): Convergent (AVE >=0.50); Discriminant (HTMT less than 0.85)\n\nSTAGE 3 - Model Fit and Predictive Validity:\n- WHOQOL-BREF domain change >=10% at 12 weeks (p less than 0.05)\n- SUS: >=70 Acceptable; >=85 Excellent\n- SDG indicators: TAI, DEGR, APES, CAE computed from questionnaire data\n- ML: Random Forest + XGBoost; k-fold CV (k=5); AUC >=0.75'},
+  {num:'11',title:'Protocol Authorisation and Signature Page',body:'AMENDMENT LOG:\nv1.0 (Jan 2026) - Initial proposal\nv2.0 (Jun 2026) - Post-advisory corrections: n=70 pilot; FHIR Domain 6; SDG indicators; GCP 19/22\n\nSIGNATORIES:\n- Principal Investigator: YZ (24UED03838), UTAR Faculty of Engineering\n- Main Supervisor: [Name], UTAR\n- Co-Supervisor: [Name], UTAR / External\n- UREC Chair: [Name], UTAR Research Ethics Committee\n\nEthics Reference: [Pending UREC submission]\n\nGOVERNING STANDARDS:\nICH E6(R2) - Declaration of Helsinki (WMA 2013) - Belmont Report (1979)\nCIOMS 2016 - PDPA 2010 (Act 709) - National Digital Health Blueprint 2023-2030 - UTAR UREC Guidelines'},
+];
+var LANGS=[{id:'en',label:'English'},{id:'bm',label:'Bahasa Malaysia'},{id:'zh',label:'简体中文'},{id:'ta',label:'தமிழ்'}];
+var GROUPS=[
+  {id:'allied',label:'Allied Health',color:'#0E8B8B'},
+  {id:'caregiver',label:'Caregiver',color:'#1B3A6B'},
+  {id:'policy',label:'Policy-Maker',color:'#6B5B3A'},
+  {id:'elderly',label:'Elderly',color:'#E07B39'},
+];
+var QDATA={
+  allied:[
+    {title:{en:'Part A: Demographic Profile',bm:'Bahagian A: Profil Demografi',zh:'A部分：人口统计',ta:'பகுதி அ: மக்கள்தொகை'},
+     items:[
+      {id:'A1',text:{en:'Age (years)',bm:'Umur (tahun)',zh:'年龄（岁）',ta:'வயது (ஆண்டுகள்)'}},
+      {id:'A2',text:{en:'Gender',bm:'Jantina',zh:'性别',ta:'பாலினம்'}},
+      {id:'A3',text:{en:'Professional role (PT / OT / other)',bm:'Peranan profesional',zh:'专业角色',ta:'தொழில்முறை பங்கு'}},
+      {id:'A4',text:{en:'Years of clinical experience',bm:'Tahun pengalaman klinikal',zh:'临床经验年数',ta:'மருத்துவ அனுபவம் (ஆண்டுகள்)'}},
+      {id:'A5',text:{en:'Prior telerehabilitation experience (Yes/No)',bm:'Pengalaman telerehabilitation terdahulu',zh:'远程康复经验',ta:'முன்னர் ඤெலிரிஹேப் அனுபவம்'}},
+     ]},
+    {title:{en:'Part B: Technology Acceptance (TAM)',bm:'Bahagian B: Penerimaan Teknologi (TAM)',zh:'B部分：技术接受度（TAM）',ta:'பகுதி ஆ: தொழில்நுட்ப ஏற்புடைமை (TAM)'},
+     items:[
+      {id:'B1',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Using telerehabilitation improves my work performance',bm:'Menggunakan telerehabilitation meningkatkan prestasi kerja saya',zh:'使用远程康复提高了我的工作效率',ta:'ඤெலிரிஹேப் பயன்படுத்துவது என் பணி செயல்திறனை மேம்படுத்துகிறது'}},
+      {id:'B2',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Telerehabilitation systems are easy to learn',bm:'Sistem telerehabilitation mudah dipelajari',zh:'远程康复系统易于学习',ta:'ඤெலிரிஹேப் அமைப்புகளை கற்பது எளிது'}},
+      {id:'B3',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'I intend to use telerehabilitation in my practice',bm:'Saya bercadang menggunakan telerehabilitation dalam amalan',zh:'我打算在实践中使用远程康复',ta:'என் நடைமுறையில் ඤெலிரிஹேப் பயன்படுத்த விரும்புகிறேன்'}},
+     ]},
+    {title:{en:'Part C: UTAUT2 Constructs',bm:'Bahagian C: Konstruk UTAUT2',zh:'C部分：UTAUT2构念',ta:'பகுதி இ: UTAUT2 கட்டுமானங்கள்'},
+     items:[
+      {id:'C1',scale:'Likert 1-7',sc:'#1B3A6B',text:{en:'Performance expectancy: Telerehabilitation enables better patient outcomes',bm:'Jangkaan prestasi: Telerehabilitation membolehkan hasil pesakit lebih baik',zh:'绩效期望：远程康复能带来更好的患者结果',ta:'செயல்திறன் எதிர்பார்ப்பு: ඤெலிரிஹேப் சிறந்த முடிவுகளை அளிக்கும்'}},
+      {id:'C2',scale:'Likert 1-7',sc:'#1B3A6B',text:{en:'Effort expectancy: I can use telerehabilitation tools without difficulty',bm:'Jangkaan usaha: Boleh menggunakan alat tanpa kesukaran',zh:'努力期望：使用工具毫不费力',ta:'முயற்சி எதிர்பார்ப்பு: சிரமமின்றி கருவிகள் பயன்படுத்தலாம்'}},
+      {id:'C3',scale:'Likert 1-7',sc:'#1B3A6B',text:{en:'Social influence: Colleagues support telerehabilitation adoption',bm:'Pengaruh sosial: Rakan sekerja menyokong penggunaan',zh:'社会影响：同事支持采用远程康复',ta:'சமூக செல்வாக்கு: சக ஊழியர்கள் ஆதரிக்கின்றனர்'}},
+     ]},
+    {title:{en:'Part D: System Usability (SUS)',bm:'Bahagian D: Kebolehgunaan Sistem (SUS)',zh:'D部分：系统可用性（SUS）',ta:'பகுதி ஈ: அமைப்பு பயன்பாட்டு தரம் (SUS)'},
+     items:[
+      {id:'D1',scale:'SUS 1-5',sc:'#8B3A6B',text:{en:'I think I would like to use this system frequently',bm:'Saya fikir saya ingin menggunakan sistem ini dengan kerap',zh:'我认为我会频繁使用这个系统',ta:'இந்த அமைப்பை அடிக்கடி பயன்படுத்த விரும்புகிறேன்'}},
+      {id:'D2',scale:'SUS 1-5 (R)',sc:'#8B3A6B',text:{en:'I found the system unnecessarily complex',bm:'Saya mendapati sistem ini terlalu kompleks',zh:'我发现系统不必要地复杂',ta:'இந்த அமைப்பு தேவையற்ற சிக்கலானது'}},
+     ]},
+  ],
+  caregiver:[
+    {title:{en:'Part A: Profile',bm:'Bahagian A: Profil',zh:'A部分：个人资料',ta:'பகுதி அ: சுயவிவரம்'},
+     items:[
+      {id:'A1',text:{en:'Relationship to patient',bm:'Hubungan dengan pesakit',zh:'与患者关系',ta:'நோயாளியுடன் உறவு'}},
+      {id:'A2',text:{en:'Hours per week providing care',bm:'Jam seminggu menjaga',zh:'每周护理时间（小时）',ta:'வாரத்தில் பராமரிப்பு மணிநேரம்'}},
+      {id:'A3',text:{en:'Living arrangement with patient',bm:'Susunan tempat tinggal',zh:'居住安排',ta:'வாழும் ஏற்பாடு'}},
+     ]},
+    {title:{en:'Part B: Caregiver Burden (ZBI)',bm:'Bahagian B: Beban Penjaga (ZBI)',zh:'B部分：照护者负担（ZBI）',ta:'பகுதி ஆ: பராமரிப்பாளர் சுமை (ZBI)'},
+     items:[
+      {id:'B1',scale:'ZBI 0-4',sc:'#6B5B3A',text:{en:'Does your relative ask for more help than they need?',bm:'Adakah saudara anda meminta bantuan lebih dari yang diperlukan?',zh:'您的亲属要求的帮助超过需要吗？',ta:'உங்கள் உறவினர் தேவைக்கு அதிகமாக உதவி கேட்கிறார்களா?'}},
+      {id:'B2',scale:'ZBI 0-4',sc:'#6B5B3A',text:{en:'Do you feel stressed between caring and other responsibilities?',bm:'Adakah anda tertekan antara menjaga dan tanggungjawab lain?',zh:'您是否在照护与其他责任间感到压力？',ta:'பராமரிப்பு மற்றும் பிற பொறுப்புகளுக்கிடையே மன அழுத்தம் உணர்கிறீர்களா?'}},
+      {id:'B3',scale:'ZBI 0-4',sc:'#6B5B3A',text:{en:'Do you feel you do not have enough time for yourself?',bm:'Adakah anda rasa tidak mempunyai masa untuk diri sendiri?',zh:'您是否感到没有足够时间给自己？',ta:'உங்களுக்காக போதுமான நேரம் இல்லை என்று உணர்கிறீர்களா?'}},
+     ]},
+    {title:{en:'Part C: Technology Acceptance',bm:'Bahagian C: Penerimaan Teknologi',zh:'C部分：技术接受度',ta:'பகுதி இ: தொழில்நுட்ப ஏற்புடைமை'},
+     items:[
+      {id:'C1',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Telerehabilitation would help manage my caregiving responsibilities',bm:'Telerehabilitation akan membantu tanggungjawab penjagaan saya',zh:'远程康复将帮助管理我的照护责任',ta:'ඤெலிரிஹேப் பராமரிப்பு பொறுப்புகளை நிர்வகிக்க உதவும்'}},
+      {id:'C2',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'I would feel confident using digital health tools for my relative',bm:'Saya yakin menggunakan alat kesihatan digital untuk saudara saya',zh:'我对为亲属使用数字健康工具感到有信心',ta:'ඤிஜிட்டல் சுகாதார கருவிகளை பயன்படுத்த நம்பிக்கை உணர்கிறேன்'}},
+     ]},
+  ],
+  policy:[
+    {title:{en:'Part A: Professional Background',bm:'Bahagian A: Latar Belakang Profesional',zh:'A部分：专业背景',ta:'பகுதி அ: தொழில்முறை பின்னணி'},
+     items:[
+      {id:'A1',text:{en:'Ministry / Agency',bm:'Kementerian / Agensi',zh:'部委 / 机构',ta:'அமைச்சகம் / நிறுவனம்'}},
+      {id:'A2',text:{en:'Policy domain (health / digital / finance)',bm:'Domain dasar',zh:'政策领域',ta:'கொள்கை துறை'}},
+      {id:'A3',text:{en:'Years in current role',bm:'Tahun dalam peranan semasa',zh:'担任现职年数',ta:'தற்போதைய பதவியில் ஆண்டுகள்'}},
+     ]},
+    {title:{en:'Part B: Policy Readiness (MAST)',bm:'Bahagian B: Kesediaan Dasar (MAST)',zh:'B部分：政策准备度（MAST）',ta:'பகுதி ஆ: கொள்கை தயார்நிலை (MAST)'},
+     items:[
+      {id:'B1',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Malaysia has adequate regulatory infrastructure for telerehabilitation',bm:'Malaysia mempunyai infrastruktur peraturan yang mencukupi',zh:'马来西亚具备充足的监管基础设施',ta:'மலேசியாவில் போதுமான கட்டுப்பாட்டு கட்டமைப்பு உள்ளது'}},
+      {id:'B2',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'National Digital Health Blueprint 2023-2030 provides sufficient guidance',bm:'Pelan Induk Kesihatan Digital Nasional 2023-2030 memberikan panduan mencukupi',zh:'2023-2030年国家数字卫生蓝图提供足够指导',ta:'தேசிய ඤிஜிட்டல் சுகாதார திட்டம் போதுமான வழிகாட்டுதல் வழங்குகிறது'}},
+      {id:'B3',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'PDPA 2010 adequately protects patient data in telerehabilitation contexts',bm:'PDPA 2010 melindungi data pesakit secara mencukupi',zh:'PDPA 2010充分保护患者数据',ta:'PDPA 2010 நோயாளி தரவை போதுமான அளவில் பாதுகாக்கிறது'}},
+      {id:'B4',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Public funding models exist for digital rehabilitation services',bm:'Model pembiayaan awam wujud untuk perkhidmatan rehabilitasi digital',zh:'存在数字康复服务公共资金模式',ta:'ඤிஜிட்டல் மறுவாழ்வு சேவைகளுக்கு பொது நிதியுதவி மாதிரிகள் உள்ளன'}},
+     ]},
+  ],
+  elderly:[
+    {title:{en:'Part A: Health & Background',bm:'Bahagian A: Kesihatan & Latar Belakang',zh:'A部分：健康与背景',ta:'பகுதி அ: சுகாதாரம் & பின்னணி'},
+     items:[
+      {id:'A1',text:{en:'Age (years)',bm:'Umur (tahun)',zh:'年龄（岁）',ta:'வயது (ஆண்டுகள்)'}},
+      {id:'A2',text:{en:'Time since stroke (months)',bm:'Masa sejak strok (bulan)',zh:'中风后时间（月）',ta:'பக்கவாதத்திலிருந்து காலம் (மாதங்கள்)'}},
+      {id:'A3',text:{en:'Level of physical independence (ICF)',bm:'Tahap kebebasan fizikal (ICF)',zh:'身体独立程度（ICF）',ta:'உடல் சுதந்திரம் அளவு (ICF)'}},
+      {id:'A4',text:{en:'Current rehabilitation setting (home / clinic / hospital)',bm:'Tetapan rehabilitasi semasa',zh:'当前康复场所',ta:'தற்போதைய மறுவாழ்வு சூழல்'}},
+     ]},
+    {title:{en:'Part B: Quality of Life (WHOQOL-BREF)',bm:'Bahagian B: Kualiti Hidup (WHOQOL-BREF)',zh:'B部分：生活质量（WHOQOL-BREF）',ta:'பகுதி ஆ: வாழ்க்கை தரம் (WHOQOL-BREF)'},
+     items:[
+      {id:'B1',scale:'WHOQOL 1-5',sc:'#3A5B6B',text:{en:'How would you rate your quality of life?',bm:'Bagaimana anda menilai kualiti hidup anda?',zh:'您如何评价自己的生活质量？',ta:'உங்கள் வாழ்க்கை தரத்தை எவ்வாறு மதிப்பிடுவீர்கள்?'}},
+      {id:'B2',scale:'WHOQOL 1-5',sc:'#3A5B6B',text:{en:'How satisfied are you with your health?',bm:'Sejauh mana anda berpuas hati dengan kesihatan?',zh:'您对自己的健康有多满意？',ta:'உங்கள் சுகாதாரத்தில் எவ்வளவு திருப்தி?'}},
+      {id:'B3',scale:'WHOQOL 1-5',sc:'#3A5B6B',text:{en:'Do you have enough energy for everyday life?',bm:'Adakah anda mempunyai tenaga cukup untuk kehidupan seharian?',zh:'您是否有足够精力应对日常生活？',ta:'அன்றாட வாழ்க்கைக்கு போதுமான ஆற்றல் இருக்கிறதா?'}},
+     ]},
+    {title:{en:'Part C: Telerehabilitation Usability (TUQ + SUS)',bm:'Bahagian C: Kebolehgunaan Telerehabilitation (TUQ + SUS)',zh:'C部分：远程康复可用性（TUQ + SUS）',ta:'பகுதி இ: ඤெலிரிஹேப் பயன்பாட்டு தரம் (TUQ + SUS)'},
+     items:[
+      {id:'C1',scale:'TUQ 1-7',sc:'#E07B39',text:{en:'The telerehabilitation system is easy to use',bm:'Sistem telerehabilitation mudah digunakan',zh:'远程康复系统易于使用',ta:'ඤெலிரிஹேப் அமைப்பு பயன்படுத்த எளிதானது'}},
+      {id:'C2',scale:'TUQ 1-7',sc:'#E07B39',text:{en:'The system helps me communicate with my therapist',bm:'Sistem ini membantu berkomunikasi dengan ahli terapi',zh:'该系统帮助我与治疗师沟通',ta:'இந்த அமைப்பு சிகிச்சையாளருடன் தொடர்பு கொள்ள உதவுகிறது'}},
+      {id:'C3',scale:'TUQ 1-7',sc:'#E07B39',text:{en:'I feel confident using the system on my own',bm:'Saya yakin menggunakan sistem telerehabilitation sendiri',zh:'我能自信地独立使用系统',ta:'அமைப்பை சொந்தமாக பயன்படுத்த நம்பிக்கை உணர்கிறேன்'}},
+     ]},
+  ],
+};
+var FRAMEWORKS=[
+  {id:'MAST',name:'MAST',full:'Model for Assessment of Telemedicine',ref:'Kidholm et al., 2012',color:'#1B3A6B',
+   groups:['Allied Health','Caregiver','Elderly','Policy-Maker','General Public'],
+   domains:['Health problem & characteristics','Safety','Clinical effectiveness','Patient perspective','Economic aspects','Organisational aspects','Socio-cultural, ethical & legal aspects'],
+   threshold:'S-CVI >=0.80; domain coverage >=6/7',
+   desc:'Primary HTA framework covering all 7 domains across all 5 stakeholder groups. Forms the structural backbone of DTAM-MY.'},
+  {id:'TAM',name:'TAM',full:'Technology Acceptance Model',ref:'Davis, 1989',color:'#0E8B8B',
+   groups:['Allied Health','Caregiver','Policy-Maker','General Public'],
+   domains:['Perceived Usefulness (PU)','Perceived Ease of Use (PEOU)','Behavioural Intention (BI)','Actual System Use'],
+   threshold:'alpha >=0.70; EFA 2-factor confirmed',
+   desc:'Measures technology acceptance. PU and PEOU predict Behavioural Intention to use telerehabilitation.'},
+  {id:'UTAUT2',name:'UTAUT2',full:'Unified Theory of Acceptance and Use of Technology 2',ref:'Venkatesh et al., 2012',color:'#3A6B5B',
+   groups:['Allied Health','Caregiver'],
+   domains:['Performance Expectancy','Effort Expectancy','Social Influence','Facilitating Conditions','Hedonic Motivation','Price Value','Habit'],
+   threshold:'PLS-SEM: AVE >=0.50; HTMT <0.85; R2 >=0.20',
+   desc:'Extended TAM with consumer-context constructs. Validated via PLS-SEM structural model.'},
+  {id:'TUQ',name:'TUQ',full:'Telehealth Usability Questionnaire',ref:'Parmanto et al., 2016',color:'#E07B39',
+   groups:['Elderly','Allied Health'],
+   domains:['Usefulness','Ease of use & learnability','Interface quality','Interaction quality','Reliability & satisfaction','Future use'],
+   threshold:'Subscale mean >=3.5/5; alpha >=0.70',
+   desc:'Telehealth-specific usability instrument. Administered via Part C interview app with cognitive impairment accommodation.'},
+  {id:'ICF',name:'ICF',full:'International Classification of Functioning',ref:'WHO, 2001',color:'#6B5B3A',
+   groups:['Elderly','Caregiver'],
+   domains:['Body functions & structures','Activities','Participation','Environmental factors','Personal factors'],
+   threshold:'>=2 urban + >=2 rural site diversity',
+   desc:'Contextualises functional status and rehabilitation goals within the biopsychosocial model.'},
+  {id:'SUS',name:'SUS',full:'System Usability Scale',ref:'Brooke, 1996',color:'#8B3A6B',
+   groups:['Elderly','Allied Health'],
+   domains:['10-item scale','Alternating positive/negative items','Score 0-100','Benchmarked vs normative data'],
+   threshold:'>=70 Acceptable; >=85 Excellent',
+   desc:'Quick usability benchmark. Administered post-system interaction.'},
+  {id:'WHOQOL',name:'WHOQOL-BREF',full:'WHO Quality of Life - Brief',ref:'WHO, 1996',color:'#3A5B6B',
+   groups:['Elderly'],
+   domains:['Physical health domain','Psychological domain','Social relationships domain','Environment domain'],
+   threshold:'Domain change >=10% at 12 weeks; p<0.05',
+   desc:'Primary outcome for elderly post-stroke patients. Administered at baseline and 12-week follow-up.'},
+  {id:'ZBI',name:'ZBI',full:'Zarit Burden Interview',ref:'Zarit et al., 1980',color:'#6B3A3A',
+   groups:['Caregiver'],
+   domains:['Personal strain','Role strain','Burden categories: Little / Mild / Moderate / Severe'],
+   threshold:'Burden cross-tabs; regression analysis',
+   desc:'Measures caregiver burden. Cross-tabulated against TAM/UTAUT2 acceptance scores.'},
+];
+var ALL_GROUPS=['Allied Health','Caregiver','Elderly','Policy-Maker','General Public'];
+var GRP_COLORS={'Allied Health':'#0E8B8B','Caregiver':'#1B3A6B','Elderly':'#E07B39','Policy-Maker':'#6B5B3A','General Public':'#3A6B5B'};
+var SDG=[
+  {id:'TAI',name:'Telerehab Accessibility Index',sdg:'SDG 3.8',formula:'TAI = (n_telerehab_accessed / n_eligible_patients) x 100',src:'WHOQOL-BREF B1 + TUQ subscale'},
+  {id:'DEGR',name:'Digital Equity Gap Ratio',sdg:'SDG 10.2',formula:'DEGR = (Urban_TAI - Rural_TAI) / Urban_TAI',src:'ICF environmental factors + TAM PEOU'},
+  {id:'APES',name:'Ageing-in-Place Enablement Score',sdg:'SDG 11.7',formula:'APES = mean(WHOQOL Environment domain) x SUS_score / 100',src:'WHOQOL-BREF domain 4 + SUS'},
+  {id:'CAE',name:'CO2 Avoidance Estimate',sdg:'SDG 13.2',formula:'CAE = n_sessions x avg_travel_km x 0.21 kg CO2/km',src:'Questionnaire: travel distance item'},
+];
+
+// ---- STATE ----
+var curGroup='allied', curLang='en', openQ=-1, openP=0, selFW=null, fwFilter=null;
+
+// ---- UTILITIES ----
+function el(tag,attrs,children){
+  var e=document.createElement(tag);
+  if(attrs) Object.keys(attrs).forEach(function(k){
+    if(k==='style'&&typeof attrs[k]==='object'){
+      Object.keys(attrs[k]).forEach(function(s){e.style[s]=attrs[k][s];});
+    } else if(k.startsWith('on')){
+      e.addEventListener(k.slice(2).toLowerCase(),attrs[k]);
+    } else { e.setAttribute(k,attrs[k]); }
+  });
+  if(children) [].concat(children).forEach(function(c){
+    if(c==null||c===false) return;
+    e.appendChild(typeof c==='string'?document.createTextNode(c):c);
+  });
+  return e;
+}
+function cls(e,c){e.className=c;}
+function $id(id){return document.getElementById(id);}
+
+// ---- TABS ----
+function showTab(id,btn){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on');});
+  $id('page-'+id).classList.add('on');
+  btn.classList.add('on');
+}
+
+// ---- DASHBOARD ----
+function renderPhases(){
+  var wrap=$id('phases');
+  wrap.innerHTML='';
+  PHASES.forEach(function(p){
+    var bc=p.status==='done'?'#22c55e':p.status==='active'?'#0E8B8B':'#e2e8f0';
+    var badgeCls=p.status==='done'?'badge bg-green':p.status==='active'?'badge bg-blue':'badge bg-slate';
+    var badgeTxt=p.status==='done'?'Complete':p.status==='active'?p.pct+'%':'Pending';
+    wrap.appendChild(el('div',{class:'card card-pad',style:{marginBottom:'8px'}},[
+      el('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'4px'}},[
+        el('span',{style:{fontWeight:'600',fontSize:'13px'}},p.name),
+        el('span',{class:badgeCls},badgeTxt)
+      ]),
+      el('div',{class:'pbar-wrap'},[el('div',{class:'pbar',style:{width:p.pct+'%',background:bc}})]),
+      el('div',{style:{fontSize:'11px',color:'#64748b'}},p.note)
+    ]));
+  });
+}
+
+function renderBarChart(){
+  var svg=$id('barchart');
+  var W=svg.parentElement.clientWidth||300;
+  svg.setAttribute('width',W);
+  var H=190,pad={l:32,r:10,t:10,b:50};
+  var bw=Math.min(40,Math.floor((W-pad.l-pad.r)/SAMPLES.length*0.6));
+  var gap=Math.floor((W-pad.l-pad.r)/SAMPLES.length);
+  var maxN=100;
+  var ch=H-pad.t-pad.b;
+  var ns='http://www.w3.org/2000/svg';
+  svg.innerHTML='';
+  // y-axis ticks
+  [0,25,50,75,100].forEach(function(v){
+    var y=pad.t+ch*(1-v/maxN);
+    var line=document.createElementNS(ns,'line');
+    line.setAttribute('x1',pad.l); line.setAttribute('x2',W-pad.r);
+    line.setAttribute('y1',y); line.setAttribute('y2',y);
+    line.setAttribute('stroke','#f1f5f9'); line.setAttribute('stroke-width','1');
+    svg.appendChild(line);
+    var t=document.createElementNS(ns,'text');
+    t.setAttribute('x',pad.l-4); t.setAttribute('y',y+4);
+    t.setAttribute('text-anchor','end'); t.setAttribute('font-size','10'); t.setAttribute('fill','#94a3b8');
+    t.textContent=v; svg.appendChild(t);
+  });
+  SAMPLES.forEach(function(s,i){
+    var x=pad.l+i*gap+(gap-bw)/2;
+    var barH=ch*(s.n/maxN);
+    var y=pad.t+ch-barH;
+    var rect=document.createElementNS(ns,'rect');
+    rect.setAttribute('x',x); rect.setAttribute('y',y);
+    rect.setAttribute('width',bw); rect.setAttribute('height',barH);
+    rect.setAttribute('fill',s.c); rect.setAttribute('rx','3');
+    svg.appendChild(rect);
+    var vt=document.createElementNS(ns,'text');
+    vt.setAttribute('x',x+bw/2); vt.setAttribute('y',y-4);
+    vt.setAttribute('text-anchor','middle'); vt.setAttribute('font-size','11'); vt.setAttribute('font-weight','600'); vt.setAttribute('fill','#1e293b');
+    vt.textContent=s.n; svg.appendChild(vt);
+    var lt=document.createElementNS(ns,'text');
+    lt.setAttribute('x',x+bw/2); lt.setAttribute('y',H-pad.b+14);
+    lt.setAttribute('text-anchor','middle'); lt.setAttribute('font-size','10'); lt.setAttribute('fill','#64748b');
+    lt.textContent=s.g; svg.appendChild(lt);
+  });
+}
+
+function renderAdvisory(){
+  var wrap=$id('advisory');
+  wrap.innerHTML='';
+  ADVISORY.forEach(function(a){
+    wrap.appendChild(el('div',{style:{display:'flex',alignItems:'flex-start',gap:'10px',padding:'10px 14px',borderBottom:'1px solid #f8fafc'}},[
+      el('span',{class:'badge '+(a.done?'bg-green':'bg-amber'),style:{flexShrink:'0',marginTop:'1px'}},a.id),
+      el('div',null,[
+        el('div',{style:{display:'flex',alignItems:'center',gap:'6px'}},[
+          el('span',{style:{fontWeight:'600',fontSize:'13px'}},a.label),
+          el('span',null,a.done?'✅':'⏳')
+        ]),
+        el('div',{style:{fontSize:'11px',color:'#64748b'}},a.desc)
+      ])
+    ]));
+  });
+}
+
+function renderDeliverables(){
+  var wrap=$id('deliverables');
+  wrap.innerHTML='';
+  DELIVERABLES.forEach(function(d){
+    wrap.appendChild(el('div',{class:'card',style:{padding:'8px 12px',display:'flex',alignItems:'flex-start',gap:'8px'}},[
+      el('span',{style:{color:'#22c55e',flexShrink:'0'}},'✓'),
+      el('span',{style:{fontSize:'12px',color:'#374151'}},d)
+    ]));
+  });
+}
+
+function renderGCPTable(){
+  var t=$id('gcp-table');
+  t.innerHTML='<thead><tr><th>ID</th><th>Description</th><th style="text-align:center">Status</th></tr></thead>';
+  var tbody=document.createElement('tbody');
+  GCP_ITEMS.forEach(function(g){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td class="mono" style="color:'+(g.ok?'#15803d':'#b45309')+'">'+g.id+'</td><td>'+g.desc+'</td><td style="text-align:center;color:'+(g.ok?'#22c55e':'#f59e0b')+'">'+(g.ok?'&#10003;':'&#9651;')+'</td>';
+    tbody.appendChild(tr);
+  });
+  t.appendChild(tbody);
+}
+
+function toggleGCP(btn){
+  var m=$id('gcp-matrix');
+  var shown=m.style.display==='block';
+  m.style.display=shown?'none':'block';
+  btn.textContent=shown?'Show full 22-item GCP Matrix ▼':'Hide GCP Matrix ▲';
+}
+
+// ---- QUESTIONNAIRE ----
+function renderGroupBtns(){
+  var wrap=$id('grp-btns');
+  wrap.innerHTML='';
+  GROUPS.forEach(function(g){
+    var btn=el('button',{class:'btn-pill'+(g.id===curGroup?' on':'')},g.label);
+    btn.style.background=g.id===curGroup?g.color:'#fff';
+    btn.style.color=g.id===curGroup?'#fff':'#374151';
+    btn.style.borderColor=g.id===curGroup?g.color:'#e2e8f0';
+    btn.addEventListener('click',function(){curGroup=g.id;openQ=-1;renderGroupBtns();renderQHeader();renderQSections();});
+    wrap.appendChild(btn);
+  });
+}
+function renderLangBtns(){
+  var wrap=$id('lang-btns');
+  wrap.innerHTML='';
+  LANGS.forEach(function(l){
+    var btn=el('button',{class:'btn-pill'+(l.id===curLang?' on':'')},l.label);
+    btn.addEventListener('click',function(){curLang=l.id;renderLangBtns();renderQHeader();renderQSections();});
+    wrap.appendChild(btn);
+  });
+}
+function renderQHeader(){
+  var g=GROUPS.find(function(x){return x.id===curGroup;});
+  var secs=QDATA[curGroup];
+  var total=secs.reduce(function(a,s){return a+s.items.length;},0);
+  var h=$id('q-header');
+  h.style.background=g.color; h.style.color='#fff';
+  h.innerHTML='<div style="font-weight:700;font-size:15px">'+g.label+' Questionnaire</div><div style="font-size:11px;opacity:0.8;margin-top:3px">'+secs.length+' sections · '+total+' items · '+LANGS.find(function(l){return l.id===curLang;}).label+'</div>';
+}
+function renderQSections(){
+  var wrap=$id('q-sections');
+  wrap.innerHTML='';
+  var secs=QDATA[curGroup];
+  secs.forEach(function(sec,si){
+    var isOpen=openQ===si;
+    var card=el('div',{class:'card',style:{marginBottom:'8px'}});
+    var hdr=el('button',{class:'accd-hdr'},[
+      el('span',{style:{fontWeight:'600',fontSize:'13px'}},sec.title[curLang]),
+      el('span',{class:'caret'},isOpen?'▲':'▼')
+    ]);
+    hdr.addEventListener('click',function(){openQ=isOpen?-1:si;renderQSections();});
+    card.appendChild(hdr);
+    if(isOpen){
+      var body=el('div',null);
+      sec.items.forEach(function(item){
+        body.appendChild(el('div',{class:'q-row'},[
+          el('span',{class:'q-id'},item.id),
+          el('span',{class:'q-text'},item.text[curLang]),
+          item.scale?el('span',{class:'q-scale',style:{background:item.sc}},item.scale):null
+        ]));
+      });
+      card.appendChild(body);
+    }
+    wrap.appendChild(card);
+  });
+}
+
+// ---- PROTOCOL ----
+function renderProtoGCPTable(){
+  var t=$id('proto-gcp-table');
+  t.innerHTML='<thead><tr><th>ID</th><th>Description</th><th style="text-align:center">Status</th></tr></thead>';
+  var tbody=document.createElement('tbody');
+  GCP_ITEMS.forEach(function(g){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td class="mono" style="color:'+(g.ok?'#15803d':'#b45309')+'">'+g.id+'</td><td>'+g.desc+'</td><td style="text-align:center;color:'+(g.ok?'#22c55e':'#f59e0b')+'">'+(g.ok?'&#10003;':'&#9651;')+'</td>';
+    tbody.appendChild(tr);
+  });
+  t.appendChild(tbody);
+}
+function toggleProtoGCP(btn){
+  var m=$id('proto-gcp');
+  var shown=m.style.display==='block';
+  m.style.display=shown?'none':'block';
+  btn.querySelector('.caret').textContent=shown?'▼':'▲';
+}
+function renderProtoSections(){
+  var wrap=$id('proto-sections');
+  wrap.innerHTML='';
+  PROTO.forEach(function(sec,i){
+    var isOpen=openP===i;
+    var card=el('div',{class:'card',style:{marginBottom:'8px'}});
+    var hdr=el('button',{class:'accd-hdr'},[
+      el('div',{style:{display:'flex',alignItems:'center',gap:'8px'}},[
+        el('span',{style:{fontSize:'11px',fontWeight:'700',color:'#fff',background:'#1B3A6B',borderRadius:'4px',padding:'2px 7px',flexShrink:'0'}},'§'+sec.num),
+        el('span',{style:{fontWeight:'600',fontSize:'13px'}},sec.title)
+      ]),
+      el('span',{class:'caret'},isOpen?'▲':'▼')
+    ]);
+    hdr.addEventListener('click',function(){openP=isOpen?-1:i;renderProtoSections();});
+    card.appendChild(hdr);
+    if(isOpen){
+      card.appendChild(el('div',{class:'accd-body'},[
+        el('pre',{class:'prose'},sec.body)
+      ]));
+    }
+    wrap.appendChild(card);
+  });
+}
+
+// ---- FRAMEWORK ----
+function renderFWFilter(){
+  var wrap=$id('fw-filter-btns');
+  wrap.innerHTML='';
+  var allBtn=el('button',{class:'btn-pill'+(fwFilter===null?' on':'')},' All Groups ');
+  allBtn.addEventListener('click',function(){fwFilter=null;renderFWFilter();renderFWCards();});
+  wrap.appendChild(allBtn);
+  ALL_GROUPS.forEach(function(g){
+    var btn=el('button',{class:'btn-pill'},g);
+    btn.style.background=fwFilter===g?GRP_COLORS[g]:'#fff';
+    btn.style.color=fwFilter===g?'#fff':'#374151';
+    btn.style.borderColor=fwFilter===g?GRP_COLORS[g]:'#e2e8f0';
+    btn.addEventListener('click',function(){fwFilter=fwFilter===g?null:g;renderFWFilter();renderFWCards();});
+    wrap.appendChild(btn);
+  });
+}
+function renderFWCards(){
+  var wrap=$id('fw-cards');
+  wrap.innerHTML='';
+  var visible=fwFilter?FRAMEWORKS.filter(function(f){return f.groups.indexOf(fwFilter)>=0;}):FRAMEWORKS;
+  visible.forEach(function(f){
+    var isOn=selFW===f.id;
+    var btn=el('button',{class:'fw-card'+(isOn?' on':'')});
+    btn.style.setProperty('--fc',f.color);
+    btn.style.background=isOn?f.color:'#fff';
+    btn.style.borderColor=isOn?f.color:'#e2e8f0';
+    btn.style.color=isOn?'#fff':'#1e293b';
+    btn.appendChild(el('div',{style:{fontWeight:'700',fontSize:'14px'}},f.name));
+    btn.appendChild(el('div',{style:{fontSize:'11px',opacity:'0.7',marginTop:'2px',lineHeight:'1.4'}},f.full));
+    btn.appendChild(el('div',{style:{fontSize:'10px',opacity:'0.6',marginTop:'4px'}},f.ref));
+    var pills=el('div',{style:{display:'flex',flexWrap:'wrap',gap:'3px',marginTop:'6px'}});
+    f.groups.forEach(function(g){
+      var p=el('span',{style:{fontSize:'10px',padding:'2px 6px',borderRadius:'10px',fontWeight:'500',
+        background:isOn?'rgba(255,255,255,0.22)':GRP_COLORS[g]+'22',
+        color:isOn?'#fff':GRP_COLORS[g]}},g.split(' ')[0]);
+      pills.appendChild(p);
+    });
+    btn.appendChild(pills);
+    btn.addEventListener('click',function(){selFW=isOn?null:f.id;renderFWCards();renderFWDetail();});
+    wrap.appendChild(btn);
+  });
+}
+function renderFWDetail(){
+  var wrap=$id('fw-detail');
+  wrap.innerHTML='';
+  if(!selFW) return;
+  var f=FRAMEWORKS.find(function(x){return x.id===selFW;});
+  wrap.style.setProperty('--dc',f.color);
+  var detail=el('div',{class:'detail',style:{borderColor:f.color}});
+  detail.appendChild(el('div',{class:'detail-hdr',style:{background:f.color}},[
+    el('div',{style:{fontWeight:'700',fontSize:'15px'}},f.name+' — '+f.full),
+    el('div',{style:{fontSize:'12px',opacity:'0.8',marginTop:'2px'}},f.ref)
+  ]));
+  var body=el('div',{class:'detail-body'});
+  // col 1
+  var c1=el('div');
+  c1.appendChild(el('div',{style:{fontSize:'11px',fontWeight:'600',color:'#475569',textTransform:'uppercase',marginBottom:'6px'}},'Description'));
+  c1.appendChild(el('p',{style:{fontSize:'13px',color:'#374151',lineHeight:'1.6'}},f.desc));
+  c1.appendChild(el('div',{style:{marginTop:'10px',fontSize:'11px',color:'#64748b'}},[el('span',{style:{fontWeight:'600'}},'Threshold: '),f.threshold]));
+  body.appendChild(c1);
+  // col 2
+  var c2=el('div');
+  c2.appendChild(el('div',{style:{fontSize:'11px',fontWeight:'600',color:'#475569',textTransform:'uppercase',marginBottom:'6px'}},'Domains / Constructs'));
+  var ol=document.createElement('ol');
+  ol.style.paddingLeft='16px';
+  f.domains.forEach(function(d){
+    var li=document.createElement('li');
+    li.style.cssText='font-size:12px;color:#374151;margin-bottom:4px';
+    li.textContent=d; ol.appendChild(li);
+  });
+  c2.appendChild(ol); body.appendChild(c2);
+  // col 3
+  var c3=el('div');
+  c3.appendChild(el('div',{style:{fontSize:'11px',fontWeight:'600',color:'#475569',textTransform:'uppercase',marginBottom:'6px'}},'Stakeholder Groups'));
+  f.groups.forEach(function(g){
+    c3.appendChild(el('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'6px'}},[
+      el('span',{style:{width:'10px',height:'10px',borderRadius:'50%',background:GRP_COLORS[g],flexShrink:'0',display:'inline-block'}}),
+      el('span',{style:{fontSize:'12px',color:'#374151'}},g)
+    ]));
+  });
+  body.appendChild(c3);
+  detail.appendChild(body);
+  wrap.appendChild(detail);
+}
+function renderFWMatrix(){
+  var t=$id('fw-matrix');
+  var hdrs=['Framework'].concat(ALL_GROUPS);
+  t.innerHTML='<thead><tr>'+hdrs.map(function(h,i){return '<th'+(i>0?' style="text-align:center;color:'+GRP_COLORS[h]+'"':'')+'>'+h+'</th>';}).join('')+'</tr></thead>';
+  var tbody=document.createElement('tbody');
+  FRAMEWORKS.forEach(function(f){
+    var tr=document.createElement('tr');
+    var cells='<td style="font-weight:600;color:'+f.color+'">'+f.name+'</td>';
+    ALL_GROUPS.forEach(function(g){
+      if(f.groups.indexOf(g)>=0){
+        cells+='<td style="text-align:center"><span style="display:inline-flex;width:20px;height:20px;border-radius:50%;background:'+f.color+';color:#fff;font-size:11px;align-items:center;justify-content:center">&#10003;</span></td>';
+      } else {
+        cells+='<td style="text-align:center;color:#cbd5e1">&mdash;</td>';
+      }
+    });
+    tr.innerHTML=cells; tbody.appendChild(tr);
+  });
+  t.appendChild(tbody);
+}
+function renderSDG(){
+  var wrap=$id('sdg-cards');
+  wrap.innerHTML='';
+  SDG.forEach(function(s){
+    wrap.appendChild(el('div',{class:'sdg-card'},[
+      el('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'6px'}},[
+        el('span',{style:{background:'#0E8B8B',color:'#fff',borderRadius:'4px',padding:'2px 8px',fontSize:'11px',fontWeight:'700'}},s.id),
+        el('span',{style:{fontSize:'11px',color:'#64748b'}},s.sdg)
+      ]),
+      el('div',{style:{fontWeight:'600',fontSize:'13px',marginBottom:'6px'}},s.name),
+      el('div',{class:'fml'},s.formula),
+      el('div',{style:{fontSize:'11px',color:'#64748b'}},'Source: '+s.src)
+    ]));
+  });
+}
+
+// ---- INIT ----
+window.addEventListener('DOMContentLoaded',function(){
+  renderPhases();
+  setTimeout(renderBarChart, 50);
+  renderAdvisory();
+  renderDeliverables();
+  renderGCPTable();
+  renderProtoGCPTable();
+  renderGroupBtns();
+  renderLangBtns();
+  renderQHeader();
+  renderQSections();
+  renderProtoSections();
+  renderFWFilter();
+  renderFWCards();
+  renderFWDetail();
+  renderFWMatrix();
+  renderSDG();
+});
+window.addEventListener('resize',function(){renderBarChart();});
+</script>
+</body>
+</html>

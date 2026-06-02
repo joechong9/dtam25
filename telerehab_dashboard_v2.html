@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>DTAM-MY v2 | Research Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy:#1B3A6B; --teal:#0E8B8B; --lteal:#D6F0F0; --lnavy:#D8E4F0;
+  --lgrey:#F2F5F8; --orange:#E07B39; --white:#fff;
+  --text:#1a1a2e; --muted:#6b7280; --success:#16a34a; --danger:#dc2626;
+  --fs-xs:11px; --fs-sm:12px; --fs-base:13px; --fs-md:14px;
+  --fs-lg:16px; --fs-xl:20px; --fs-2xl:24px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--lgrey);color:var(--text);min-height:100vh;font-size:var(--fs-base);}
+
+/* ── Header ── */
+.header{background:var(--navy);color:white;padding:calc(12px + var(--safe-top)) 24px 12px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.header .logo{display:flex;align-items:center;gap:10px;min-width:0;}
+.header .logo-icon{width:36px;height:36px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;flex-shrink:0;}
+.header .logo-title{font-size:var(--fs-md);font-weight:700;}
+.header .logo-sub{font-size:var(--fs-xs);opacity:.65;}
+.header .hdr-actions{display:flex;gap:8px;flex-shrink:0;}
+.hdr-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;
+  padding:6px 14px;border-radius:20px;cursor:pointer;font-size:var(--fs-xs);font-weight:600;
+  transition:background .2s;white-space:nowrap;}
+.hdr-btn:hover,.hdr-btn.active{background:var(--teal);}
+.hdr-btn.danger{background:rgba(220,38,38,.3);border-color:rgba(220,38,38,.5);}
+.hdr-btn.danger:hover{background:#dc2626;}
+
+/* ── Layout ── */
+.container{max-width:1200px;margin:0 auto;padding:20px 16px calc(20px + var(--safe-bottom));}
+
+/* ── KPI Cards ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:24px;}
+.kpi-card{background:white;border-radius:12px;padding:18px;border:1px solid #e5e7eb;
+  border-top:4px solid var(--teal);display:flex;flex-direction:column;gap:4px;}
+.kpi-card.orange{border-top-color:var(--orange);}
+.kpi-card.navy{border-top-color:var(--navy);}
+.kpi-card.success{border-top-color:var(--success);}
+.kpi-val{font-size:clamp(28px,5vw,36px);font-weight:900;color:var(--navy);line-height:1;}
+.kpi-label{font-size:var(--fs-xs);color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.kpi-sub{font-size:var(--fs-xs);color:var(--muted);}
+.kpi-trend{font-size:var(--fs-sm);font-weight:700;margin-top:4px;}
+.kpi-trend.up{color:var(--success);}
+
+/* ── Section headers ── */
+.section-title{font-size:var(--fs-lg);font-weight:800;color:var(--navy);margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;}
+
+/* ── Grid layouts ── */
+.charts-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.charts-3col{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+.charts-1col{margin-bottom:20px;}
+
+/* ── Chart card ── */
+.chart-card{background:white;border-radius:12px;padding:20px;border:1px solid #e5e7eb;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);}
+.chart-card h4{font-size:var(--fs-base);font-weight:700;color:var(--navy);margin-bottom:4px;}
+.chart-card .chart-sub{font-size:var(--fs-xs);color:var(--muted);margin-bottom:14px;}
+.chart-canvas-wrap{position:relative;width:100%;}
+
+/* ── Table ── */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{width:100%;border-collapse:collapse;font-size:var(--fs-sm);min-width:560px;}
+thead tr{background:var(--lgrey);}
+th{text-align:left;padding:10px 12px;font-weight:700;color:var(--navy);
+  font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid #e5e7eb;}
+td{padding:10px 12px;border-bottom:1px solid #f3f4f6;vertical-align:top;}
+tr:hover td{background:#fafafa;}
+.badge-group{display:inline-flex;align-items:center;gap:5px;background:var(--lnavy);
+  color:var(--navy);border-radius:6px;padding:2px 8px;font-size:var(--fs-xs);font-weight:600;}
+.score-pill{display:inline-block;padding:2px 8px;border-radius:4px;font-size:var(--fs-xs);font-weight:700;}
+.score-pill.good{background:#dcfce7;color:var(--success);}
+.score-pill.mod{background:#fef3c7;color:#92400e;}
+.score-pill.poor{background:#fee2e2;color:var(--danger);}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:48px 24px;color:var(--muted);}
+.empty .empty-icon{font-size:48px;margin-bottom:12px;}
+.empty h3{font-size:var(--fs-lg);font-weight:700;color:var(--navy);margin-bottom:8px;}
+.empty p{font-size:var(--fs-base);line-height:1.6;max-width:400px;margin:0 auto 20px;}
+.empty a{color:var(--teal);font-weight:600;text-decoration:none;}
+.empty a:hover{text-decoration:underline;}
+
+/* ── Tabs ── */
+.tab-bar{display:flex;gap:4px;background:#f3f4f6;padding:4px;border-radius:8px;margin-bottom:20px;flex-wrap:wrap;}
+.tab-btn{flex:1;padding:8px 12px;border:none;background:transparent;border-radius:6px;
+  font-size:var(--fs-sm);font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;min-width:80px;}
+.tab-btn.active{background:white;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+
+/* ── Status bar ── */
+.status-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  background:white;border-radius:10px;padding:10px 16px;margin-bottom:20px;
+  border:1px solid #e5e7eb;font-size:var(--fs-xs);}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.status-dot.live{background:var(--success);box-shadow:0 0 0 3px rgba(22,163,74,.2);animation:pulse 2s infinite;}
+.status-dot.local{background:var(--orange);}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(22,163,74,.2);}50%{box-shadow:0 0 0 6px rgba(22,163,74,.08);}}
+.status-items{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+/* ── Progress bars ── */
+.prog-bar-wrap{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+.prog-row{display:grid;grid-template-columns:120px 1fr 48px;align-items:center;gap:8px;}
+.prog-label{font-size:var(--fs-xs);font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.prog-track{background:#e5e7eb;border-radius:99px;height:8px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:99px;background:var(--teal);transition:width .6s ease;}
+.prog-pct{font-size:var(--fs-xs);font-weight:700;color:var(--teal);text-align:right;}
+
+/* ── Score summary grid ── */
+.score-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:12px;}
+.score-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f3f4f6;}
+.score-row:last-child{border:none;}
+.score-name{font-size:var(--fs-sm);color:var(--text);}
+.score-num{font-size:var(--fs-sm);font-weight:800;color:var(--navy);}
+
+/* ── Tooltip override ── */
+.chart-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);color:var(--muted);}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* ── Responsive ── */
+@media(max-width:900px){.charts-3col{grid-template-columns:1fr 1fr;}}
+@media(max-width:640px){
+  .charts-2col,.charts-3col{grid-template-columns:1fr;}
+  .kpi-grid{grid-template-columns:1fr 1fr;}
+  .header{padding:calc(10px + var(--safe-top)) 14px 10px;}
+  .container{padding:14px 10px;}
+}
+@media(max-width:400px){.kpi-grid{grid-template-columns:1fr;}}
+
+/* ── Print ── */
+@media print{.header .hdr-actions,.tab-bar{display:none!important;}body{background:white;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">📊</div>
+    <div>
+      <div class="logo-title">DTAM-MY Research Dashboard</div>
+      <div class="logo-sub">CHONG Yu Zheng · UTAR LKC FES · 24UED03838</div>
+    </div>
+  </div>
+  <div class="hdr-actions">
+    <a href="admin_portal_v2.html" class="hdr-btn">🏛 Admin Portal</a>
+    <button class="hdr-btn" onclick="refreshData()">🔄 Refresh</button>
+    <button class="hdr-btn" onclick="exportCSV()">⬇️ Export CSV</button>
+    <button class="hdr-btn" onclick="window.open('telerehab_questionnaire_app.html','_blank')">📋 Open Survey</button>
+    <button class="hdr-btn" onclick="showTab('omr',this)" style="background:rgba(14,139,139,.35);border-color:rgba(14,139,139,.6)">🔍 OMR Scanner</button>
+    <button class="hdr-btn danger" onclick="confirmClear()">🗑 Clear Data</button>
+  </div>
+</div>
+
+<div id="demo-banner" style="background:#fff7ed;border-bottom:2px solid #fed7aa;padding:8px 24px;font-size:12px;color:#92400e;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+  <span>⚠ <strong>Demo data displayed</strong> — values are illustrative until connected to the live backend API. Export CSV to verify actual localStorage counts.</span>
+  <button onclick="document.getElementById('demo-banner').style.display='none'" style="background:none;border:none;color:#92400e;cursor:pointer;font-size:16px;line-height:1;flex-shrink:0;" aria-label="Dismiss banner">✕</button>
+</div>
+<div class="container">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <div class="status-items">
+      <div class="status-dot local" id="status-dot"></div>
+      <span id="status-text" style="font-weight:600;color:var(--navy)">Local Storage Mode</span>
+      <span style="color:var(--muted)">· Auto-refreshes every 30s</span>
+    </div>
+    <div class="status-items">
+      <span style="color:var(--muted)">Last updated: <strong id="last-updated">—</strong></span>
+      <span style="color:var(--muted)">Study: <strong style="color:var(--navy)">DTAM-MY-2025</strong></span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('project',this)">📁 Project</button>
+    <button class="tab-btn" onclick="showTab('overview',this)">📊 Overview</button>
+    <button class="tab-btn" onclick="showTab('scores',this)">🎯 Scores</button>
+    <button class="tab-btn" onclick="showTab('demographics',this)">👥 Demographics</button>
+    <button class="tab-btn" onclick="showTab('responses',this)">📋 Responses</button>
+    <button class="tab-btn" onclick="showTab('omr',this)" style="color:var(--teal);font-weight:700">🔍 OMR Scanner</button>
+  </div>
+
+  <!-- ═══════════ PROJECT TAB ═══════════ -->
+  <div id="tab-project">
+
+    <!-- Phase progress KPIs -->
+    <div class="kpi-grid" style="margin-bottom:20px">
+      <div class="kpi-card success">
+        <div class="kpi-val">19/22</div>
+        <div class="kpi-label">GCP Compliance</div>
+        <div class="kpi-sub">86% · 3 procedural △ pending</div>
+        <div class="kpi-trend up">↑ Target ≥20/22</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-val">12</div>
+        <div class="kpi-label">Questionnaire Docs</div>
+        <div class="kpi-sub">4 instruments × 3 languages</div>
+        <div class="kpi-trend up">✓ Complete</div>
+      </div>
+      <div class="kpi-card orange">
+        <div class="kpi-val">370</div>
+        <div class="kpi-label">Target Participants</div>
+        <div class="kpi-sub">5 stakeholder groups</div>
+        <div class="kpi-trend up">Revised from 220</div>
+      </div>
+      <div class="kpi-card navy">
+        <div class="kpi-val">8</div>
+        <div class="kpi-label">Frameworks</div>
+        <div class="kpi-sub">MAST·TAM·UTAUT2·TUQ·ICF·SUS·WHOQOL·ZBI</div>
+      </div>
+      <div class="kpi-card success">
+        <div class="kpi-val">5</div>
+        <div class="kpi-label">FHIR R4 Interfaces</div>
+        <div class="kpi-sub">Domain 6 · DTAM-MY</div>
+        <div class="kpi-trend up">✓ Specified</div>
+      </div>
+      <div class="kpi-card orange">
+        <div class="kpi-val">4</div>
+        <div class="kpi-label">SDG Indicators</div>
+        <div class="kpi-sub">TAI · DEGR · APES · CAE</div>
+        <div class="kpi-trend up">✓ Defined</div>
+      </div>
+    </div>
+
+    <!-- Deliverables table -->
+    <div class="chart-card" style="margin-bottom:20px">
+      <h4>Completed Deliverables</h4>
+      <div class="chart-sub" style="margin-bottom:14px">All artefacts produced as of 31 May 2026</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Deliverable</th><th>Type</th><th>Status</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Allied Health Questionnaire</td><td>DOCX × 4 lang</td><td><span class="score-pill good">Done</span></td><td>EN / BM / ZH / TA</td></tr>
+            <tr><td>2</td><td>Caregiver Questionnaire</td><td>DOCX × 4 lang</td><td><span class="score-pill good">Done</span></td><td>EN / BM / ZH / TA</td></tr>
+            <tr><td>3</td><td>Policy-Maker Questionnaire</td><td>DOCX × 4 lang</td><td><span class="score-pill good">Done</span></td><td>EN / BM / ZH / TA</td></tr>
+            <tr><td>4</td><td>Elderly Questionnaire</td><td>DOCX × 4 lang</td><td><span class="score-pill good">Done</span></td><td>EN / BM / ZH / TA</td></tr>
+            <tr><td>5</td><td>Caregiver OMR Answer Sheet</td><td>PDF + DOCX</td><td><span class="score-pill good">Done</span></td><td>v2 — all F1–F6 bugs fixed</td></tr>
+            <tr><td>6</td><td>Policy-Maker OMR Answer Sheet</td><td>PDF + DOCX</td><td><span class="score-pill good">Done</span></td><td>gen_policy_v3.py</td></tr>
+            <tr><td>7</td><td>Allied Health OMR Answer Sheet</td><td>PDF + DOCX</td><td><span class="score-pill good">Done</span></td><td>gen_allied_v3.py</td></tr>
+            <tr><td>8</td><td>Reference List</td><td>DOCX</td><td><span class="score-pill good">Done</span></td><td>Standard + Harvard formats</td></tr>
+            <tr><td>9</td><td>Questionnaire Suite Dev. Presentation</td><td>PPTX (17 slides)</td><td><span class="score-pill good">Done</span></td><td>Questionnaire_Development.pptx</td></tr>
+            <tr><td>10</td><td>Master Research Protocol</td><td>DOCX</td><td><span class="score-pill good">Done</span></td><td>v2.0 · 11 sections · GCP 19/22</td></tr>
+            <tr><td>11</td><td>Ethics Dossier</td><td>DOCX + HTML</td><td><span class="score-pill mod">Pending UREC</span></td><td>Ready for submission</td></tr>
+            <tr><td>12</td><td>DTAM-MY Questionnaire App</td><td>HTML / APK</td><td><span class="score-pill good">Done</span></td><td>React PWA + Capacitor Android</td></tr>
+            <tr><td>13</td><td>Part C Interview App</td><td>HTML</td><td><span class="score-pill good">Done</span></td><td>partc_interview.html</td></tr>
+            <tr><td>14</td><td>Admin Portal</td><td>HTML</td><td><span class="score-pill good">Done</span></td><td><a href="admin_portal_v2.html" style="color:var(--teal);font-weight:700">admin_portal.html ↗</a></td></tr>
+            <tr><td>15</td><td>App Development Design</td><td>DOCX</td><td><span class="score-pill good">Done</span></td><td>DTAM_MY_App_Development_Design_v1.0</td></tr>
+            <tr><td>16</td><td>Implementation Guide</td><td>DOCX</td><td><span class="score-pill good">Done</span></td><td>Section 0 + Section 1 guides</td></tr>
+            <tr><td>17</td><td>Verbal Interview Architecture</td><td>DOCX</td><td><span class="score-pill good">Done</span></td><td>verbal_interview_architecture.docx</td></tr>
+            <tr><td>18</td><td>FHIR R4 Interface Spec</td><td>MD</td><td><span class="score-pill good">Done</span></td><td>references/fhir-interfaces.md · 5 interfaces</td></tr>
+            <tr><td>19</td><td>GCP Audit Matrix (22-item)</td><td>MD</td><td><span class="score-pill good">Done</span></td><td>references/gcp-audit-full.md</td></tr>
+            <tr><td>20</td><td>Sample Size Calculations</td><td>MD</td><td><span class="score-pill good">Done</span></td><td>Pilot n=70; full n=370</td></tr>
+            <tr><td>21</td><td>SDG Indicator Formulas</td><td>MD</td><td><span class="score-pill good">Done</span></td><td>references/sdg-indicators.md</td></tr>
+            <tr><td>22</td><td>Instrument-Framework Mapping</td><td>MD</td><td><span class="score-pill good">Done</span></td><td>references/instrument-items.md</td></tr>
+            <tr><td>23</td><td>Research Dashboard</td><td>HTML</td><td><span class="score-pill good">Done</span></td><td>telerehab_dashboard.html (this file)</td></tr>
+            <tr><td>24</td><td>OMR Scanner App</td><td>HTML PWA</td><td><span class="score-pill good">Done</span></td><td>omr_scanner.html · v1.1 · 5 sheet types · TAM/UTAUT2/TUQ/SUS/ZBI/MAST/WHOQOL-BREF · OpenCV warp · CSV+JSON export</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Phase roadmap -->
+    <div class="chart-card" style="margin-bottom:20px">
+      <h4>Research Phase Roadmap</h4>
+      <div class="chart-sub" style="margin-bottom:14px">8-phase pipeline — current position: Phase 1 complete, Phase 2 ready</div>
+      <div id="phase-bars" class="prog-bar-wrap"></div>
+    </div>
+
+    <!-- Advisory items -->
+    <div class="chart-card">
+      <h4>Advisory Items — Pre-Submission Checklist</h4>
+      <div class="chart-sub" style="margin-bottom:14px">3 items must be resolved before UREC/MREC submission</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Item</th><th>Description</th><th>Status</th><th>Detail</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>A1</strong></td>
+              <td>SDG Alignment — 4 quantified indicators</td>
+              <td><span class="score-pill good">Done</span></td>
+              <td>TAI (SDG 3.8) · DEGR (SDG 10.2) · APES (SDG 11.7) · CAE (SDG 13.2)</td>
+            </tr>
+            <tr>
+              <td><strong>A2</strong></td>
+              <td>Longitudinal arm — increase pilot to n=70</td>
+              <td><span class="score-pill good">Done</span></td>
+              <td>42 urban + 28 rural · completers=45 · no ethics amendment required</td>
+            </tr>
+            <tr>
+              <td><strong>A3</strong></td>
+              <td>EMR Interoperability — FHIR R4 interfaces</td>
+              <td><span class="score-pill good">Done</span></td>
+              <td>5 interfaces specified · Domain 6 added to DTAM-MY</td>
+            </tr>
+            <tr>
+              <td><strong>P1</strong></td>
+              <td>Ethics Reference Number (UREC)</td>
+              <td><span class="score-pill mod">Pending</span></td>
+              <td>Dossier ready · awaiting UREC submission date</td>
+            </tr>
+            <tr>
+              <td><strong>P2</strong></td>
+              <td>MREC Malaysia Registration</td>
+              <td><span class="score-pill mod">Pending</span></td>
+              <td>Follows UREC approval</td>
+            </tr>
+            <tr>
+              <td><strong>P3</strong></td>
+              <td>OSF Pre-Registration</td>
+              <td><span class="score-pill mod">Pending</span></td>
+              <td>Pre-register protocol on OSF before data collection</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /tab-project -->
+
+  <!-- ═══════════ OVERVIEW TAB ═══════════ -->
+  <div id="tab-overview" style="display:none">
+    <div class="kpi-grid" id="kpi-grid"></div>
+
+    <div class="charts-2col">
+      <div class="chart-card">
+        <h4>Responses by Stakeholder Group</h4>
+        <div class="chart-sub">Target vs actual per group</div>
+        <div class="chart-canvas-wrap" style="height:220px">
+          <canvas id="chart-groups"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h4>Recruitment Progress</h4>
+        <div class="chart-sub">% of target n achieved per group</div>
+        <div id="progress-bars" class="prog-bar-wrap"></div>
+      </div>
+    </div>
+
+    <div class="charts-2col">
+      <div class="chart-card">
+        <h4>Submission Timeline</h4>
+        <div class="chart-sub">Responses per day</div>
+        <div class="chart-canvas-wrap" style="height:200px">
+          <canvas id="chart-timeline"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h4>Language Distribution</h4>
+        <div class="chart-sub">Survey language selected at completion</div>
+        <div class="chart-canvas-wrap" style="height:200px">
+          <canvas id="chart-lang"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SCORES TAB ═══════════ -->
+  <div id="tab-scores" style="display:none">
+    <div class="charts-2col">
+      <div class="chart-card">
+        <h4>SUS — System Usability Scale</h4>
+        <div class="chart-sub">Distribution (0–100) · Target ≥70</div>
+        <div class="chart-canvas-wrap" style="height:200px">
+          <canvas id="chart-sus"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h4>ZBI — Caregiver Burden</h4>
+        <div class="chart-sub">Category distribution (Caregiver group)</div>
+        <div class="chart-canvas-wrap" style="height:200px">
+          <canvas id="chart-zbi"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="charts-2col">
+      <div class="chart-card">
+        <h4>TAM — Technology Acceptance</h4>
+        <div class="chart-sub">Mean PU & PEOU per group (1–5 scale)</div>
+        <div class="chart-canvas-wrap" style="height:200px">
+          <canvas id="chart-tam"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h4>WHOQOL-BREF — Quality of Life</h4>
+        <div class="chart-sub">Mean domain scores (0–100) · Elderly group</div>
+        <div class="chart-canvas-wrap" style="height:200px">
+          <canvas id="chart-whoqol"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="charts-1col">
+      <div class="chart-card">
+        <h4>MAST — Telemedicine Assessment Composite</h4>
+        <div class="chart-sub">Mean composite score by stakeholder group (1–5)</div>
+        <div class="chart-canvas-wrap" style="height:180px">
+          <canvas id="chart-mast"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Score summary table -->
+    <div class="chart-card">
+      <h4>Score Summary — All Groups</h4>
+      <div class="chart-sub" style="margin-bottom:14px">Mean ± latest value per instrument</div>
+      <div class="table-wrap">
+        <table id="score-table">
+          <thead><tr><th>Instrument</th><th>Group(s)</th><th>N with score</th><th>Mean</th><th>Min</th><th>Max</th><th>Interpretation</th></tr></thead>
+          <tbody id="score-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ DEMOGRAPHICS TAB ═══════════ -->
+  <div id="tab-demographics" style="display:none">
+    <div class="charts-3col">
+      <div class="chart-card">
+        <h4>Age Distribution</h4>
+        <div class="chart-canvas-wrap" style="height:200px">
+          <canvas id="chart-age"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h4>Gender</h4>
+        <div class="chart-canvas-wrap" style="height:200px">
+          <canvas id="chart-gender"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h4>Residential Area</h4>
+        <div class="chart-canvas-wrap" style="height:200px">
+          <canvas id="chart-area"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="charts-2col">
+      <div class="chart-card">
+        <h4>State of Residence</h4>
+        <div class="chart-sub">Response count by Malaysian state</div>
+        <div class="chart-canvas-wrap" style="height:260px">
+          <canvas id="chart-state"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h4>Education Level</h4>
+        <div class="chart-canvas-wrap" style="height:260px">
+          <canvas id="chart-edu"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="charts-2col">
+      <div class="chart-card">
+        <h4>Device Ownership</h4>
+        <div class="chart-sub">Smartphone / tablet ownership</div>
+        <div class="chart-canvas-wrap" style="height:180px">
+          <canvas id="chart-device"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h4>Internet Usage Frequency</h4>
+        <div class="chart-canvas-wrap" style="height:180px">
+          <canvas id="chart-internet"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ RESPONSES TAB ═══════════ -->
+  <div id="tab-responses" style="display:none">
+    <div class="chart-card" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <h4 style="margin:0">All Responses</h4>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="filter-group" onchange="renderResponses()" style="border:1px solid #d1d5db;border-radius:6px;padding:6px 10px;font-size:var(--fs-sm);">
+            <option value="">All Groups</option>
+            <option value="allied">Allied Health</option>
+            <option value="caregiver">Caregiver</option>
+            <option value="elderly">Elderly</option>
+            <option value="policy">Policy-Maker</option>
+            <option value="public">General Public</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>ID</th><th>Timestamp</th><th>Group</th><th>Items Answered</th><th>Key Scores</th></tr></thead>
+          <tbody id="responses-tbody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px;font-size:var(--fs-xs);color:var(--muted)" id="responses-count"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ OMR SCANNER TAB ═══════════ -->
+  <div id="tab-omr" style="display:none">
+
+    <!-- Launch banner -->
+    <div style="background:linear-gradient(135deg,#0E8B8B 0%,#1B3A6B 100%);border-radius:12px;
+      padding:24px 28px;margin-bottom:20px;color:#fff;display:flex;gap:20px;
+      align-items:center;flex-wrap:wrap;">
+      <div style="flex:1;min-width:220px">
+        <div style="font-size:22px;font-weight:800;margin-bottom:4px">🔍 DTAM-MY OMR Scanner</div>
+        <div style="font-size:13px;opacity:.85;margin-bottom:14px">
+          Scan filled OMR answer sheets from any questionnaire group · Extract responses &amp; compute scores · Export CSV / JSON
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="window.open('omr_scanner.html','_blank')"
+            style="background:#fff;color:#0E8B8B;border:none;border-radius:6px;
+              padding:8px 20px;font-weight:700;font-size:13px;cursor:pointer">
+            ↗ Open OMR Scanner
+          </button>
+          <button onclick="document.getElementById('omr-embed').style.display=
+              document.getElementById('omr-embed').style.display==='none'?'block':'none'"
+            style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);
+              border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer">
+            ⬛ Embed Here
+          </button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:240px">
+        <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:10px 14px;text-align:center">
+          <div style="font-size:22px;font-weight:800">5</div>
+          <div style="font-size:11px;opacity:.8">Questionnaire types</div>
+        </div>
+        <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:10px 14px;text-align:center">
+          <div style="font-size:22px;font-weight:800">100+</div>
+          <div style="font-size:11px;opacity:.8">Items per sheet</div>
+        </div>
+        <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:10px 14px;text-align:center">
+          <div style="font-size:22px;font-weight:800">7</div>
+          <div style="font-size:11px;opacity:.8">Scoring instruments</div>
+        </div>
+        <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:10px 14px;text-align:center">
+          <div style="font-size:22px;font-weight:800">Local</div>
+          <div style="font-size:11px;opacity:.8">No server · PDPA safe</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick-launch cards per questionnaire type -->
+    <div style="margin-bottom:6px;font-size:12px;font-weight:700;color:#1B3A6B;letter-spacing:.5px;
+      text-transform:uppercase">Quick Launch by Questionnaire Type</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-bottom:20px">
+      <!-- Each card opens OMR scanner with the sheet pre-selected via URL hash -->
+      <a href="omr_scanner.html#CAREGIVER" target="_blank"
+        style="background:#fff;border:2px solid #D8E4F0;border-radius:10px;padding:16px;
+          text-decoration:none;transition:border-color .2s"
+        onmouseover="this.style.borderColor='#0E8B8B'" onmouseout="this.style.borderColor='#D8E4F0'">
+        <div style="font-size:24px;margin-bottom:6px">👨‍👩‍👧</div>
+        <div style="font-weight:700;color:#1B3A6B;font-size:13px">Caregiver</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">3 pages · TAM · UTAUT2 · ZBI</div>
+        <div style="margin-top:8px;font-size:10px;background:#D6F0F0;color:#0E8B8B;
+          display:inline-block;padding:2px 7px;border-radius:10px;font-weight:700">CG · n=100</div>
+      </a>
+      <a href="omr_scanner.html#ALLIED_HEALTH" target="_blank"
+        style="background:#fff;border:2px solid #D8E4F0;border-radius:10px;padding:16px;
+          text-decoration:none"
+        onmouseover="this.style.borderColor='#0E8B8B'" onmouseout="this.style.borderColor='#D8E4F0'">
+        <div style="font-size:24px;margin-bottom:6px">🩺</div>
+        <div style="font-weight:700;color:#1B3A6B;font-size:13px">Allied Health</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">2 pages · TAM · UTAUT2 · TUQ · SUS</div>
+        <div style="margin-top:8px;font-size:10px;background:#D6F0F0;color:#0E8B8B;
+          display:inline-block;padding:2px 7px;border-radius:10px;font-weight:700">AH · n=100</div>
+      </a>
+      <a href="omr_scanner.html#POLICY_MAKER" target="_blank"
+        style="background:#fff;border:2px solid #D8E4F0;border-radius:10px;padding:16px;
+          text-decoration:none"
+        onmouseover="this.style.borderColor='#0E8B8B'" onmouseout="this.style.borderColor='#D8E4F0'">
+        <div style="font-size:24px;margin-bottom:6px">🏛️</div>
+        <div style="font-weight:700;color:#1B3A6B;font-size:13px">Policy-Maker</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">2 pages · TAM · MAST (7 domains)</div>
+        <div style="margin-top:8px;font-size:10px;background:#D6F0F0;color:#0E8B8B;
+          display:inline-block;padding:2px 7px;border-radius:10px;font-weight:700">PM · n=20</div>
+      </a>
+      <a href="omr_scanner.html#GENERAL_PUBLIC" target="_blank"
+        style="background:#fff;border:2px solid #D8E4F0;border-radius:10px;padding:16px;
+          text-decoration:none"
+        onmouseover="this.style.borderColor='#0E8B8B'" onmouseout="this.style.borderColor='#D8E4F0'">
+        <div style="font-size:24px;margin-bottom:6px">🌐</div>
+        <div style="font-weight:700;color:#1B3A6B;font-size:13px">General Public</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">2 pages · TAM · Attitude & Intention</div>
+        <div style="margin-top:8px;font-size:10px;background:#D6F0F0;color:#0E8B8B;
+          display:inline-block;padding:2px 7px;border-radius:10px;font-weight:700">GP · n=50</div>
+      </a>
+      <a href="omr_scanner.html#ELDERLY" target="_blank"
+        style="background:#fff;border:2px solid #D8E4F0;border-radius:10px;padding:16px;
+          text-decoration:none"
+        onmouseover="this.style.borderColor='#0E8B8B'" onmouseout="this.style.borderColor='#D8E4F0'">
+        <div style="font-size:24px;margin-bottom:6px">🧓</div>
+        <div style="font-weight:700;color:#1B3A6B;font-size:13px">Elderly</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">3 pages · TUQ · WHOQOL-BREF · SUS</div>
+        <div style="margin-top:8px;font-size:10px;background:#D6F0F0;color:#0E8B8B;
+          display:inline-block;padding:2px 7px;border-radius:10px;font-weight:700">EL · n=100</div>
+      </a>
+    </div>
+
+    <!-- Workflow guide -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+      <div class="chart-card">
+        <h4>Scanning Workflow</h4>
+        <div class="chart-sub">Phase 4 OMR data collection pipeline</div>
+        <ol style="padding-left:18px;font-size:12px;line-height:2;color:#444;margin-top:8px">
+          <li>Participant completes printed OMR answer sheet</li>
+          <li>Researcher uploads scan (📁) or photographs with camera (📷)</li>
+          <li>OpenCV auto-corrects perspective for camera photos</li>
+          <li>Click <strong>⚡ Process</strong> — all bubble positions sampled</li>
+          <li>Review overlay: <span style="color:#2E7D32;font-weight:700">green</span> = filled ·
+            <span style="color:#F57C00;font-weight:700">orange</span> = ambiguous ·
+            <span style="color:#bbb;font-weight:700">grey</span> = empty</li>
+          <li>Fix any misreads via the <strong>Fix</strong> dropdown per item</li>
+          <li>Export <strong>CSV</strong> → warehouse · <strong>JSON</strong> → ML pipeline</li>
+        </ol>
+      </div>
+      <div class="chart-card">
+        <h4>Instruments &amp; Scoring</h4>
+        <div class="chart-sub">Auto-computed on every scan</div>
+        <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:8px">
+          <thead>
+            <tr style="background:#F2F5F8">
+              <th style="padding:4px 8px;text-align:left;color:#1B3A6B;font-weight:700">Instrument</th>
+              <th style="padding:4px 8px;text-align:left;color:#1B3A6B;font-weight:700">Groups</th>
+              <th style="padding:4px 8px;text-align:left;color:#1B3A6B;font-weight:700">Threshold</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #F2F5F8"><td style="padding:4px 8px">TAM</td><td style="padding:4px 8px">All 5</td><td style="padding:4px 8px;color:#0E8B8B">Mean ≥3.5/5</td></tr>
+            <tr style="border-bottom:1px solid #F2F5F8"><td style="padding:4px 8px">UTAUT2</td><td style="padding:4px 8px">CG · AH</td><td style="padding:4px 8px;color:#0E8B8B">Mean ≥3.5/5</td></tr>
+            <tr style="border-bottom:1px solid #F2F5F8"><td style="padding:4px 8px">TUQ</td><td style="padding:4px 8px">EL · AH</td><td style="padding:4px 8px;color:#0E8B8B">Mean ≥3.5/5</td></tr>
+            <tr style="border-bottom:1px solid #F2F5F8"><td style="padding:4px 8px">SUS</td><td style="padding:4px 8px">EL · AH</td><td style="padding:4px 8px;color:#0E8B8B">≥70 · ≥85 Excellent</td></tr>
+            <tr style="border-bottom:1px solid #F2F5F8"><td style="padding:4px 8px">ZBI</td><td style="padding:4px 8px">CG</td><td style="padding:4px 8px;color:#0E8B8B">0–20 minimal</td></tr>
+            <tr style="border-bottom:1px solid #F2F5F8"><td style="padding:4px 8px">MAST</td><td style="padding:4px 8px">PM</td><td style="padding:4px 8px;color:#0E8B8B">Domain ≥3.5/5</td></tr>
+            <tr><td style="padding:4px 8px">WHOQOL-BREF</td><td style="padding:4px 8px">EL</td><td style="padding:4px 8px;color:#0E8B8B">≥10% Δ at 12 wks</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="chart-card" style="margin-bottom:20px">
+      <h4>Scan Quality Tips</h4>
+      <div class="chart-sub">Follow these to maximise auto-detection accuracy</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:12px">
+        <div style="background:#F2F5F8;border-radius:8px;padding:12px">
+          <div style="font-weight:700;color:#1B3A6B;margin-bottom:4px;font-size:12px">📠 Flatbed Scanner</div>
+          <div style="font-size:11px;color:#555;line-height:1.6">Use ≥200 DPI · JPEG or PNG · Place sheet flat with no creases · Best accuracy</div>
+        </div>
+        <div style="background:#F2F5F8;border-radius:8px;padding:12px">
+          <div style="font-weight:700;color:#1B3A6B;margin-bottom:4px;font-size:12px">📷 Camera / Phone</div>
+          <div style="font-size:11px;color:#555;line-height:1.6">Place sheet on dark flat surface · Even lighting · No shadows · Enable Auto perspective-correct</div>
+        </div>
+        <div style="background:#F2F5F8;border-radius:8px;padding:12px">
+          <div style="font-weight:700;color:#1B3A6B;margin-bottom:4px;font-size:12px">🎯 If Grid Misaligns</div>
+          <div style="font-size:11px;color:#555;line-height:1.6">Open Calibration panel · Adjust ΔY per section · Re-process · Save offsets for that printer</div>
+        </div>
+        <div style="background:#F2F5F8;border-radius:8px;padding:12px">
+          <div style="font-weight:700;color:#1B3A6B;margin-bottom:4px;font-size:12px">📤 Export &amp; Warehouse</div>
+          <div style="font-size:11px;color:#555;line-height:1.6">CSV → direct import to SPSS / R · JSON → Phase 7 ML pipeline (PostgreSQL)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Embedded iframe (hidden by default) -->
+    <div id="omr-embed" style="display:none;margin-bottom:20px">
+      <div style="font-size:12px;color:#888;margin-bottom:6px">
+        ⚠️ Embedded view — for full functionality open in a new tab above.
+      </div>
+      <iframe src="omr_scanner.html"
+        style="width:100%;height:80vh;border:2px solid #D8E4F0;border-radius:10px"
+        title="DTAM-MY OMR Scanner"></iframe>
+    </div>
+
+  </div><!-- /tab-omr -->
+
+</div><!-- /container -->
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+const STORAGE_KEY   = 'dtam_my_responses';
+const TARGETS       = { allied:100, caregiver:100, elderly:100, policy:20, public:50 };
+const GROUP_LABELS  = { allied:'Allied Health', caregiver:'Caregiver', elderly:'Elderly', policy:'Policy-Maker', public:'General Public' };
+const GROUP_COLORS  = { allied:'#0E8B8B', caregiver:'#E07B39', elderly:'#1B3A6B', policy:'#6366f1', public:'#10b981' };
+const PALETTE       = ['#0E8B8B','#1B3A6B','#E07B39','#6366f1','#10b981','#f59e0b','#ec4899'];
+
+let allData = [];
+let charts  = {};
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function mean(arr) {
+  const nums = arr.filter(v => v != null && !isNaN(v));
+  return nums.length ? nums.reduce((a,b) => a+b,0) / nums.length : null;
+}
+
+function scorePill(val, max) {
+  if (val == null) return '—';
+  const pct = max === 100 ? val : (val / max) * 100;
+  const cls = pct >= 60 ? 'good' : pct >= 40 ? 'mod' : 'poor';
+  return `<span class="score-pill ${cls}">${typeof val === 'number' ? (Number.isInteger(val) ? val : val.toFixed(1)) : val}</span>`;
+}
+
+function fmtDate(iso) {
+  try { return new Date(iso).toLocaleString('en-MY',{dateStyle:'short',timeStyle:'short'}); }
+  catch(e) { return iso; }
+}
+
+function countBy(arr, fn) {
+  const out = {};
+  arr.forEach(x => { const k = fn(x); out[k] = (out[k]||0) + 1; });
+  return out;
+}
+
+function mkChart(id, type, data, options={}) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  if (charts[id]) { charts[id].destroy(); }
+  charts[id] = new Chart(ctx, { type, data, options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: type === 'doughnut' || type === 'pie', position:'right',
+      labels:{ font:{size:11}, boxWidth:12 } } },
+    scales: (type === 'bar' || type === 'line') ? {
+      x: { ticks:{font:{size:10}}, grid:{display:false} },
+      y: { ticks:{font:{size:10}}, beginAtZero:true, grid:{color:'#f3f4f6'} }
+    } : {},
+    ...options
+  }});
+}
+
+// ─── TABS ────────────────────────────────────────────────────────────────────
+function showTab(name, btn) {
+  ['project','overview','scores','demographics','responses','omr'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t === name ? '' : 'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (name === 'scores')       renderScoreCharts();
+  if (name === 'demographics') renderDemoCharts();
+  if (name === 'responses')    renderResponses();
+  if (name === 'project')      renderPhaseBars();
+}
+
+function renderPhaseBars() {
+  const phases = [
+    { label:'Ph 1 · Ethics & Design',  pct:90,  color:'#16a34a', note:'Protocol v2.0 · GCP 86% · Dossier ready' },
+    { label:'Ph 2 · Questionnaires',   pct:100, color:'#16a34a', note:'12 docs · 5 OMR sheet types · 4 languages' },
+    { label:'Ph 3 · App Development',  pct:90,  color:'#0E8B8B', note:'PWA + APK + OMR Scanner done · Backend hosting TBD' },
+    { label:'Ph 4 · Pilot Study',      pct:0,   color:'#E07B39', note:'n=70 · pending ethics clearance' },
+    { label:'Ph 5 · Data Collection',  pct:0,   color:'#6366f1', note:'n=370 total · 5 groups' },
+    { label:'Ph 6 · Analytics',        pct:0,   color:'#1B3A6B', note:'EFA · PLS-SEM · WHOQOL change' },
+    { label:'Ph 7 · ML Pipeline',      pct:0,   color:'#1B3A6B', note:'React + Node.js + PostgreSQL PWA' },
+    { label:'Ph 8 · Submission',       pct:0,   color:'#1B3A6B', note:'Dissertation write-up & defence' },
+  ];
+  const pb = document.getElementById('phase-bars');
+  if (!pb) return;
+  pb.innerHTML = phases.map(p => `
+    <div class="prog-row" style="grid-template-columns:180px 1fr auto;gap:10px;margin-bottom:4px">
+      <div class="prog-label" style="white-space:normal;font-size:11px;color:var(--navy);font-weight:700">${p.label}</div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div class="prog-track"><div class="prog-fill" style="width:${p.pct}%;background:${p.color}"></div></div>
+        <div style="font-size:10px;color:var(--muted)">${p.note}</div>
+      </div>
+      <div class="prog-pct" style="color:${p.color}">${p.pct}%</div>
+    </div>`).join('');
+}
+
+// ─── MAIN RENDER ─────────────────────────────────────────────────────────────
+function refreshData() {
+  allData = loadData();
+  document.getElementById('last-updated').textContent = new Date().toLocaleTimeString('en-MY');
+  renderKPIs();
+  renderOverviewCharts();
+  // Re-render active tab
+  const active = document.querySelector('.tab-btn.active');
+  if (active) active.click();
+}
+
+// ── KPIs ──────────────────────────────────────────────────────────────────────
+function renderKPIs() {
+  const total     = allData.length;
+  const groups    = [...new Set(allData.map(r => r.group))].length;
+  const totalTarget = Object.values(TARGETS).reduce((a,b)=>a+b,0); // 370
+  const pct       = total ? Math.round((total/totalTarget)*100) : 0;
+  const today     = allData.filter(r => new Date(r.timestamp).toDateString() === new Date().toDateString()).length;
+
+  // Compute avg SUS
+  const susVals   = allData.map(r => r.scores?.SUS?.value).filter(v => v != null);
+  const avgSUS    = susVals.length ? (susVals.reduce((a,b)=>a+b,0)/susVals.length).toFixed(1) : '—';
+
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-val">${total}</div>
+      <div class="kpi-label">Total Responses</div>
+      <div class="kpi-sub">Target: ${totalTarget}</div>
+      <div class="kpi-trend up">+${today} today</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-val">${pct}%</div>
+      <div class="kpi-label">Recruitment Progress</div>
+      <div class="kpi-sub">${total} / ${totalTarget} participants</div>
+    </div>
+    <div class="kpi-card navy">
+      <div class="kpi-val">${groups}</div>
+      <div class="kpi-label">Groups Active</div>
+      <div class="kpi-sub">of 5 stakeholder groups</div>
+    </div>
+    <div class="kpi-card success">
+      <div class="kpi-val">${avgSUS}</div>
+      <div class="kpi-label">Avg SUS Score</div>
+      <div class="kpi-sub">Target ≥70 (Acceptable)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val">${today}</div>
+      <div class="kpi-label">Responses Today</div>
+      <div class="kpi-sub">${new Date().toLocaleDateString('en-MY')}</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-val">${allData.filter(r=>r.group==='elderly').length}</div>
+      <div class="kpi-label">Elderly Responses</div>
+      <div class="kpi-sub">Pilot target: 70 · Full: 100</div>
+    </div>
+  `;
+}
+
+// ── OVERVIEW CHARTS ────────────────────────────────────────────────────────────
+function renderOverviewCharts() {
+  const groupCounts = countBy(allData, r => r.group);
+  const groups      = Object.keys(TARGETS);
+
+  // Groups bar chart
+  mkChart('chart-groups','bar',{
+    labels: groups.map(g => GROUP_LABELS[g]),
+    datasets:[
+      { label:'Actual', data: groups.map(g => groupCounts[g]||0),
+        backgroundColor: groups.map(g => GROUP_COLORS[g]), borderRadius:6 },
+      { label:'Target', data: groups.map(g => TARGETS[g]),
+        backgroundColor:'transparent', borderColor:'#d1d5db', borderWidth:2,
+        borderDash:[4,4], type:'line', pointRadius:0 }
+    ]
+  },{ plugins:{ legend:{ display:true, position:'top', labels:{font:{size:10},boxWidth:12} } } });
+
+  // Progress bars
+  const pb = document.getElementById('progress-bars');
+  pb.innerHTML = groups.map(g => {
+    const n   = groupCounts[g] || 0;
+    const tgt = TARGETS[g];
+    const pct = Math.min(Math.round((n/tgt)*100), 100);
+    return `<div class="prog-row">
+      <div class="prog-label">${GROUP_LABELS[g]}</div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${GROUP_COLORS[g]}"></div></div>
+      <div class="prog-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+
+  // Timeline (last 30 days)
+  const days = 30;
+  const dayBuckets = {};
+  for (let i = days-1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    dayBuckets[d.toLocaleDateString('en-MY',{month:'short',day:'numeric'})] = 0;
+  }
+  allData.forEach(r => {
+    const d = new Date(r.timestamp).toLocaleDateString('en-MY',{month:'short',day:'numeric'});
+    if (d in dayBuckets) dayBuckets[d]++;
+  });
+  mkChart('chart-timeline','line',{
+    labels: Object.keys(dayBuckets),
+    datasets:[{ label:'Responses', data: Object.values(dayBuckets),
+      borderColor: '#0E8B8B', backgroundColor: 'rgba(14,139,139,.1)',
+      fill:true, tension:.4, pointRadius:3, pointHoverRadius:5 }]
+  });
+
+  // Language (from meta.lang)
+  const langMap = { 'en':'English', 'bm':'Bahasa Malaysia', 'zh':'Chinese', 'ta':'Tamil' };
+  const langCounts = countBy(allData, r => {
+    const l = (r.meta?.lang||'').slice(0,2).toLowerCase();
+    return langMap[l] || 'English';
+  });
+  mkChart('chart-lang','doughnut',{
+    labels: Object.keys(langCounts),
+    datasets:[{ data: Object.values(langCounts),
+      backgroundColor: PALETTE, hoverOffset:8, borderWidth:2, borderColor:'white' }]
+  });
+}
+
+// ── SCORE CHARTS ──────────────────────────────────────────────────────────────
+function renderScoreCharts() {
+  // SUS histogram (0-100 in 10-point bins)
+  const susBins  = Array(10).fill(0);
+  const susVals  = allData.map(r => r.scores?.SUS?.value).filter(v => v != null);
+  susVals.forEach(v => { const bin = Math.min(Math.floor(v/10), 9); susBins[bin]++; });
+  mkChart('chart-sus','bar',{
+    labels:['0-9','10-19','20-29','30-39','40-49','50-59','60-69','70-79','80-89','90-100'],
+    datasets:[{ label:'Responses', data:susBins,
+      backgroundColor: susBins.map((_,i) => i>=7?'#16a34a':i>=6?'#ca8a04':'#dc2626'),
+      borderRadius:6 }]
+  });
+
+  // ZBI category donut
+  const zbiCats = {'Little/No (0-20)':0,'Mild-Moderate (21-40)':0,'Moderate-Severe (41-60)':0,'Severe (61-88)':0};
+  allData.filter(r=>r.group==='caregiver').forEach(r=>{
+    const v=r.scores?.ZBI?.value;
+    if(v==null)return;
+    if(v<=20)zbiCats['Little/No (0-20)']++;
+    else if(v<=40)zbiCats['Mild-Moderate (21-40)']++;
+    else if(v<=60)zbiCats['Moderate-Severe (41-60)']++;
+    else zbiCats['Severe (61-88)']++;
+  });
+  mkChart('chart-zbi','doughnut',{
+    labels:Object.keys(zbiCats),
+    datasets:[{data:Object.values(zbiCats),
+      backgroundColor:['#16a34a','#ca8a04','#ea580c','#dc2626'],
+      borderWidth:2,borderColor:'white',hoverOffset:8}]
+  });
+
+  // TAM bar per group
+  const tamGroups=['allied','caregiver','policy','public'];
+  const puMeans  = tamGroups.map(g=>{
+    const vs=allData.filter(r=>r.group===g).map(r=>r.scores?.TAM_PU?.value).filter(v=>v!=null);
+    return vs.length?mean(vs):null;
+  });
+  const peouMeans= tamGroups.map(g=>{
+    const vs=allData.filter(r=>r.group===g).map(r=>r.scores?.TAM_PEOU?.value).filter(v=>v!=null);
+    return vs.length?mean(vs):null;
+  });
+  mkChart('chart-tam','bar',{
+    labels:tamGroups.map(g=>GROUP_LABELS[g]),
+    datasets:[
+      {label:'Perceived Usefulness',data:puMeans,backgroundColor:'#0E8B8B',borderRadius:4},
+      {label:'Ease of Use',data:peouMeans,backgroundColor:'#D6F0F0',borderRadius:4,borderColor:'#0E8B8B',borderWidth:1}
+    ]
+  },{scales:{y:{min:0,max:5}}});
+
+  // WHOQOL domains - elderly only
+  const domains=['Physical','Psychological','Social','Environment'];
+  const whoMeans=domains.map(d=>{
+    const vs=allData.filter(r=>r.group==='elderly').map(r=>r.scores?.[`WHOQOL_${d}`]?.value).filter(v=>v!=null);
+    return vs.length?mean(vs):null;
+  });
+  mkChart('chart-whoqol','bar',{
+    labels:domains,
+    datasets:[{label:'Mean Score (0-100)',data:whoMeans,
+      backgroundColor:domains.map((_,i)=>PALETTE[i]),borderRadius:6}]
+  },{scales:{y:{min:0,max:100}}});
+
+  // MAST per group
+  const mastGrps=Object.keys(TARGETS);
+  const mastMeans=mastGrps.map(g=>{
+    const vs=allData.filter(r=>r.group===g).map(r=>r.scores?.MAST?.value).filter(v=>v!=null);
+    return vs.length?mean(vs):null;
+  });
+  mkChart('chart-mast','bar',{
+    labels:mastGrps.map(g=>GROUP_LABELS[g]),
+    datasets:[{label:'MAST Mean (1–5)',data:mastMeans,
+      backgroundColor:mastGrps.map(g=>GROUP_COLORS[g]),borderRadius:6}]
+  },{scales:{y:{min:0,max:5}}});
+
+  // Score summary table
+  const scoreRows = [
+    {name:'SUS', groups:'Allied Health, Elderly', max:100, key:'SUS'},
+    {name:'ZBI', groups:'Caregiver', max:88, key:'ZBI'},
+    {name:'TAM – PU', groups:'All (ex-Elderly)', max:5, key:'TAM_PU'},
+    {name:'TAM – PEOU', groups:'All (ex-Elderly)', max:5, key:'TAM_PEOU'},
+    {name:'WHOQOL Physical', groups:'Elderly', max:100, key:'WHOQOL_Physical'},
+    {name:'WHOQOL Psychological', groups:'Elderly', max:100, key:'WHOQOL_Psychological'},
+    {name:'WHOQOL Social', groups:'Elderly', max:100, key:'WHOQOL_Social'},
+    {name:'WHOQOL Environment', groups:'Elderly', max:100, key:'WHOQOL_Environment'},
+    {name:'MAST Composite', groups:'All', max:5, key:'MAST'},
+  ];
+  const tbody = document.getElementById('score-table-body');
+  tbody.innerHTML = scoreRows.map(row => {
+    const vals = allData.map(r => r.scores?.[row.key]?.value).filter(v => v != null);
+    const mn   = vals.length ? mean(vals) : null;
+    const mi   = vals.length ? Math.min(...vals) : null;
+    const mx   = vals.length ? Math.max(...vals) : null;
+    const interp = mn == null ? '—' : row.max===100 ? (mn>=70?'Acceptable+':mn>=60?'Moderate':'Poor') : (mn>=4?'High':mn>=3?'Moderate':'Low');
+    return `<tr>
+      <td><strong>${row.name}</strong></td>
+      <td style="color:var(--muted)">${row.groups}</td>
+      <td>${vals.length || 0}</td>
+      <td>${mn!=null?mn.toFixed(1):'—'}</td>
+      <td>${mi!=null?(Number.isInteger(mi)?mi:mi.toFixed(1)):'—'}</td>
+      <td>${mx!=null?(Number.isInteger(mx)?mx:mx.toFixed(1)):'—'}</td>
+      <td>${scorePill(mn!=null?Math.round(mn):null, row.max)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── DEMOGRAPHICS CHARTS ────────────────────────────────────────────────────────
+function renderDemoCharts() {
+  const d2 = (key, labels) => {
+    const counts = countBy(allData, r => r.answers?.[key] || 'Unknown');
+    return { labels, datasets:[{data:labels.map(l=>counts[l]||0),
+      backgroundColor:PALETTE,borderWidth:2,borderColor:'white',hoverOffset:6}]};
+  };
+
+  mkChart('chart-age','doughnut',d2('d1',['18-24','25-34','35-44','45-54','55-64','65-74','75+']));
+  mkChart('chart-gender','doughnut',d2('d2',['Male','Female','Prefer not to say']));
+  mkChart('chart-area','doughnut',d2('d5',['Urban','Suburban','Rural']));
+  mkChart('chart-device','doughnut',d2('d6',['Yes','No']));
+  mkChart('chart-internet','bar',{
+    labels:['Daily','Several/week','Weekly','Rarely','Never'],
+    datasets:[{data:['Daily','Several times a week','Weekly','Rarely','Never'].map(l=>{
+      const c=countBy(allData,r=>r.answers?.d7||'');return c[l]||0;}),
+      backgroundColor:'#0E8B8B',borderRadius:6,label:'Responses'}]
+  });
+
+  const states=['Johor','Kedah','Kelantan','Kuala Lumpur','Melaka','Negeri Sembilan','Pahang','Penang','Perak','Selangor'];
+  const stateAll=countBy(allData,r=>r.answers?.d4||'Other');
+  mkChart('chart-state','bar',{
+    labels:states,
+    datasets:[{data:states.map(s=>stateAll[s]||0),backgroundColor:'#1B3A6B',borderRadius:4,label:'Responses'}]
+  },{indexAxis:'y'});
+
+  const edu=['No formal education','Primary school','Secondary school','Diploma/Certificate','Bachelor\'s Degree','Postgraduate (Master/PhD)'];
+  const eduShort=['None','Primary','Secondary','Diploma','Bachelor','Postgrad'];
+  const eduCount=countBy(allData,r=>r.answers?.d3||'');
+  mkChart('chart-edu','bar',{
+    labels:eduShort,
+    datasets:[{data:edu.map(e=>eduCount[e]||0),backgroundColor:'#E07B39',borderRadius:4,label:'Responses'}]
+  });
+}
+
+// ── RESPONSES TABLE ────────────────────────────────────────────────────────────
+function renderResponses() {
+  const grpFilter = document.getElementById('filter-group')?.value || '';
+  const filtered  = grpFilter ? allData.filter(r=>r.group===grpFilter) : allData;
+  const tbody     = document.getElementById('responses-tbody');
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">No responses yet.</td></tr>`;
+    document.getElementById('responses-count').textContent = '';
+    return;
+  }
+
+  tbody.innerHTML = [...filtered].reverse().slice(0,200).map((r,i) => {
+    const scores = r.scores || {};
+    const keyScores = [
+      scores.SUS     ? `SUS ${scores.SUS.value}` : '',
+      scores.ZBI     ? `ZBI ${scores.ZBI.value}` : '',
+      scores.TAM_PU  ? `PU ${scores.TAM_PU.value}` : '',
+      scores.MAST    ? `MAST ${scores.MAST.value}` : '',
+    ].filter(Boolean).slice(0,3).join(' · ') || '—';
+
+    return `<tr>
+      <td style="color:var(--muted)">${filtered.length - i}</td>
+      <td><code style="font-size:10px;background:var(--lgrey);padding:2px 5px;border-radius:3px">${(r.id||'').slice(-8)}</code></td>
+      <td style="white-space:nowrap">${fmtDate(r.timestamp)}</td>
+      <td><span class="badge-group" style="background:${GROUP_COLORS[r.group]}22;color:${GROUP_COLORS[r.group]}">${GROUP_LABELS[r.group]||r.group}</span></td>
+      <td>${Object.keys(r.answers||{}).length}</td>
+      <td style="font-size:11px;color:var(--muted)">${keyScores}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('responses-count').textContent =
+    `Showing ${Math.min(filtered.length,200)} of ${filtered.length} responses${grpFilter?' (filtered)':''}`;
+}
+
+// ── EXPORT CSV ────────────────────────────────────────────────────────────────
+function exportCSV() {
+  if (!allData.length) { alert('No data to export yet.'); return; }
+  const allKeys = [...new Set(allData.flatMap(r => Object.keys(r.answers||{})))].sort();
+  const scoreKeys = [...new Set(allData.flatMap(r => Object.keys(r.scores||{})))];
+  const header = ['id','timestamp','group', ...allKeys, ...scoreKeys.map(k=>`score_${k}`)];
+  const rows = allData.map(r => [
+    r.id, r.timestamp, r.group,
+    ...allKeys.map(k => r.answers?.[k] ?? ''),
+    ...scoreKeys.map(k => r.scores?.[k]?.value ?? ''),
+  ]);
+  const csv = [header, ...rows].map(row => row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = `dtam_my_responses_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ── CLEAR DATA ────────────────────────────────────────────────────────────────
+function confirmClear() {
+  if (confirm('⚠️ This will permanently delete ALL saved responses from this browser.\n\nExport CSV first if you need to keep the data.\n\nProceed?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    allData = [];
+    refreshData();
+  }
+}
+
+// ── EMPTY STATE ────────────────────────────────────────────────────────────────
+function showEmpty() {
+  const container = document.querySelector('.container');
+  const existing  = document.getElementById('empty-state');
+  if (!existing) {
+    const el = document.createElement('div');
+    el.id = 'empty-state';
+    el.className = 'empty';
+    el.innerHTML = `
+      <div class="empty-icon">📭</div>
+      <h3>No responses yet</h3>
+      <p>Open the survey questionnaire, complete a response, and it will appear here automatically.</p>
+      <a href="telerehab_questionnaire_app_v2.html" target="_blank">→ Open Questionnaire App</a>
+    `;
+    document.getElementById('tab-overview').prepend(el);
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+refreshData();
+if (!allData.length) showEmpty();
+renderPhaseBars();
+setInterval(() => { allData = loadData(); renderKPIs(); }, 30000);
+</script>
+</body>
+</html>

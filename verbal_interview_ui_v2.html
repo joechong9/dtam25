@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DTAM-MY Verbal Interview v2 — Data Collection Interface</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+  :root {
+    --navy: #1B3A6B; --teal: #0E8B8B; --lteal: #D6F0F0;
+    --lnavy: #D8E4F0; --lgrey: #F2F5F8; --orange: #E07B39;
+    --white: #fff; --text: #1a1a2e; --muted: #6b7280;
+    --success: #16a34a; --warning: #d97706; --danger: #dc2626;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+  body { background: var(--lgrey); color: var(--text); }
+
+  /* ── Layout ── */
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+  .topbar { background: var(--navy); color: #fff; padding: 10px 20px;
+    display: flex; justify-content: space-between; align-items: center; }
+  .topbar h1 { font-size: 15px; letter-spacing: .5px; }
+  .topbar .session-badge { background: var(--teal); padding: 3px 10px;
+    border-radius: 12px; font-size: 12px; }
+
+  .main { display: grid; grid-template-columns: 320px 1fr 280px;
+    gap: 16px; padding: 16px; flex: 1; }
+
+  /* ── Cards ── */
+  .card { background: var(--white); border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08); overflow: hidden; }
+  .card-header { background: var(--navy); color: #fff; padding: 10px 14px;
+    font-size: 13px; font-weight: 600; letter-spacing: .3px; }
+  .card-body { padding: 14px; }
+
+  /* ── Setup Panel ── */
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; color: var(--muted);
+    margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+  .field select, .field input { width: 100%; padding: 7px 10px;
+    border: 1.5px solid #d1d5db; border-radius: 6px; font-size: 13px;
+    background: var(--lgrey); }
+  .field select:focus, .field input:focus {
+    outline: none; border-color: var(--teal); }
+
+  .btn { padding: 8px 16px; border: none; border-radius: 7px;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: .15s; }
+  .btn-primary { background: var(--teal); color: #fff; width: 100%; padding: 10px; }
+  .btn-primary:hover { background: #0a7070; }
+  .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--teal);
+    color: var(--teal); }
+
+  /* ── Interview Panel ── */
+  .progress-bar { height: 5px; background: var(--lnavy); border-radius: 3px; margin-bottom: 14px; }
+  .progress-fill { height: 100%; background: var(--teal); border-radius: 3px;
+    transition: width .4s ease; }
+  .progress-label { font-size: 11px; color: var(--muted); margin-bottom: 6px;
+    display: flex; justify-content: space-between; }
+
+  .instrument-badge { display: inline-block; background: var(--lteal);
+    color: var(--teal); font-size: 11px; font-weight: 700; padding: 2px 8px;
+    border-radius: 10px; margin-bottom: 8px; }
+
+  .question-box { background: var(--lnavy); border-left: 4px solid var(--navy);
+    border-radius: 0 8px 8px 0; padding: 12px 14px; margin-bottom: 14px; }
+  .question-box .q-code { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .question-box .q-text { font-size: 17px; font-weight: 500; line-height: 1.4; }
+  .question-box .q-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* ── Record Button ── */
+  .record-zone { text-align: center; padding: 14px 0; }
+  .record-btn { width: 72px; height: 72px; border-radius: 50%; border: none;
+    cursor: pointer; font-size: 28px; transition: .2s;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 8px; }
+  .record-btn.idle { background: var(--lgrey); border: 3px solid var(--teal); }
+  .record-btn.recording { background: var(--danger); animation: pulse 1s infinite; }
+  .record-btn.processing { background: var(--warning); }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.4)}
+    50%{box-shadow:0 0 0 10px rgba(220,38,38,0)} }
+  .record-status { font-size: 12px; color: var(--muted); }
+  .record-duration { font-size: 20px; font-weight: 700; color: var(--danger); }
+
+  /* ── Transcript Box ── */
+  .transcript-box { background: var(--lgrey); border: 1.5px solid #e5e7eb;
+    border-radius: 8px; min-height: 70px; padding: 10px 12px;
+    font-size: 14px; line-height: 1.6; margin-bottom: 12px; }
+  .transcript-box.live { border-color: var(--teal); background: #f0fafa; }
+  .transcript-box textarea { width: 100%; border: none; background: transparent;
+    resize: none; font-size: 14px; line-height: 1.6; outline: none;
+    font-family: inherit; }
+  .confidence-bar { display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+  .conf-fill { height: 4px; border-radius: 2px; flex: 1; background: #e5e7eb; }
+  .conf-inner { height: 100%; border-radius: 2px; }
+
+  /* ── Scoring ── */
+  .score-section { margin-bottom: 12px; }
+  .score-label { font-size: 12px; color: var(--muted); font-weight: 600;
+    text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; }
+  .likert-row { display: flex; gap: 6px; }
+  .likert-btn { flex: 1; padding: 8px 4px; border: 2px solid #e5e7eb;
+    border-radius: 7px; background: var(--lgrey); cursor: pointer;
+    font-size: 11px; text-align: center; transition: .15s; }
+  .likert-btn:hover { border-color: var(--teal); }
+  .likert-btn.selected { border-color: var(--teal); background: var(--lteal);
+    color: var(--teal); font-weight: 700; }
+  .likert-btn.auto-selected { border-color: var(--orange);
+    background: #fff3e8; color: var(--orange); font-weight: 700; }
+  .override-flag { font-size: 11px; color: var(--orange); margin-top: 4px; }
+
+  .nav-row { display: flex; gap: 8px; margin-top: 14px; }
+  .nav-row .btn { flex: 1; }
+
+  /* ── Log Panel ── */
+  .log-entry { padding: 8px 10px; border-bottom: 1px solid var(--lgrey);
+    font-size: 12px; }
+  .log-entry:last-child { border-bottom: none; }
+  .log-entry .le-code { font-weight: 700; color: var(--navy); }
+  .log-entry .le-score { float: right; background: var(--lteal);
+    color: var(--teal); padding: 1px 6px; border-radius: 8px; font-weight: 700; }
+  .log-entry .le-override { float: right; background: #fff3e8;
+    color: var(--orange); padding: 1px 6px; border-radius: 8px; font-weight: 700;
+    margin-right: 4px; }
+  .log-entry .le-text { color: var(--muted); margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── States ── */
+  .screen { display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px; }
+  .setup-card { background: var(--white); border-radius: 14px; padding: 32px;
+    width: 100%; max-width: 480px; box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+  .setup-card .logo { text-align: center; margin-bottom: 24px; }
+  .setup-card .logo h2 { color: var(--navy); font-size: 20px; }
+  .setup-card .logo p { color: var(--muted); font-size: 13px; }
+
+  .summary-card { background: var(--white); border-radius: 14px; padding: 28px;
+    width: 100%; max-width: 540px; box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+  .summary-row { display: flex; justify-content: space-between; padding: 8px 0;
+    border-bottom: 1px solid var(--lgrey); font-size: 14px; }
+  .summary-row:last-child { border-bottom: none; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 8px;
+    font-size: 11px; font-weight: 700; }
+  .tag-green { background: #dcfce7; color: var(--success); }
+  .tag-orange { background: #fff3e8; color: var(--orange); }
+
+  .consent-box { background: var(--lnavy); border-radius: 8px; padding: 12px;
+    font-size: 13px; margin-bottom: 16px; line-height: 1.6; }
+  .consent-check { display: flex; align-items: center; gap: 8px;
+    font-size: 13px; margin-bottom: 14px; cursor: pointer; }
+  .consent-check input { width: 16px; height: 16px; accent-color: var(--teal); }
+
+  /* [v2] M6 — Responsive layout for tablets and phones */
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+    .setup-col { display: none; }
+    .right-panel { display: none; }
+  }
+  @media (max-width: 600px) {
+    .topbar { padding: 8px 12px; flex-wrap: wrap; gap: 6px; }
+    .topbar h1 { font-size: 13px; }
+    .card-body { padding: 10px; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ── Instrument bank (sample items from DTAM-MY suite) ──────────────────────
+const INSTRUMENTS = {
+  en: [
+    { code: "TAM-1", instrument: "TAM", section: "Perceived Usefulness",
+      text: "Using telerehabilitation technology would improve my rehabilitation outcomes.",
+      sub: "1 = Strongly Disagree → 5 = Strongly Agree", type: "likert5" },
+    { code: "TAM-2", instrument: "TAM", section: "Perceived Usefulness",
+      text: "Telerehabilitation technology would make it easier to manage my rehabilitation exercises at home.",
+      sub: "1 = Strongly Disagree → 5 = Strongly Agree", type: "likert5" },
+    { code: "UTAUT-1", instrument: "UTAUT2", section: "Effort Expectancy",
+      text: "Learning to use telerehabilitation technology would be easy for me.",
+      sub: "1 = Strongly Disagree → 5 = Strongly Agree", type: "likert5" },
+    { code: "TUQ-1", instrument: "TUQ", section: "Usability",
+      text: "How easy was it to connect to your therapist using this system?",
+      sub: "1 = Very Difficult → 5 = Very Easy", type: "likert5" },
+    { code: "SUS-1", instrument: "SUS", section: "System Usability",
+      text: "I think I would like to use this system frequently.",
+      sub: "1 = Strongly Disagree → 5 = Strongly Agree", type: "likert5" },
+    { code: "WHOQOL-1", instrument: "WHOQOL-BREF", section: "Physical Health",
+      text: "How would you rate your quality of life over the past two weeks?",
+      sub: "1 = Very Poor → 5 = Very Good", type: "likert5" },
+  ],
+  bm: [
+    { code: "TAM-1", instrument: "TAM", section: "Kegunaan Yang Dirasai",
+      text: "Menggunakan teknologi telerehabilitasi akan meningkatkan hasil pemulihan saya.",
+      sub: "1 = Sangat Tidak Setuju → 5 = Sangat Setuju", type: "likert5" },
+    { code: "TAM-2", instrument: "TAM", section: "Kegunaan Yang Dirasai",
+      text: "Teknologi telerehabilitasi akan memudahkan saya menguruskan senaman pemulihan di rumah.",
+      sub: "1 = Sangat Tidak Setuju → 5 = Sangat Setuju", type: "likert5" },
+    { code: "UTAUT-1", instrument: "UTAUT2", section: "Jangkaan Usaha",
+      text: "Mempelajari cara menggunakan teknologi telerehabilitasi akan mudah bagi saya.",
+      sub: "1 = Sangat Tidak Setuju → 5 = Sangat Setuju", type: "likert5" },
+    { code: "TUQ-1", instrument: "TUQ", section: "Kebolehgunaan",
+      text: "Seberapa mudah untuk berhubung dengan ahli terapi anda menggunakan sistem ini?",
+      sub: "1 = Sangat Sukar → 5 = Sangat Mudah", type: "likert5" },
+    { code: "SUS-1", instrument: "SUS", section: "Kebolehgunaan Sistem",
+      text: "Saya rasa saya ingin menggunakan sistem ini dengan kerap.",
+      sub: "1 = Sangat Tidak Setuju → 5 = Sangat Setuju", type: "likert5" },
+    { code: "WHOQOL-1", instrument: "WHOQOL-BREF", section: "Kesihatan Fizikal",
+      text: "Bagaimanakah anda menilai kualiti hidup anda dalam dua minggu yang lalu?",
+      sub: "1 = Sangat Buruk → 5 = Sangat Baik", type: "likert5" },
+  ],
+};
+
+const LIKERT5_LABELS = {
+  en: ["1\nSD", "2\nD", "3\nN", "4\nA", "5\nSA"],
+  bm: ["1\nSTS", "2\nTS", "3\nN", "4\nS", "5\nSS"],
+};
+
+// Simulated STT keyword→score mapping (in production: call Whisper + NLP API)
+function simulateSTT(lang) {
+  const phrases = {
+    en: [
+      "I strongly agree with that",
+      "I think it would be quite useful",
+      "I'm not sure, maybe neutral",
+      "That seems a bit difficult",
+      "I strongly disagree",
+    ],
+    bm: [
+      "Saya sangat setuju dengan perkara itu",
+      "Saya rasa ia agak berguna",
+      "Saya tidak pasti, mungkin neutral",
+      "Itu kelihatan agak sukar",
+      "Saya sangat tidak setuju",
+    ],
+  };
+  const scores = [5, 4, 3, 2, 1];
+  const idx = Math.floor(Math.random() * 5);
+  return { transcript: (phrases[lang] || phrases.en)[idx], score: scores[idx], confidence: 0.65 + Math.random() * 0.30 };
+}
+
+// ── App ─────────────────────────────────────────────────────────────────────
+function App() {
+  const [screen, setScreen] = useState("setup"); // setup | consent | interview | summary
+  const [config, setConfig] = useState({
+    researcherId: "", group: "elderly", lang: "en", mode: "assisted",
+    participantId: "", site: "urban",
+  });
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [itemIndex, setItemIndex] = useState(0);
+  const [recState, setRecState] = useState("idle"); // idle | recording | processing | done
+  const [duration, setDuration] = useState(0);
+  const [transcript, setTranscript] = useState("");
+  const [autoScore, setAutoScore] = useState(null);
+  const [confidence, setConfidence] = useState(null);
+  const [manualScore, setManualScore] = useState(null);
+  const [log, setLog] = useState([]);
+  const timerRef = useRef(null);
+
+  const items = INSTRUMENTS[config.lang] || INSTRUMENTS.en;
+  const item = items[itemIndex];
+  const labels = LIKERT5_LABELS[config.lang] || LIKERT5_LABELS.en;
+  const totalItems = items.length;
+  const isOverride = manualScore !== null && manualScore !== autoScore;
+  const activeScore = manualScore ?? autoScore;
+  const sessionId = `DTAM-${config.group.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+
+  // Timer
+  useEffect(() => {
+    if (recState === "recording") {
+      timerRef.current = setInterval(() => setDuration(d => d + 1), 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [recState]);
+
+  function startRecord() {
+    setRecState("recording");
+    setDuration(0);
+    setTranscript("");
+    setAutoScore(null);
+    setManualScore(null);
+    setConfidence(null);
+  }
+
+  function stopRecord() {
+    setRecState("processing");
+    // Simulate async STT (replace with fetch('/api/stt', {audio}) in production)
+    setTimeout(() => {
+      const result = simulateSTT(config.lang);
+      setTranscript(result.transcript);
+      setAutoScore(result.score);
+      setConfidence(result.confidence);
+      setRecState("done");
+    }, 1400);
+  }
+
+  function confirmAndNext() {
+    const entry = {
+      code: item.code,
+      instrument: item.instrument,
+      transcript,
+      autoScore,
+      confirmedScore: activeScore,
+      isOverride,
+      confidence,
+      ts: new Date().toISOString(),
+    };
+    setLog(prev => [...prev, entry]);
+
+    if (itemIndex + 1 < totalItems) {
+      setItemIndex(i => i + 1);
+      setRecState("idle");
+      setTranscript("");
+      setAutoScore(null);
+      setManualScore(null);
+      setConfidence(null);
+    } else {
+      setScreen("summary");
+    }
+  }
+
+  function fmtDuration(s) {
+    return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+  }
+
+  // ── Screens ──────────────────────────────────────────────────────────────
+
+  if (screen === "setup") return (
+    <div className="screen">
+      <div className="setup-card">
+        <div className="logo">
+          <h2>🏥 DTAM-MY</h2>
+          <p>Verbal Interview Data Collection</p>
+          <p style={{fontSize:11,color:"#9ca3af",marginTop:4}}>UTAR · PhD Research · 24UED03838</p>
+        </div>
+        <div className="field">
+          <label>Researcher ID</label>
+          <input placeholder="e.g. R001" value={config.researcherId}
+            onChange={e => setConfig(c => ({...c, researcherId: e.target.value}))} />
+        </div>
+        <div className="field">
+          <label>Participant ID</label>
+          <input placeholder="e.g. ELD-001" value={config.participantId}
+            onChange={e => setConfig(c => ({...c, participantId: e.target.value}))} />
+        </div>
+        <div className="field">
+          <label>Stakeholder Group</label>
+          <select value={config.group} onChange={e => setConfig(c => ({...c, group: e.target.value}))}>
+            <option value="elderly">Elderly (Post-Stroke)</option>
+            <option value="caregiver">Caregiver / Family</option>
+            <option value="allied">Allied Health (PT / OT)</option>
+            <option value="policymaker">Policy-Maker (MOH)</option>
+            <option value="general">General Public</option>
+          </select>
+        </div>
+        <div className="field">
+          <label>Interview Language</label>
+          <select value={config.lang} onChange={e => setConfig(c => ({...c, lang: e.target.value}))}>
+            <option value="en">English</option>
+            <option value="bm">Bahasa Malaysia</option>
+            <option value="zh">中文 (Mandarin)</option>
+            <option value="ta">தமிழ் (Tamil)</option>
+          </select>
+        </div>
+        <div className="field">
+          <label>Interview Mode</label>
+          <select value={config.mode} onChange={e => setConfig(c => ({...c, mode: e.target.value}))}>
+            <option value="assisted">Researcher-Assisted</option>
+            <option value="self">Self-Administered</option>
+          </select>
+        </div>
+        <div className="field">
+          <label>Site</label>
+          <select value={config.site} onChange={e => setConfig(c => ({...c, site: e.target.value}))}>
+            <option value="urban">Urban</option>
+            <option value="rural">Rural</option>
+          </select>
+        </div>
+        <button className="btn btn-primary"
+          disabled={!config.researcherId || !config.participantId}
+          onClick={() => setScreen("consent")}>
+          Proceed to Consent →
+        </button>
+      </div>
+    </div>
+  );
+
+  if (screen === "consent") return (
+    <div className="screen">
+      <div className="setup-card">
+        <h3 style={{color:"var(--navy)",marginBottom:14}}>📋 Consent &amp; Session Start</h3>
+        <div className="consent-box">
+          <strong>PDPA 2010 Notice:</strong> This session will record audio and transcriptions for research purposes only.
+          Data will be stored on Malaysian-territory servers (encrypted, AES-256). Audio is classified as personal data
+          and will be retained for 5 years post-publication, then securely deleted. Participation is voluntary.
+          <br/><br/>
+          <strong>Ethics:</strong> UTAR UREC approved. Participant may withdraw at any time without consequence.
+        </div>
+        <label className="consent-check">
+          <input type="checkbox" checked={consentChecked} onChange={e => setConsentChecked(e.target.checked)} />
+          Participant has been informed and verbally consents to audio recording.
+          Researcher ID: <strong style={{marginLeft:4}}>{config.researcherId}</strong>
+        </label>
+        <div style={{fontSize:12,color:"var(--muted)",marginBottom:14}}>
+          Session: <strong>{sessionId}</strong> · {new Date().toLocaleString()}
+        </div>
+        <button className="btn btn-primary" disabled={!consentChecked}
+          onClick={() => setScreen("interview")}>
+          Begin Interview →
+        </button>
+      </div>
+    </div>
+  );
+
+  if (screen === "summary") return (
+    <div className="screen">
+      <div className="summary-card">
+        <h3 style={{color:"var(--navy)",marginBottom:4}}>✅ Session Complete</h3>
+        <p style={{fontSize:13,color:"var(--muted)",marginBottom:18}}>
+          {sessionId} · {log.length} items recorded
+        </p>
+        {log.map((e, i) => (
+          <div className="summary-row" key={i}>
+            <span><strong>{e.code}</strong> — {e.instrument}</span>
+            <span>
+              {e.isOverride && <span className="tag tag-orange" style={{marginRight:6}}>Override</span>}
+              <span className="tag tag-green">Score: {e.confirmedScore}</span>
+            </span>
+          </div>
+        ))}
+        <div style={{marginTop:18,padding:"10px 0",borderTop:"1px solid var(--lgrey)",fontSize:13}}>
+          <strong>Override rate:</strong> {Math.round(log.filter(e=>e.isOverride).length/log.length*100)}%
+          &nbsp;·&nbsp;
+          <strong>Avg confidence:</strong> {(log.reduce((s,e)=>s+(e.confidence||0),0)/log.length*100).toFixed(0)}%
+        </div>
+        <div style={{display:"flex",gap:8,marginTop:14}}>
+          <button className="btn btn-success" style={{flex:1}}
+            onClick={() => { alert("In production: POST /api/sessions with log data → PostgreSQL warehouse"); }}>
+            Submit to Warehouse
+          </button>
+          <button className="btn btn-outline" style={{flex:1}}
+            onClick={() => { const d = JSON.stringify(log,null,2); const a=document.createElement("a");
+              a.href=URL.createObjectURL(new Blob([d],{type:"application/json"}));
+              a.download=`${sessionId}.json`; a.click(); }}>
+            Export JSON
+          </button>
+        </div>
+        <button className="btn btn-outline" style={{width:"100%",marginTop:8}}
+          onClick={() => { setScreen("setup"); setLog([]); setItemIndex(0); setConsentChecked(false);
+            setConfig(c=>({...c,participantId:""})); }}>
+          New Session
+        </button>
+      </div>
+    </div>
+  );
+
+  // ── Interview Screen ─────────────────────────────────────────────────────
+  return (
+    <div className="app">
+      <div className="topbar">
+        <h1>DTAM-MY Verbal Interview</h1>
+        <span className="session-badge">{sessionId}</span>
+        <span style={{fontSize:12}}>{config.participantId} · {config.group.toUpperCase()} · {config.lang.toUpperCase()}</span>
+      </div>
+
+      <div className="main">
+        {/* Left: Session Info */}
+        <div>
+          <div className="card" style={{marginBottom:12}}>
+            <div className="card-header">Session Info</div>
+            <div className="card-body">
+              {[
+                ["Participant", config.participantId],
+                ["Group", config.group],
+                ["Language", config.lang.toUpperCase()],
+                ["Mode", config.mode],
+                ["Site", config.site],
+                ["Researcher", config.researcherId],
+              ].map(([k,v]) => (
+                <div key={k} style={{display:"flex",justifyContent:"space-between",
+                  fontSize:13,paddingBottom:6,borderBottom:"1px solid var(--lgrey)",marginBottom:6}}>
+                  <span style={{color:"var(--muted)"}}>{k}</span>
+                  <strong>{v}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="card">
+            <div className="card-header">Completed Items ({log.length})</div>
+            <div className="card-body" style={{padding:0,maxHeight:260,overflowY:"auto"}}>
+              {log.length === 0 && <p style={{padding:"12px",fontSize:13,color:"var(--muted)"}}>No items yet.</p>}
+              {log.map((e,i) => (
+                <div className="log-entry" key={i}>
+                  <span className="le-code">{e.code}</span>
+                  {e.isOverride
+                    ? <span className="le-override">OVR {e.confirmedScore}</span>
+                    : <span className="le-score">{e.confirmedScore}</span>}
+                  <div className="le-text">{e.transcript}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Centre: Question + Record */}
+        <div>
+          <div className="card">
+            <div className="card-header">
+              Item {itemIndex + 1} of {totalItems} — {item.section}
+            </div>
+            <div className="card-body">
+              <div className="progress-label">
+                <span>Progress</span>
+                <span>{Math.round((itemIndex/totalItems)*100)}%</span>
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{width:`${(itemIndex/totalItems)*100}%`}}/>
+              </div>
+
+              <span className="instrument-badge">{item.instrument} · {item.code}</span>
+
+              <div className="question-box">
+                <div className="q-code">{item.code}</div>
+                <div className="q-text">{item.text}</div>
+                <div className="q-sub">{item.sub}</div>
+              </div>
+
+              {/* Record */}
+              <div className="record-zone">
+                {recState === "recording" &&
+                  <div className="record-duration">{fmtDuration(duration)}</div>}
+                <button
+                  className={`record-btn ${recState === "recording" ? "recording" : recState === "processing" ? "processing" : "idle"}`}
+                  onClick={recState === "idle" || recState === "done" ? startRecord :
+                    recState === "recording" ? stopRecord : undefined}
+                  disabled={recState === "processing"}>
+                  {recState === "recording" ? "⏹" : recState === "processing" ? "⏳" : "🎙"}
+                </button>
+                <div className="record-status">
+                  {recState === "idle" && "Tap to record participant response"}
+                  {recState === "recording" && "Recording… tap ⏹ to stop"}
+                  {recState === "processing" && "Transcribing…"}
+                  {recState === "done" && "Transcript ready — review below"}
+                </div>
+              </div>
+
+              {/* Transcript */}
+              {(recState === "done" || transcript) && (
+                <>
+                  <div style={{fontSize:12,color:"var(--muted)",marginBottom:4,fontWeight:600,textTransform:"uppercase",letterSpacing:.4}}>
+                    Transcript (edit if needed)
+                  </div>
+                  <div className={`transcript-box ${recState === "done" ? "live" : ""}`}>
+                    <textarea rows={3} value={transcript}
+                      onChange={e => setTranscript(e.target.value)}/>
+                  </div>
+                  {confidence !== null && (
+                    <div className="confidence-bar">
+                      <span>STT Confidence</span>
+                      <div className="conf-fill">
+                        <div className="conf-inner" style={{
+                          width:`${confidence*100}%`,
+                          background: confidence > 0.8 ? "var(--success)" : confidence > 0.6 ? "var(--warning)" : "var(--danger)"
+                        }}/>
+                      </div>
+                      <span>{(confidence*100).toFixed(0)}%</span>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Scoring */}
+              {recState === "done" && (
+                <div className="score-section">
+                  <div className="score-label">
+                    Confirm Score
+                    {autoScore && <span style={{fontWeight:400,color:"var(--teal)",marginLeft:6}}>
+                      (Auto-suggested: {autoScore})
+                    </span>}
+                  </div>
+                  <div className="likert-row">
+                    {labels.map((label, idx) => {
+                      const val = idx + 1;
+                      const isAuto = val === autoScore && manualScore === null;
+                      const isManual = val === manualScore;
+                      return (
+                        <button key={val}
+                          className={`likert-btn ${isManual ? "selected" : isAuto ? "auto-selected" : ""}`}
+                          onClick={() => setManualScore(val === manualScore ? null : val)}>
+                          {label.split("\n").map((l,i) => <div key={i}>{l}</div>)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {isOverride && (
+                    <div className="override-flag">
+                      ⚠ Manual override — will be flagged in QA log
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="nav-row">
+                <button className="btn btn-outline" disabled={itemIndex === 0}
+                  onClick={() => { setItemIndex(i=>i-1); setRecState("idle");
+                    setTranscript(""); setAutoScore(null); setManualScore(null); }}>
+                  ← Back
+                </button>
+                <button className="btn btn-primary"
+                  disabled={recState !== "done" || activeScore === null}
+                  onClick={confirmAndNext}>
+                  Confirm &amp; Next →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: STT Info + Tips */}
+        <div>
+          <div className="card" style={{marginBottom:12}}>
+            <div className="card-header">STT Engine Status</div>
+            <div className="card-body">
+              {[
+                ["Model", "Whisper large-v3"],
+                ["Language", config.lang === "en" ? "English" : config.lang === "bm" ? "BM" : config.lang === "zh" ? "ZH (Mandarin)" : "TA (Tamil)"],
+                ["Mode", "Self-hosted (PDPA)"],
+                ["Status", "● Ready"],
+              ].map(([k,v]) => (
+                <div key={k} style={{display:"flex",justifyContent:"space-between",
+                  fontSize:12,paddingBottom:5,borderBottom:"1px solid var(--lgrey)",marginBottom:5}}>
+                  <span style={{color:"var(--muted)"}}>{k}</span>
+                  <span style={{fontWeight:600,color:k==="Status"?"var(--success)":"inherit"}}>{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card" style={{marginBottom:12}}>
+            <div className="card-header">Scoring Key</div>
+            <div className="card-body">
+              {[["5","Strongly Agree / Very Easy / Very Good"],
+                ["4","Agree / Easy / Good"],
+                ["3","Neutral"],
+                ["2","Disagree / Difficult / Poor"],
+                ["1","Strongly Disagree / Very Difficult / Very Poor"],
+              ].map(([s,l]) => (
+                <div key={s} style={{fontSize:12,display:"flex",gap:8,marginBottom:5}}>
+                  <span style={{background:"var(--lteal)",color:"var(--teal)",borderRadius:4,
+                    padding:"1px 6px",fontWeight:700,minWidth:20,textAlign:"center"}}>{s}</span>
+                  <span style={{color:"var(--muted)"}}>{l}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card-header">Researcher Tips</div>
+            <div className="card-body">
+              <ul style={{fontSize:12,color:"var(--muted)",paddingLeft:16,lineHeight:1.8}}>
+                <li>Allow 5–10 s silence before stopping</li>
+                <li>Edit transcript for code-switching errors</li>
+                <li>Tamil: prefer manual entry if STT confidence &lt; 60%</li>
+                <li>Override is logged — note reason if asked</li>
+                <li>All audio stays on Malaysian server</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
