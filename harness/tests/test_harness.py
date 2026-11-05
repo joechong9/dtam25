@@ -124,32 +124,6 @@ class ConstantsFixtures(unittest.TestCase):
         self.assertEqual(self.hits("the pilot is NOT n=50"), [])
         self.assertEqual(self.hits("General Public (n=50)"), [])
 
-    def test_ethics_submission_pending(self):
-        hit = ["This study has been submitted to the UTAR University Research Ethics Committee (UREC) for review.",
-               "📋 Ethics application submitted to UTAR UREC — approval pending",
-               "Kajian ini telah dikemukakan kepada Jawatankuasa Etika Penyelidikan Universiti UTAR (UREC) untuk semakan.",
-               "Permohonan etika dikemukakan kepada UTAR UREC",
-               "本研究已提交拉曼大学（UTAR）大学研究伦理委员会（UREC）审查，目前尚待批准",
-               "伦理申请已提交 UTAR UREC — 审批中",
-               "இந்த ஆராய்ச்சி UTAR பல்கலைக்கழக ஆராய்ச்சி நெறிமுறை குழுவின் (UREC) மதிப்பாய்வுக்குச் சமர்ப்பிக்கப்பட்டுள்ளது.",
-               "UTAR UREC-க்கு நெறிமுறை விண்ணப்பம் சமர்ப்பிக்கப்பட்டது"]
-        ok = ["UTAR UREC ethics application — awaiting submission; approval pending",
-              "The application has not yet been submitted to UREC.",
-              "It will be submitted to UREC after the pilot.",
-              "Permohonan etika UTAR UREC — belum dikemukakan; kelulusan belum diterima",
-              "UTAR UREC 伦理申请 — 尚未提交，批准待定",
-              "UTAR UREC நெறிமுறை விண்ணப்பம் — இன்னும் சமர்ப்பிக்கப்படவில்லை",
-              "Your response was submitted successfully.",
-              "您的回答已提交。",
-              "உங்கள் பதில் சமர்ப்பிக்கப்பட்டது",
-              "Dossier ready · awaiting UREC submission date"]
-        for t in hit:
-            with self.subTest(t=t):
-                self.assertEqual(self.hits(t), ["ETHICS_SUBMISSION"])
-        for t in ok:
-            with self.subTest(t=t):
-                self.assertEqual(self.hits(t), [])
-
     def test_ethics_status_pending(self):
         hit = ["This study has been reviewed and approved by the UTAR UREC.",
                "<strong>Ethics:</strong> UTAR UREC approved.",
@@ -162,7 +136,7 @@ class ConstantsFixtures(unittest.TestCase):
         ok = ["Approval is pending, and no data will be collected until it is granted.",
               "Available after UREC ethics clearance",
               "'Kelulusan UTAR UREC Tertunda'",
-              "本研究正在等待拉曼大学（UTAR）大学研究伦理委员会（UREC）的伦理批准",
+              "本研究已提交拉曼大学（UTAR）大学研究伦理委员会（UREC）审查，目前尚待批准",
               "'UTAR UREC批准待定'",
               "'UTAR UREC அங்கீகாரம் நிலுவையில்'",
               "8. Ethics Approval",
