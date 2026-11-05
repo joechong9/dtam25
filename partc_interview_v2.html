@@ -382,10 +382,75 @@ function genSessionId() {
   return "DTAM-"+S.group.substring(0,3).toUpperCase()+"-"+Date.now().toString(36).toUpperCase();
 }
 
+/** Escape user-entered text before it is placed in an innerHTML template. */
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/**
+ * @typedef {{transcript:string, notes:string, recSecs:number, status:'done'|'partial'|'skip'}} InterviewResponse
+ */
+
+// ── Persistence ──
+// Draft of the running interview: sessionStorage, so an accidental reload or back-navigation does not
+// lose the interview, while transcripts are not left on the device after the tab is closed.
+const DRAFT_KEY = 'dtam_partc_draft';
+// Metadata-only index read by admin_portal_v2.html (no transcripts or notes).
+const INTERVIEW_INDEX_KEY = 'dtam_my_interviews';
+const ADMIN_GROUP = { caregiver:'caregiver', allied:'allied', policymaker:'policy', elderly:'elderly' };
+const DRAFT_FIELDS = ['screen','researcherId','participantId','group','lang','site','consentChecked',
+                      'sessionId','secIdx','qIdx','responses','startedAt','exported','showBilingual'];
+
+function saveDraft() {
+  if (S.screen !== 'interview' && S.screen !== 'summary') return;
+  try {
+    const d = {}; DRAFT_FIELDS.forEach(k => d[k] = S[k]);
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+  } catch(e) { /* storage unavailable: nothing to do */ }
+}
+function clearDraft() { try { sessionStorage.removeItem(DRAFT_KEY); } catch(e) {} }
+function restoreDraft() {
+  try {
+    const d = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || 'null');
+    if (!d || !d.sessionId || !QB[d.group]) return false;
+    DRAFT_FIELDS.forEach(k => { if (k in d) S[k] = d[k]; });
+    S.recState = 'idle'; S.recSecs = 0;
+    return true;
+  } catch(e) { return false; }
+}
+
+function upsertInterviewIndex() {
+  if (!S.sessionId) return;
+  try {
+    const qs = allQuestions();
+    const done = qs.filter(q => getR(q.code).status === 'done').length;
+    const entry = {
+      id: S.sessionId,
+      group: ADMIN_GROUP[S.group] || S.group,
+      interviewer: S.researcherId,
+      language: S.lang,
+      site: S.site,
+      startedAt: S.startedAt || Date.now(),
+      endedAt: Date.now(),
+      duration: Math.round((Date.now() - (S.startedAt || Date.now())) / 1000),   // seconds
+      recordedSecs: qs.reduce((t, q) => t + (getR(q.code).recSecs || 0), 0),
+      questions: qs.length,
+      answered: done,
+      completed: done === qs.length,
+    };
+    let list = [];
+    try { const parsed = JSON.parse(localStorage.getItem(INTERVIEW_INDEX_KEY) || '[]'); if (Array.isArray(parsed)) list = parsed; } catch(e) {}
+    const i = list.findIndex(x => x.id === entry.id);
+    if (i >= 0) list[i] = entry; else list.push(entry);
+    localStorage.setItem(INTERVIEW_INDEX_KEY, JSON.stringify(list));
+  } catch(e) { console.warn('Interview index not saved:', e); }
+}
+
 // response accessors
 function getR(code) { return S.responses[code] || {transcript:"",notes:"",recSecs:0,status:"skip"}; }
 function setR(code, patch) {
   S.responses[code] = Object.assign(getR(code), patch);
+  saveDraft();
 }
 
 // ── Translation helper ──
@@ -405,6 +470,8 @@ function render() {
   if (S.screen === "interview") el.innerHTML = renderInterview();
   if (S.screen === "summary")   el.innerHTML = renderSummary();
   attachEvents();
+  if (S.screen === "summary") upsertInterviewIndex();
+  saveDraft();
 }
 
 function renderSetup() {
@@ -420,11 +487,11 @@ function renderSetup() {
     <div class="field-row">
       <div class="field">
         <label>Researcher ID</label>
-        <input id="f_rid" value="${S.researcherId}" placeholder="e.g. R001"/>
+        <input id="f_rid" value="${esc(S.researcherId)}" placeholder="e.g. R001"/>
       </div>
       <div class="field">
         <label>Participant ID</label>
-        <input id="f_pid" value="${S.participantId}" placeholder="e.g. CG-001"/>
+        <input id="f_pid" value="${esc(S.participantId)}" placeholder="e.g. CG-001"/>
       </div>
     </div>
 
@@ -482,11 +549,11 @@ function renderConsent() {
     <label class="consent-check">
       <input type="checkbox" id="cb_consent" ${S.consentChecked?"checked":""}/>
       Participant has been read the information sheet, has had the opportunity to ask questions,
-      and verbally consents to audio recording. Researcher: <strong style="margin-left:4px">${S.researcherId}</strong>
+      and verbally consents to audio recording. Researcher: <strong style="margin-left:4px">${esc(S.researcherId)}</strong>
     </label>
     <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
       Session ID: <strong>${genSessionId()}</strong><br/>
-      Participant: <strong>${S.participantId}</strong> · ${S.group} · ${S.lang.toUpperCase()} · ${S.site}
+      Participant: <strong>${esc(S.participantId)}</strong> · ${esc(S.group)} · ${esc(S.lang.toUpperCase())} · ${esc(S.site)}
     </div>
     <div style="display:flex;gap:10px">
       <button class="btn btn-ghost" id="btn_consent_back" style="flex:1">← Back</button>
@@ -512,7 +579,7 @@ function renderInterview() {
     <div class="right">
       <span class="badge">${S.sessionId}</span>
       <span class="badge badge-orange">${grp.label}</span>
-      <span style="font-size:11px">${S.participantId} · ${S.lang.toUpperCase()} · ${S.site}</span>
+      <span style="font-size:11px">${esc(S.participantId)} · ${esc(S.lang.toUpperCase())} · ${esc(S.site)}</span>
       <button class="badge" id="btn_toggle_bilingual" style="cursor:pointer;background:${S.showBilingual?'var(--orange)':'var(--teal)'}">
         ${S.showBilingual ? 'EN+LANG ✓' : 'Show EN'}
       </button>
@@ -594,7 +661,7 @@ function renderInterview() {
         <div class="t-label" style="margin-bottom:5px">Transcript (edit to correct errors)</div>
         <textarea class="transcript-area ${S.recState==='done'?'live':''}" id="ta_transcript"
           placeholder="Transcript will appear here after recording — or type directly…"
-          rows="5">${r.transcript}</textarea>
+          rows="5">${esc(r.transcript)}</textarea>
 
         <!-- Researcher notes -->
         <div class="t-label" style="margin-top:12px;margin-bottom:5px;color:var(--orange)">
@@ -602,7 +669,7 @@ function renderInterview() {
         </div>
         <textarea class="notes-area" id="ta_notes"
           placeholder="Probe responses used, non-verbal cues, follow-up needed…"
-          rows="3">${r.notes}</textarea>
+          rows="3">${esc(r.notes)}</textarea>
 
         <div class="nav-row">
           <button class="btn btn-ghost" id="btn_prev" ${gi===0?"disabled":""}>← Prev</button>
@@ -627,7 +694,7 @@ function renderInterview() {
             return `<div class="log-item">
               <span class="log-code">${q2.code}</span>
               <span class="log-status ${label}">${labelText}</span>
-              <div class="log-text">${r2.transcript ? r2.transcript.substring(0,55)+'…' : tq.substring(0,55)+'…'}</div>
+              <div class="log-text">${esc(r2.transcript ? r2.transcript.substring(0,55)+'…' : tq.substring(0,55)+'…')}</div>
             </div>`;
           }).join("")}
         </div>
@@ -679,7 +746,7 @@ function renderSummary() {
   <div class="card summary-card">
     <h3 style="color:var(--navy);margin-bottom:4px">✅ Interview Complete</h3>
     <p style="color:var(--muted);font-size:13px;margin-bottom:18px">
-      ${S.sessionId} · ${S.participantId} · ${grp.label}
+      ${esc(S.sessionId)} · ${esc(S.participantId)} · ${grp.label}
     </p>
     <div class="sum-row"><span>Total Questions</span><strong>${qs.length}</strong></div>
     <div class="sum-row"><span>Fully Completed</span><span class="tag tag-green">${done}</span></div>
@@ -760,6 +827,7 @@ function attachEvents() {
   });
   if (btn_cn) btn_cn.addEventListener("click", () => {
     S.sessionId = genSessionId();
+    S.startedAt = Date.now(); S.exported = false;
     S.secIdx = 0; S.qIdx = 0; S.responses = {};
     S.recState = "idle"; S.recSecs = 0;
     S.screen = "interview"; render();
@@ -822,8 +890,11 @@ function attachEvents() {
 
   if (btn_exp) btn_exp.addEventListener("click", exportSession);
   if (btn_ns)  btn_ns.addEventListener("click",  () => {
+    if (!S.exported && Object.keys(S.responses).length &&
+        !confirm('This session has not been exported yet. Start a new session anyway?')) return;
     S.screen="setup"; S.participantId=""; S.consentChecked=false;
-    S.responses={}; S.recState="idle"; S.recSecs=0;
+    S.responses={}; S.recState="idle"; S.recSecs=0; S.sessionId=null; S.exported=false;
+    clearDraft();
     render();
   });
   if (btn_bi) btn_bi.addEventListener("click", () => { S.screen="interview"; render(); });
@@ -836,8 +907,7 @@ function saveCurrentResponse(asDone=false) {
   const transcript = ta ? ta.value : getR(q.code).transcript;
   const notes      = tn ? tn.value : getR(q.code).notes;
   const status     = asDone ? "done" : (transcript ? "partial" : "skip");
-  setR(q.code, { transcript, notes, status,
-    recSecs: S.recState==="done" ? S.recSecs : (getR(q.code).recSecs||0) });
+  setR(q.code, { transcript, notes, status });   // recSecs is added when the recording finishes
 }
 
 function navigateQ(dir) {
@@ -858,57 +928,65 @@ function navigateQ(dir) {
 // ── Web Speech API transcription ──
 const LANG_MAP = { en:"en-US", bm:"ms-MY", zh:"zh-CN", ta:"ta-IN" };
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || null;
-let _recog = null;
 let _recInterval = null;
-let _interimEl = null;   // live interim display
-let _finalBuf  = "";     // accumulated final text this session
 
 function sttSupported() { return !!SpeechRec; }
+
+// Each recognition run is bound to the question it started on. Stopping flushes the final text into that
+// question's response, even if the interviewer has already moved to the next question — previously the
+// delayed finish wrote the old transcript into the next question's empty box and could abort a new recording.
+let _rec = null;   // { recog, code, secs, finalBuf, stopping }
+
+function _isShowing(code) {
+  return S.screen === "interview" && currentQuestion().code === code;
+}
 
 function startRec() {
   if (!sttSupported()) {
     alert("Speech recognition is not supported in this browser.\nUse Chrome or Edge for embedded transcription.");
     return;
   }
+  if (_rec) _finishRec(_rec);   // never run two recognisers at once
 
+  const code = currentQuestion().code;
+  const run = { recog: new SpeechRec(), code, secs: 0, stopping: false,
+                finalBuf: (document.getElementById("ta_transcript")?.value || "").trim() };
+  _rec = run;
   S.recState = "recording"; S.recSecs = 0;
-  _finalBuf = (document.getElementById("ta_transcript")?.value || "").trim();
 
   // Timer
   clearInterval(_recInterval);
   _recInterval = setInterval(() => {
-    S.recSecs++;
+    run.secs++; S.recSecs = run.secs;
     const rt = document.querySelector(".rec-timer");
-    if (rt) { rt.classList.remove("idle"); rt.textContent = fmtTime(S.recSecs); }
+    if (rt && _isShowing(code)) { rt.classList.remove("idle"); rt.textContent = fmtTime(run.secs); }
   }, 1000);
 
-  // Recogniser
-  _recog = new SpeechRec();
-  _recog.lang = LANG_MAP[S.lang] || "en-US";
-  _recog.continuous      = true;
-  _recog.interimResults  = true;
-  _recog.maxAlternatives = 1;
+  const recog = run.recog;
+  recog.lang = LANG_MAP[S.lang] || "en-US";
+  recog.continuous      = true;
+  recog.interimResults  = true;
+  recog.maxAlternatives = 1;
 
-  _recog.onstart = () => {
+  recog.onstart = () => {
+    if (!_isShowing(code)) return;
     const rs = document.querySelector(".rec-status");
     if (rs) rs.textContent = "🔴 Listening… tap ⏹ to stop";
     const btn = document.getElementById("btn_rec");
     if (btn) { btn.className = "rec-btn recording"; btn.textContent = "⏹"; }
   };
 
-  _recog.onresult = (e) => {
+  recog.onresult = (e) => {
     let interim = "";
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) {
-        _finalBuf += (_finalBuf ? " " : "") + t.trim();
-      } else {
-        interim = t;
-      }
+      if (e.results[i].isFinal) run.finalBuf += (run.finalBuf ? " " : "") + t.trim();
+      else interim = t;
     }
+    if (!_isShowing(code)) return;          // the interviewer moved on: keep buffering, don't touch the new question
     const ta = document.getElementById("ta_transcript");
     if (ta) {
-      ta.value = _finalBuf + (interim ? " " + interim : "");
+      ta.value = run.finalBuf + (interim ? " " + interim : "");
       ta.classList.add("live");
       ta.scrollTop = ta.scrollHeight;
     }
@@ -918,7 +996,7 @@ function startRec() {
       : "🔴 Listening…";
   };
 
-  _recog.onerror = (e) => {
+  recog.onerror = (e) => {
     const msgs = {
       "no-speech":         "No speech detected — tap 🎙 to try again.",
       "audio-capture":     "Microphone not found. Check browser permissions.",
@@ -926,55 +1004,66 @@ function startRec() {
       "network":           "Network error — speech recognition requires an internet connection on some browsers.",
       "language-not-supported": `Language '${LANG_MAP[S.lang]}' not supported on this device. Try English.`,
     };
+    _finishRec(run);
     const rs = document.querySelector(".rec-status");
-    if (rs) rs.textContent = msgs[e.error] || `Error: ${e.error}`;
-    _finishRec();
+    if (rs && _isShowing(code)) rs.textContent = msgs[e.error] || `Error: ${e.error}`;
   };
 
-  _recog.onend = () => {
-    // Auto-restart if still in recording state (recognition times out ~60s on some browsers)
-    if (S.recState === "recording") {
-      try { _recog.start(); } catch(e) { _finishRec(); }
+  recog.onend = () => {
+    // Auto-restart if still recording (recognition times out ~60s on some browsers)
+    if (_rec === run && !run.stopping) {
+      try { recog.start(); } catch(e) { _finishRec(run); }
     }
   };
 
   try {
-    _recog.start();
+    recog.start();
   } catch(e) {
     const rs = document.querySelector(".rec-status");
     if (rs) rs.textContent = "Could not start microphone: " + e.message;
+    clearInterval(_recInterval);
+    _rec = null;
     S.recState = "idle";
   }
 }
 
 function stopRec() {
+  const run = _rec;
+  if (!run || run.stopping) { if (!run) S.recState = "idle"; return; }
+  run.stopping = true;
   clearInterval(_recInterval);
-  if (S.recState === "recording") {
-    S.recState = "processing";
+  S.recState = "processing";
+  if (_isShowing(run.code)) {
     const rs = document.querySelector(".rec-status");
     if (rs) rs.textContent = "Finalising transcript…";
     const btn = document.getElementById("btn_rec");
     if (btn) { btn.className = "rec-btn processing"; btn.textContent = "⏳"; }
-    if (_recog) {
-      try { _recog.stop(); } catch(e) {}
-    }
-    // Give recogniser 800ms to flush final result, then finish
-    setTimeout(_finishRec, 800);
-  } else {
-    S.recState = "idle";
-    if (_recog) { try { _recog.abort(); } catch(e) {} _recog = null; }
   }
+  try { run.recog.stop(); } catch(e) {}
+  // Give the recogniser 800ms to flush its final result, then finish *this* run only
+  setTimeout(() => _finishRec(run), 800);
 }
 
-function _finishRec() {
-  clearInterval(_recInterval);
-  if (_recog) { try { _recog.abort(); } catch(e) {} _recog = null; }
-  S.recState = "done";
+function _finishRec(run) {
+  if (!run || run.finished) return;
+  run.finished = true;
+  if (_rec === run) { clearInterval(_recInterval); _rec = null; }
+  try { run.recog.abort(); } catch(e) {}
 
+  // Store into the question this recording belongs to
+  const prev = getR(run.code);
+  const patch = { recSecs: (prev.recSecs || 0) + run.secs };
+  if (run.finalBuf && run.finalBuf.length > (prev.transcript || "").length) {
+    patch.transcript = run.finalBuf;
+    if (prev.status === "skip") patch.status = "partial";
+  }
+  setR(run.code, patch);
+
+  if (!_isShowing(run.code)) return;      // finished in the background after navigation
+  if (!_rec) S.recState = "done";
   const ta = document.getElementById("ta_transcript");
   if (ta) {
-    // Ensure final buffer is flushed to textarea
-    if (_finalBuf && !ta.value.trim()) ta.value = _finalBuf;
+    if (run.finalBuf && ta.value.trim().length < run.finalBuf.length) ta.value = run.finalBuf;
     ta.classList.add("live");
   }
   const btn = document.getElementById("btn_rec");
@@ -1012,14 +1101,32 @@ function exportSession() {
     })
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
+  a.href = url;
   a.download = `${S.sessionId}.json`;
   a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  S.exported = true;
+  upsertInterviewIndex();
+  saveDraft();
 }
 
 // ── Boot ──
-render();
+if (restoreDraft() && !confirm(`Resume interview ${S.sessionId} (participant ${S.participantId})?\n\nCancel discards it.`)) {
+  clearDraft();
+  location.reload();
+} else {
+  render();
+}
+window.addEventListener('beforeunload', e => {
+  if (S.screen === 'interview' || (S.screen === 'summary' && !S.exported && Object.keys(S.responses).length)) {
+    if (_rec) _finishRec(_rec);
+    saveDraft();
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
 </script>
 </body>
 </html>
