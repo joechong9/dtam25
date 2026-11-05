@@ -350,6 +350,11 @@ let S = {
   site: "urban",
   sessionId: "",
   consentChecked: false,
+  // Browser speech-to-text sends audio to the browser vendor's cloud service, so it is opt-in (PDPA)
+  sttEnabled: false,
+  // Distress / AE / SAE records (Protocol §6)
+  incidents: [],
+  showIncident: false,
 
   secIdx: 0,
   qIdx: 0,
@@ -399,7 +404,8 @@ const DRAFT_KEY = 'dtam_partc_draft';
 const INTERVIEW_INDEX_KEY = 'dtam_my_interviews';
 const ADMIN_GROUP = { caregiver:'caregiver', allied:'allied', policymaker:'policy', elderly:'elderly' };
 const DRAFT_FIELDS = ['screen','researcherId','participantId','group','lang','site','consentChecked',
-                      'sessionId','secIdx','qIdx','responses','startedAt','exported','showBilingual'];
+                      'sessionId','secIdx','qIdx','responses','startedAt','exported','showBilingual',
+                      'sttEnabled','incidents'];
 
 function saveDraft() {
   if (S.screen !== 'interview' && S.screen !== 'summary') return;
@@ -437,6 +443,7 @@ function upsertInterviewIndex() {
       questions: qs.length,
       answered: done,
       completed: done === qs.length,
+      incidents: (S.incidents || []).map(i => ({ type: i.type, recordedAt: i.recordedAt })),
     };
     let list = [];
     try { const parsed = JSON.parse(localStorage.getItem(INTERVIEW_INDEX_KEY) || '[]'); if (Array.isArray(parsed)) list = parsed; } catch(e) {}
@@ -467,11 +474,69 @@ function render() {
   const el = document.getElementById("root");
   if (S.screen === "setup")     el.innerHTML = renderSetup();
   if (S.screen === "consent")   el.innerHTML = renderConsent();
-  if (S.screen === "interview") el.innerHTML = renderInterview();
+  if (S.screen === "interview") el.innerHTML = renderInterview() + (S.showIncident ? renderIncidentModal() : "");
   if (S.screen === "summary")   el.innerHTML = renderSummary();
   attachEvents();
   if (S.screen === "summary") upsertInterviewIndex();
   saveDraft();
+}
+
+// ── Distress / adverse-event record (Protocol §6) ──
+const DISTRESS_STEPS = [
+  "Interviewer paused and assessed distress level",
+  "Offered to stop or pause the session",
+  "Provided written crisis contacts (Befrienders KL 03-7627 2929; MIASA 1800 180 066 / WhatsApp 03-9765 6088; emergency 999)",
+  "Notified PI within 1 hour",
+  "PI documented event and assessed AE/SAE classification",
+  "Referred to clinical team (if required)",
+  "48-hour follow-up contact scheduled",
+];
+function renderIncidentModal() {
+  const q = currentQuestion();
+  return `
+<div id="incident_overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px">
+  <div class="card" style="max-width:560px;width:100%;max-height:90vh;overflow:auto">
+    <div class="card-hd" style="background:#dc2626;color:#fff">⚠ Distress / Adverse Event Record — Protocol §6</div>
+    <div class="card-body">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Session ${esc(S.sessionId)} · Participant ${esc(S.participantId)} · during ${esc(q.code)}</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Event type</label>
+          <select id="inc_type">
+            <option value="distress">Participant distress</option>
+            <option value="ae">Adverse event (AE) — report within 7 days</option>
+            <option value="sae">Serious adverse event (SAE) — report within 24 h</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Session outcome</label>
+          <select id="inc_outcome">
+            <option value="paused">Paused, then continued</option>
+            <option value="stopped">Stopped</option>
+            <option value="continued">Continued without pause</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>What happened (no identifying details)</label>
+        <textarea id="inc_desc" rows="3" style="width:100%"></textarea>
+      </div>
+      <div class="field">
+        <label>Distress protocol steps completed</label>
+        ${DISTRESS_STEPS.map((t,i)=>`<label style="display:flex;gap:8px;font-weight:400;font-size:12px;margin:4px 0;cursor:pointer">
+          <input type="checkbox" class="inc_step" value="${i+1}" style="width:auto"/> ${i+1}. ${esc(t)}</label>`).join("")}
+      </div>
+      <div class="field">
+        <label>PI notified at</label>
+        <input type="datetime-local" id="inc_pi"/>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-primary" id="btn_inc_save" style="flex:1;background:#dc2626">Save record</button>
+        <button class="btn btn-outline" id="btn_inc_cancel" style="flex:1">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>`;
 }
 
 function renderSetup() {
@@ -524,6 +589,18 @@ function renderSetup() {
       </div>
     </div>
 
+    <div class="field">
+      <label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;cursor:pointer">
+        <input type="checkbox" id="f_stt" ${S.sttEnabled?"checked":""} style="width:auto;margin-top:3px"/>
+        <span>Enable live speech-to-text
+          <span style="display:block;font-weight:400;font-size:11px;color:var(--muted);line-height:1.5;margin-top:2px">
+            Off by default. In Chrome/Edge, recorded speech is sent to the browser vendor's cloud speech service, which may be outside Malaysia.
+            Enable only if this is disclosed in the Participant Information Sheet and the participant has consented. When off, the timer still runs and you type notes manually.
+          </span>
+        </span>
+      </label>
+    </div>
+
     <button class="btn btn-primary btn-full" id="btn_setup_next"
       ${(!S.researcherId || !S.participantId)?"disabled":""}>
       Proceed to Consent →
@@ -543,13 +620,16 @@ function renderConsent() {
       <strong>Group:</strong> ${grp.label} &nbsp;·&nbsp; <strong>Estimated Duration:</strong> ${grp.duration}<br/>
       <strong>Analysis Method:</strong> ${grp.method}<br/><br/>
       <strong>PDPA 2010 Notice:</strong> This session will be audio-recorded solely for research transcription.
-      Recordings are stored on Malaysian-territory servers (AES-256 encrypted), retained for 5 years
+      Recordings are stored on Malaysian-territory servers (AES-256 encrypted), retained for 7 years
       post-publication, then securely deleted. Participation is voluntary; withdrawal is permitted at any time.
+      ${S.sttEnabled ? `<br/><br/><strong>Speech-to-text notice:</strong> Live transcription is switched on for this session.
+      The browser sends the participant's speech to its provider's cloud speech service, which may be outside Malaysia.
+      Tell the participant this before starting; switch it off in setup if they do not agree.` : ""}
     </div>
     <label class="consent-check">
       <input type="checkbox" id="cb_consent" ${S.consentChecked?"checked":""}/>
       Participant has been read the information sheet, has had the opportunity to ask questions,
-      and verbally consents to audio recording. Researcher: <strong style="margin-left:4px">${esc(S.researcherId)}</strong>
+      and verbally consents to audio recording${S.sttEnabled ? " and to live speech-to-text processing by the browser provider's cloud service" : ""}. Researcher: <strong style="margin-left:4px">${esc(S.researcherId)}</strong>
     </label>
     <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
       Session ID: <strong>${genSessionId()}</strong><br/>
@@ -580,6 +660,7 @@ function renderInterview() {
       <span class="badge">${S.sessionId}</span>
       <span class="badge badge-orange">${grp.label}</span>
       <span style="font-size:11px">${esc(S.participantId)} · ${esc(S.lang.toUpperCase())} · ${esc(S.site)}</span>
+      <button class="badge" id="btn_incident" style="cursor:pointer;background:#dc2626" title="Record distress, adverse event or SAE (Protocol §6)">⚠ Distress / AE${S.incidents.length?` (${S.incidents.length})`:""}</button>
       <button class="badge" id="btn_toggle_bilingual" style="cursor:pointer;background:${S.showBilingual?'var(--orange)':'var(--teal)'}">
         ${S.showBilingual ? 'EN+LANG ✓' : 'Show EN'}
       </button>
@@ -704,10 +785,10 @@ function renderInterview() {
         <div class="card-hd">STT Engine</div>
         <div class="card-body">
           ${[
-            ["Engine", "Web Speech API (built-in)"],
+            ["Engine", S.sttEnabled ? "Web Speech API (browser)" : "Off — manual transcription"],
             ["Language", `${LANG_MAP[S.lang]||"en-US"}`],
             ["Mode", "Continuous · Interim results"],
-            ["Data", "On-device — no cloud"],
+            ["Data", S.sttEnabled ? "Audio sent to browser vendor cloud" : "No audio processed"],
             ["Browser", "Chrome / Edge required"],
           ].map(([k,v])=>`<div style="display:flex;justify-content:space-between;
             font-size:12px;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid var(--lgrey)">
@@ -753,6 +834,8 @@ function renderSummary() {
     <div class="sum-row"><span>Partial (transcript only)</span><span class="tag tag-orange">${partial}</span></div>
     <div class="sum-row"><span>Skipped</span><span class="tag tag-grey">${skipped}</span></div>
     <div class="sum-row"><span>Analysis Method</span><span style="font-size:12px">${grp.method}</span></div>
+    <div class="sum-row"><span>Distress / AE / SAE records</span><span class="tag ${S.incidents.length?"tag-orange":"tag-grey"}">${S.incidents.length}</span></div>
+    ${S.incidents.some(i=>i.type==="sae") ? `<div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:#fee2e2;color:#991b1b;font-size:12px;font-weight:700">⚠ SAE recorded — report to UREC within 24 hours (Protocol §6).</div>` : ""}
 
     <div style="margin-top:16px;border-top:1px solid var(--lgrey);padding-top:14px;
       max-height:260px;overflow-y:auto">
@@ -805,6 +888,7 @@ function attachEvents() {
   const f_lang  = document.getElementById("f_lang");
   const f_site  = document.getElementById("f_site");
   const btn_sn  = document.getElementById("btn_setup_next");
+  const f_stt   = document.getElementById("f_stt");
 
   function syncSetup() {
     if (f_rid)   S.researcherId = f_rid.value.trim();
@@ -812,9 +896,11 @@ function attachEvents() {
     if (f_group) S.group = f_group.value;
     if (f_lang)  S.lang  = f_lang.value;
     if (f_site)  S.site  = f_site.value;
+    if (f_stt)   S.sttEnabled = f_stt.checked;
     if (btn_sn)  btn_sn.disabled = !(S.researcherId && S.participantId);
   }
   [f_rid,f_pid,f_group,f_lang,f_site].forEach(el => el && el.addEventListener("input", () => { syncSetup(); }));
+  if (f_stt) f_stt.addEventListener("change", () => { syncSetup(); });
   if (btn_sn) btn_sn.addEventListener("click", () => { syncSetup(); S.screen="consent"; render(); });
 
   // ── Consent ──
@@ -827,7 +913,7 @@ function attachEvents() {
   });
   if (btn_cn) btn_cn.addEventListener("click", () => {
     S.sessionId = genSessionId();
-    S.startedAt = Date.now(); S.exported = false;
+    S.startedAt = Date.now(); S.exported = false; S.incidents = []; S.showIncident = false;
     S.secIdx = 0; S.qIdx = 0; S.responses = {};
     S.recState = "idle"; S.recSecs = 0;
     S.screen = "interview"; render();
@@ -843,6 +929,39 @@ function attachEvents() {
       stopRec();
       render();
     });
+  });
+
+  // ── Distress / AE record ──
+  const btn_inc = document.getElementById("btn_incident");
+  if (btn_inc) btn_inc.addEventListener("click", () => {
+    // Keep typed text without changing the question's status, then stop timing/recording
+    const q = currentQuestion();
+    const ta = document.getElementById("ta_transcript"), tn = document.getElementById("ta_notes");
+    setR(q.code, { transcript: ta ? ta.value : getR(q.code).transcript, notes: tn ? tn.value : getR(q.code).notes });
+    if (S.recState === "recording") stopRec();
+    S.showIncident = true; render();
+  });
+  const btn_inc_cancel = document.getElementById("btn_inc_cancel");
+  if (btn_inc_cancel) btn_inc_cancel.addEventListener("click", () => { S.showIncident = false; render(); });
+  const btn_inc_save = document.getElementById("btn_inc_save");
+  if (btn_inc_save) btn_inc_save.addEventListener("click", () => {
+    const rec = {
+      id: `INC-${Date.now().toString(36).toUpperCase()}`,
+      type: document.getElementById("inc_type").value,
+      outcome: document.getElementById("inc_outcome").value,
+      description: document.getElementById("inc_desc").value.trim(),
+      stepsCompleted: [...document.querySelectorAll(".inc_step:checked")].map(c => parseInt(c.value)),
+      piNotifiedAt: document.getElementById("inc_pi").value || null,
+      questionCode: currentQuestion().code,
+      recordedAt: new Date().toISOString(),
+    };
+    S.incidents.push(rec);
+    S.showIncident = false;
+    saveDraft();
+    upsertInterviewIndex();   // flag in the admin portal straight away (type and time only)
+    if (rec.type === "sae") alert("SAE recorded.\n\nReport to UREC within 24 hours and notify the PI immediately (Protocol §6). Export this session JSON as the source record.");
+    if (rec.outcome === "stopped") { S.screen = "summary"; }
+    render();
   });
 
   // ── Record ──
@@ -893,7 +1012,7 @@ function attachEvents() {
     if (!S.exported && Object.keys(S.responses).length &&
         !confirm('This session has not been exported yet. Start a new session anyway?')) return;
     S.screen="setup"; S.participantId=""; S.consentChecked=false;
-    S.responses={}; S.recState="idle"; S.recSecs=0; S.sessionId=null; S.exported=false;
+    S.responses={}; S.recState="idle"; S.recSecs=0; S.sessionId=null; S.exported=false; S.incidents=[]; S.showIncident=false;
     clearDraft();
     render();
   });
@@ -942,15 +1061,17 @@ function _isShowing(code) {
 }
 
 function startRec() {
-  if (!sttSupported()) {
+  if (S.sttEnabled && !sttSupported()) {
     alert("Speech recognition is not supported in this browser.\nUse Chrome or Edge for embedded transcription.");
     return;
   }
   if (_rec) _finishRec(_rec);   // never run two recognisers at once
 
   const code = currentQuestion().code;
-  const run = { recog: new SpeechRec(), code, secs: 0, stopping: false,
-                finalBuf: (document.getElementById("ta_transcript")?.value || "").trim() };
+  // STT off: timer-only run with a no-op recogniser, so no audio leaves the device
+  const manual = !S.sttEnabled;
+  const run = { recog: manual ? { start(){}, stop(){}, abort(){} } : new SpeechRec(), code, secs: 0, stopping: false, manual,
+                finalBuf: manual ? "" : (document.getElementById("ta_transcript")?.value || "").trim() };
   _rec = run;
   S.recState = "recording"; S.recSecs = 0;
 
@@ -961,6 +1082,14 @@ function startRec() {
     const rt = document.querySelector(".rec-timer");
     if (rt && _isShowing(code)) { rt.classList.remove("idle"); rt.textContent = fmtTime(run.secs); }
   }, 1000);
+
+  if (manual) {
+    const rs = document.querySelector(".rec-status");
+    if (rs) rs.textContent = "⏱ Timing answer — speech-to-text is off; type the response below. Tap ⏹ to stop.";
+    const btn = document.getElementById("btn_rec");
+    if (btn) { btn.className = "rec-btn recording"; btn.textContent = "⏹"; }
+    return;
+  }
 
   const recog = run.recog;
   recog.lang = LANG_MAP[S.lang] || "en-US";
@@ -1069,7 +1198,9 @@ function _finishRec(run) {
   const btn = document.getElementById("btn_rec");
   if (btn) { btn.className = "rec-btn idle"; btn.textContent = "🎙"; }
   const rs = document.querySelector(".rec-status");
-  if (rs) rs.textContent = "✅ Transcription done — edit below if needed. Tap 🎙 to continue recording.";
+  if (rs) rs.textContent = run.manual
+    ? "⏹ Stopped — type or edit the response below. Tap 🎙 to time another answer."
+    : "✅ Transcription done — edit below if needed. Tap 🎙 to continue recording.";
 }
 
 // ── Export ──
@@ -1084,6 +1215,8 @@ function exportSession() {
       language: S.lang,
       site: S.site,
       exportedAt: new Date().toISOString(),
+      sttEnabled: S.sttEnabled,
+      incidentCount: S.incidents.length,
       totalQ: qs.length,
       completed: qs.filter(q => getR(q.code).status==="done").length,
     },
@@ -1098,7 +1231,8 @@ function exportSession() {
         recordedSecs: r.recSecs || 0,
         status: r.status,
       };
-    })
+    }),
+    incidents: S.incidents,
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
   const url = URL.createObjectURL(blob);
