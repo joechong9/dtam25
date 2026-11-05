@@ -201,10 +201,65 @@ PENDING_CLAIM_RX = re.compile(
     r"|அங்கீகாரம்\s+(?:இன்னும்\s+)?நிலுவையில்|நெறிமுறை\s+ஒப்புதல்\s+வரை|இன்னும்\s+சமர்ப்பிக்கப்படவில்லை"
     r"|நெறிமுறை\s+குறிப்பு\s+எண்[^.\n]{0,40}நிலுவை",
     re.IGNORECASE)
+# An ethics-committee reference token: optional prefixes, then SERC/ or UREC/, then the rest.
+# Tokens with no digit after the committee name ("UREC/MREC", "UTAR/SERC/...") are prose
+# or empty hints, not references, and are ignored.
+REF_TOKEN_RX = re.compile(r"(?<![\w/])(?:[A-Za-z]{1,8}/)*(?:SERC|UREC)/[A-Za-z0-9()./_-]+")
+NMRR_TOKEN_RX = re.compile(r"\bNMRR-\d{2}-[A-Za-z0-9-]+")
+
+
+def _ref_token(raw: str) -> str:
+    tok = raw.rstrip(".,;:-")
+    while tok.endswith(")") and tok.count(")") > tok.count("("):
+        tok = tok[:-1].rstrip(".,;:-")
+    return tok
+
+
 SUP_RX = re.compile(
     r"(Main Supervisor|Co-Supervisor|Supervisor|Penyelia(?:\s+Utama|\s+Bersama)?)\s*[:：]\s*"
     r"((?:Assoc\.?\s*Prof\.?|A/Prof\.?|Prof\.?|Ir\.?|Dr\.?|Ts\.?)\s*)*"
     r"([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})")
+
+
+def check_ethics_reference(ctx: Ctx, r: str, text: str, eth: dict):
+    """ETHICS_REF: a wrong-shaped or wrong-valued ethics reference, or an NMRR ID before one exists.
+
+    ETHICS_STATUS sees wording ("approval pending"); it cannot see a confident, finished-looking
+    reference that is simply invented, such as UTAR/SERC/2026/0142. The exact approval reference
+    is not stored in this public repo: it comes from ethics.reference or DTAM_UREC_REFERENCE.
+    """
+    out = []
+    shape = eth.get("reference_shape")
+    exact = os.environ.get("DTAM_UREC_REFERENCE") or eth.get("reference")
+    covered = [m.span() for m in PENDING_CLAIM_RX.finditer(text)] if eth.get("status") == "approved" else []
+    for m in REF_TOKEN_RX.finditer(text) if shape else ():
+        tok = _ref_token(m.group(0))
+        tail = tok.split("SERC/", 1)[-1] if "SERC/" in tok else tok.split("UREC/", 1)[-1]
+        if not re.search(r"\d", tail):
+            continue
+        if any(a <= m.start() < b for a, b in covered):
+            continue  # already an ETHICS_STATUS finding (e.g. UTAR/UREC/2025)
+        if suppressed(ctx, text, m.start(), m.end(), "ETHICS_REF"):
+            continue
+        if not re.match(shape, tok):
+            out.append(finding("ETHICS_REF", "error", r, line_of(text, m.start()), tok,
+                               "Ethics reference has the wrong shape for a UREC approval reference "
+                               "(dtam_constants.json ethics.reference_shape). It is invented or a placeholder: "
+                               "use the approval reference from PostGrad Work CLAUDE.md §1."))
+        elif exact and tok != exact:
+            out.append(finding("ETHICS_REF", "error", r, line_of(text, m.start()), tok,
+                               "Ethics reference does not match the approval reference "
+                               "(DTAM_UREC_REFERENCE / ethics.reference; canonical source: PostGrad Work CLAUDE.md §1)."))
+    nmrr = eth.get("nmrr_id")
+    for m in NMRR_TOKEN_RX.finditer(text):
+        if m.group(0) == nmrr or re.fullmatch(r"NMRR-\d{2}-X+", m.group(0)):
+            continue  # the assigned ID, or an all-X input template such as NMRR-26-XXXXX
+        if suppressed(ctx, text, m.start(), m.end(), "ETHICS_REF"):
+            continue
+        out.append(finding("ETHICS_REF", "error", r, line_of(text, m.start()), m.group(0),
+                           "NMRR ID does not match dtam_constants.json ethics.nmrr_id"
+                           + (" (none assigned yet: MREC registration is pending; leave it blank)." if not nmrr else ".")))
+    return out
 
 
 def check_constants(ctx: Ctx, path: Path, text: str):
@@ -257,6 +312,7 @@ def check_constants(ctx: Ctx, path: Path, text: str):
                                "Says ethics approval is pending or not yet submitted, or uses a placeholder "
                                "reference, but UREC has approved the study (dtam_constants.json ethics.status; "
                                "canonical source: PostGrad Work CLAUDE.md §1). Use approved wording."))
+    out.extend(check_ethics_reference(ctx, r, text, eth))
     for name in (c["supervisors"]["main"], c["supervisors"]["co"]):
         for m in re.finditer(re.escape(name), text):
             before = text[max(0, m.start() - 22):m.start()]

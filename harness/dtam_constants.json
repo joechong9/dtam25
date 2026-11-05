@@ -98,9 +98,11 @@
     ]
   },
   "ethics": {
-    "_comment": "UREC has approved the study (canonical source: PostGrad Work CLAUDE.md §1, private). The approval reference is deliberately NOT stored here because this repo is public; adding it is the PI's decision. While status is 'approved', any 'pending'/'not submitted' claim or placeholder reference is an error; while 'pending', any approval claim is.",
+    "_comment": "UREC has approved the study (canonical source: PostGrad Work CLAUDE.md §1, private). The approval reference is deliberately NOT stored here because this repo is public; adding it is the PI's decision. While status is 'approved', any 'pending'/'not submitted' claim or placeholder reference is an error; while 'pending', any approval claim is. ETHICS_REF: every SERC/UREC-style reference must have the shape in reference_shape, and must equal the approval reference when one is supplied (ethics.reference, or the DTAM_UREC_REFERENCE environment variable, which the private repo's CI sets so the value never lives here). nmrr_id null means no NMRR ID has been assigned yet, so any NMRR-style ID is an error.",
     "status": "approved",
     "reference": null,
+    "reference_shape": "^U/SERC/\\d+\\([A-Z]\\)-\\d+/\\d{4}$",
+    "nmrr_id": null,
     "committee": "UTAR University Research Ethics Committee (UREC)"
   }
 }
