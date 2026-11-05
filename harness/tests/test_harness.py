@@ -36,6 +36,9 @@ class DriftRuleFixtures(unittest.TestCase):
         ("NDHB_ZH", "国家数字健康蓝图 2023-2030"),
         ("NDHB_ZH", "2023-2030年国家数字卫生蓝图提供足够指导"),
         ("NDHB_TA", "தேசிய டிஜிட்டல் சுகாதார வரைவு 2023-2030"),
+        ("NDHB_TA", "தேசிய ඤிஜிட்டல் சுகாதார திட்டம் போதுமான"),  # corrupted glyph seen in the wild
+        ("NDHB_TA_SHORT", "வரைவின் மூலோபாய திசை"),
+        ("NDHB_EN_SHORT", "Does the Blueprint's strategic direction address"),
         ("NDHB_BM_SHORT", "Adakah hala tuju strategik Pelan Induk menangani"),
         ("NDHB_ZH_SHORT", "蓝图的战略方向是否专门针对"),
         ("LIM2017", "attrition of 20% (Lim et al., 2017)"),
@@ -54,6 +57,10 @@ class DriftRuleFixtures(unittest.TestCase):
         "Lim et al. (2019) examined stroke rehabilitation",
         "digital health services for older adults",
         "pelan rawatan kesihatan",
+        "டிஜிட்டல் சுகாதார சேவைகளை",
+        "சுகாதார வெள்ளை அறிக்கை (2023)",
+        "《卫生白皮书》（2023）",
+        "blueprints of the OMR sheet layout are in the appendix",
         "TAM (Davis, 1989); UTAUT2 (Venkatesh et al., 2012)",
         "NDHBX is not an acronym we use",
         # negation context: rule documentation, not usage
