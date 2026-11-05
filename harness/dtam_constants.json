@@ -1,0 +1,65 @@
+{
+  "_comment": "SINGLE SOURCE OF TRUTH for DTAM-MY canonical constants. Every app, skill, document and agent prompt is CHECKED against this file by harness/dtam_harness.py. Change a value here first, then fix the downstream files the harness flags. Never restate these numbers from memory.",
+  "version": "1.0",
+  "study": {
+    "label": "DTAM-MY",
+    "title": "Development of Digital Healthcare Telerehabilitation Technology Assessments Model and System for Enhancement of Elderly Quality-of-Life",
+    "pi": "CHONG Yu Zheng",
+    "student_id": "24UED03838",
+    "faculty": "LKC FES",
+    "faculty_long": "Lee Kong Chian Faculty of Engineering and Science",
+    "institution": "UTAR"
+  },
+  "supervisors": {
+    "main": "Kwan Ban Hoe",
+    "co": "Goh Choon Hian"
+  },
+  "sample": {
+    "total_n": 370,
+    "groups": { "allied": 100, "caregiver": 100, "elderly": 100, "policy": 20, "public": 50 },
+    "pilot_n": 70,
+    "pilot_urban": 42,
+    "pilot_rural": 28,
+    "pilot_effective_completers": 45,
+    "pilot_allowed_numbers": [70, 42, 28, 45]
+  },
+  "gcp": {
+    "score": 19,
+    "max": 22,
+    "ethics_thresholds_allowed": ["≥20/22", ">=20/22", "<17/22"]
+  },
+  "languages": ["en", "bm", "zh", "ta"],
+  "stakeholder_groups": 5,
+  "frameworks": [
+    "MAST (Kidholm et al., 2012)",
+    "TAM (Davis, 1989)",
+    "UTAUT2 (Venkatesh et al., 2012)",
+    "TUQ (Parmanto et al., 2016)",
+    "ICF (WHO, 2001)",
+    "SUS (Brooke, 1996)",
+    "WHOQOL-BREF (WHO, 1996)",
+    "ZBI (Zarit et al., 1980)"
+  ],
+  "policy_anchors": [
+    "Health White Paper (2023), MOH Malaysia, Command Paper No. 29 of 2023",
+    "PDPA 2010 (Act 709)",
+    "12th Malaysia Plan"
+  ],
+  "domain6": "System Interoperability (FHIR R4, 5 interfaces)",
+  "palette": {
+    "NAVY": "#1B3A6B", "TEAL": "#0E8B8B", "LTEAL": "#D6F0F0",
+    "LNAVY": "#D8E4F0", "LGREY": "#F2F5F8", "ORANGE": "#E07B39"
+  },
+  "omr_geometry_mm": {
+    "_comment": "A4 landscape OMR layout. Regression rules: any app that re-declares these must match.",
+    "PAGE_W": 297, "PAGE_H": 210,
+    "LM": 12, "RM": 12, "TM": 10, "BM": 10,
+    "A_W": 154, "GAP": 4, "B_W": 115,
+    "BR": 2.6, "BSPC": 8
+  },
+  "llm": {
+    "_comment": "Default model for in-app assistants. Change here, then run: python3 harness/dtam_harness.py sync --write",
+    "chat_model": "claude-haiku-5-5",
+    "chat_model_options": ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-haiku-4-5"]
+  }
+}
