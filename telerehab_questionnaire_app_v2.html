@@ -1088,10 +1088,10 @@ function scoreSurvey(group, answers) {
     Environment: ['wq8','wq9','wq12','wq13','wq14','wq23','wq24','wq25'],
   };
   const whoReversed = ['wq3','wq4','wq26'];
-  // Minimum answered items per domain. Social (Q20–22) may have one missing item (Q21 is optional);
-  // the domain is then the mean of the answered items, i.e. the missing item takes the domain mean.
-  // Other domains still need every item.
-  const whoMinAnswered = { Social: 2 };
+  // Each domain is scored with at most one missing item; the score is then the mean of the answered
+  // items, i.e. the missing item takes the domain mean (Physical 6/7, Psychological 5/6, Social 2/3,
+  // Environment 7/8).
+  const WHO_MAX_MISSING = 1;
   const whoMap = {};
   Object.keys(answers).filter(k => k.startsWith('wq')).forEach(k => {
     const v = parseInt(answers[k], 10);
@@ -1101,7 +1101,7 @@ function scoreSurvey(group, answers) {
   Object.entries(whoDomains).forEach(([domain, keys]) => {
     const realKeys = keys.map(k => k.replace('r',''));
     const answered = realKeys.filter(k => whoMap[k] != null);
-    if (answered.length >= (whoMinAnswered[domain] ?? realKeys.length)) {
+    if (answered.length > 0 && answered.length >= realKeys.length - WHO_MAX_MISSING) {
       const mean = answered.reduce((a,k) => a + whoMap[k], 0) / answered.length;
       const score100 = ((mean - 1) / 4) * 100;
       scores[`WHOQOL_${domain}`] = { value: Math.round(score100), label: `QoL – ${domain}`, max: 100,

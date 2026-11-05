@@ -450,16 +450,19 @@ function computeScores(results) {
       return item.neg ? 6 - raw : raw;
     };
     const domainN = {};
-    // minN = minimum answered items for the domain to be scored (missing items take the domain mean)
-    const domainMean = (codes, key, minN = 1) => {
+    // A domain is scored with at most one missing item; the missing item takes the domain mean
+    // (Physical 6/7, Psychological 5/6, Social 2/3, Environment 7/8, global Q1–Q2 1/2).
+    const WHO_MAX_MISSING = 1;
+    const domainMean = (codes, key) => {
       const vals = codes.map(getScore).filter(v => v !== null);
       domainN[key] = `${vals.length}/${codes.length}`;
-      return vals.length >= minN ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+      return vals.length > 0 && vals.length >= codes.length - WHO_MAX_MISSING
+        ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
     };
     const toScore = mean => mean !== null ? ((mean - 1) * 25).toFixed(1) : null;
     const physMean  = domainMean(['WHOQ_3','WHOQ_4','WHOQ_10','WHOQ_15','WHOQ_16','WHOQ_17','WHOQ_18'], 'physical');
     const psychMean = domainMean(['WHOQ_5','WHOQ_6','WHOQ_7','WHOQ_11','WHOQ_19','WHOQ_26'], 'psychological');
-    const socMean   = domainMean(['WHOQ_20','WHOQ_21','WHOQ_22'], 'social', 2);   // at most one missing item
+    const socMean   = domainMean(['WHOQ_20','WHOQ_21','WHOQ_22'], 'social');
     const envMean   = domainMean(['WHOQ_8','WHOQ_9','WHOQ_12','WHOQ_13','WHOQ_14','WHOQ_23','WHOQ_24','WHOQ_25'], 'environmental');
     const globalMean= domainMean(['WHOQ_1','WHOQ_2'], 'global');
     whoqol = {
