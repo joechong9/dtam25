@@ -223,47 +223,29 @@ const LIKERT5_LABELS = {
   bm: ["1\nSTS", "2\nTS", "3\nN", "4\nS", "5\nSS"],
 };
 
-// ⚠ Speech-to-text is SIMULATED in this build: simulateSTT() returns a RANDOM phrase and score.
-// While this flag is true the app never stores the simulated transcript or score as data — the interviewer
-// must select the participant's answer manually, and exports are tagged stt:"simulated".
-// Set to false only after simulateSTT() is replaced by a real STT/NLP call.
-const SIMULATED_STT = true;
+// Live transcription uses the browser's Web Speech API, as in partc_interview_v2.html. This app saves no
+// audio file; in Chrome and Edge the browser sends the audio to its vendor's online speech service.
+// The interviewer always selects the score: there is no automatic speech→score mapping until one is
+// validated, so nothing in the log is machine-scored.
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+const STT_LANG = { en:"en-US", bm:"ms-MY", zh:"zh-CN", ta:"ta-IN" };
+const STT_ERRORS = {
+  "no-speech": "No speech detected — tap 🎙 to try again, or type the transcript.",
+  "audio-capture": "Microphone not found. Check browser permissions, or type the transcript.",
+  "not-allowed": "Microphone access denied. Allow it in browser settings, or type the transcript.",
+  "network": "The browser's speech service could not be reached (it needs internet). Type the transcript instead.",
+  "language-not-supported": "This language is not supported by the browser's speech service. Type the transcript instead.",
+};
 
 /**
  * @typedef {Object} VerbalLogEntry
  * @property {string} code
  * @property {string} instrument
- * @property {string|null} transcript      null while STT is simulated
- * @property {number|null} autoScore       null while STT is simulated
- * @property {number} confirmedScore       1–5, chosen/confirmed by the interviewer
- * @property {boolean} isOverride
- * @property {number|null} confidence
- * @property {'simulated'|'live'} stt
+ * @property {string|null} transcript      as reviewed/edited by the interviewer
+ * @property {number} confirmedScore       1–5, selected by the interviewer
+ * @property {'browser'|'manual'} stt      'browser' if live transcription produced text for this item
  * @property {string} ts                   ISO timestamp
  */
-
-// Simulated STT keyword→score mapping (in production: call Whisper + NLP API)
-function simulateSTT(lang) {
-  const phrases = {
-    en: [
-      "I strongly agree with that",
-      "I think it would be quite useful",
-      "I'm not sure, maybe neutral",
-      "That seems a bit difficult",
-      "I strongly disagree",
-    ],
-    bm: [
-      "Saya sangat setuju dengan perkara itu",
-      "Saya rasa ia agak berguna",
-      "Saya tidak pasti, mungkin neutral",
-      "Itu kelihatan agak sukar",
-      "Saya sangat tidak setuju",
-    ],
-  };
-  const scores = [5, 4, 3, 2, 1];
-  const idx = Math.floor(Math.random() * 5);
-  return { transcript: (phrases[lang] || phrases.en)[idx], score: scores[idx], confidence: 0.65 + Math.random() * 0.30 };
-}
 
 // ── App ─────────────────────────────────────────────────────────────────────
 function App() {
@@ -277,25 +259,31 @@ function App() {
   const [recState, setRecState] = useState("idle"); // idle | recording | processing | done
   const [duration, setDuration] = useState(0);
   const [transcript, setTranscript] = useState("");
-  const [autoScore, setAutoScore] = useState(null);
-  const [confidence, setConfidence] = useState(null);
   const [manualScore, setManualScore] = useState(null);
+  const [heardSpeech, setHeardSpeech] = useState(false);   // live transcription produced text for this item
+  const [sttNote, setSttNote] = useState("");
   const [log, setLog] = useState([]);
   const [sessionId, setSessionId] = useState("");
   const timerRef = useRef(null);
-  const sttTimeoutRef = useRef(null);   // pending (simulated) STT result
+  const recogRef = useRef(null);   // the running recognition: { recog, stopping }
 
   const items = INSTRUMENTS[config.lang] || INSTRUMENTS.en;
   const item = items[itemIndex];
   const labels = LIKERT5_LABELS[config.lang] || LIKERT5_LABELS.en;
   const totalItems = items.length;
-  // With simulated STT the (random) suggestion is never used as the participant's answer
-  const activeScore = SIMULATED_STT ? manualScore : (manualScore ?? autoScore);
-  const isOverride = !SIMULATED_STT && manualScore !== null && manualScore !== autoScore;
+  const activeScore = manualScore;   // always the interviewer's selection
   // Session id is generated once per session (it was rebuilt from Date.now() on every render)
   const newSessionId = () => `DTAM-${config.group.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
-  const cancelPendingSTT = () => { clearTimeout(sttTimeoutRef.current); sttTimeoutRef.current = null; };
+  // Stop any running recognition. Results from a stopped run are ignored, so nothing lands on another item.
+  const cancelPendingSTT = () => {
+    const run = recogRef.current;
+    recogRef.current = null;
+    if (run) { try { run.recog.abort(); } catch(e) {} }
+  };
   useEffect(() => cancelPendingSTT, []);
+  const resetItemState = () => {
+    setRecState("idle"); setTranscript(""); setManualScore(null); setHeardSpeech(false); setSttNote("");
+  };
 
   // Timer
   useEffect(() => {
@@ -308,27 +296,61 @@ function App() {
   }, [recState]);
 
   function startRecord() {
-    setRecState("recording");
+    setSttNote("");
+    if (!SpeechRec) {
+      setRecState("done");
+      setSttNote("Live transcription is not available in this browser (use Chrome or Edge). Type the transcript below.");
+      return;
+    }
+    cancelPendingSTT();
+    const recog = new SpeechRec();
+    const run = { recog, stopping: false, finalText: transcript.trim() };   // continue after any existing text
+    recogRef.current = run;
+    recog.lang = STT_LANG[config.lang] || "en-US";
+    recog.continuous = true;
+    recog.interimResults = true;
+    const finish = () => {
+      if (recogRef.current !== run) return;
+      recogRef.current = null;
+      setTranscript(run.finalText);
+      setRecState("done");
+    };
+    run.finish = finish;
+    recog.onresult = (e) => {
+      if (recogRef.current !== run) return;
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) run.finalText += (run.finalText ? " " : "") + t.trim();
+        else interim = t;
+      }
+      setHeardSpeech(true);
+      setTranscript(run.finalText + (interim ? " " + interim : ""));
+    };
+    recog.onerror = (e) => {
+      if (recogRef.current !== run) return;
+      setSttNote(STT_ERRORS[e.error] || `Speech recognition error: ${e.error}. Type the transcript instead.`);
+      finish();
+    };
+    recog.onend = () => {
+      if (recogRef.current !== run) return;
+      if (!run.stopping) { try { recog.start(); return; } catch(e) {} }   // browsers end long sessions on their own
+      finish();
+    };
     setDuration(0);
-    setTranscript("");
-    setAutoScore(null);
-    setManualScore(null);
-    setConfidence(null);
+    setRecState("recording");
+    try { recog.start(); }
+    catch (e) { recogRef.current = null; setSttNote("Could not start the microphone: " + e.message); setRecState("done"); }
   }
 
   function stopRecord() {
+    const run = recogRef.current;
+    if (!run) { setRecState("done"); return; }
+    run.stopping = true;
     setRecState("processing");
-    // Simulate async STT (replace with fetch('/api/stt', {audio}) in production).
-    // The timeout is cancelled on navigation so a late result cannot land on the next item.
-    cancelPendingSTT();
-    sttTimeoutRef.current = setTimeout(() => {
-      sttTimeoutRef.current = null;
-      const result = simulateSTT(config.lang);
-      setTranscript(result.transcript);
-      setAutoScore(result.score);
-      setConfidence(result.confidence);
-      setRecState("done");
-    }, 1400);
+    try { run.recog.stop(); } catch (e) { run.finish(); return; }
+    // If the browser never fires onend, finish anyway
+    setTimeout(() => { if (recogRef.current === run) { try { run.recog.abort(); } catch(e) {} run.finish(); } }, 2000);
   }
 
   function confirmAndNext() {
@@ -337,12 +359,9 @@ function App() {
     const entry = {
       code: item.code,
       instrument: item.instrument,
-      transcript: SIMULATED_STT ? null : transcript,
-      autoScore:  SIMULATED_STT ? null : autoScore,
+      transcript: transcript.trim() || null,
       confirmedScore: activeScore,
-      isOverride,
-      confidence: SIMULATED_STT ? null : confidence,
-      stt: SIMULATED_STT ? "simulated" : "live",
+      stt: heardSpeech ? "browser" : "manual",
       ts: new Date().toISOString(),
     };
     // Upsert by item code: going Back and confirming again replaced nothing and duplicated the item
@@ -351,11 +370,7 @@ function App() {
 
     if (itemIndex + 1 < totalItems) {
       setItemIndex(i => i + 1);
-      setRecState("idle");
-      setTranscript("");
-      setAutoScore(null);
-      setManualScore(null);
-      setConfidence(null);
+      resetItemState();
     } else {
       setScreen("summary");
     }
@@ -432,15 +447,18 @@ function App() {
       <div className="setup-card">
         <h3 style={{color:"var(--navy)",marginBottom:14}}>📋 Consent &amp; Session Start</h3>
         <div className="consent-box">
-          <strong>PDPA 2010 Notice:</strong> This session will record audio and transcriptions for research purposes only.
-          Data will be stored on Malaysian-territory servers (encrypted, AES-256). Audio is classified as personal data
-          and will be retained for 5 years post-publication, then securely deleted. Participation is voluntary.
+          <strong>PDPA 2010 Notice:</strong> Answers are transcribed live by the browser's speech-recognition service for
+          research purposes only; this app does not save an audio file. In Chrome and Edge the browser sends the audio to
+          its vendor's online speech service (Google or Microsoft), which may be outside Malaysia. If the participant does
+          not agree to this, do not use 🎙 — type the transcript instead. Transcripts and answers are kept on this device
+          until the researcher exports them, then stored on Malaysian-territory servers (encrypted, AES-256), retained for
+          5 years post-publication, then securely deleted. Participation is voluntary.
           <br/><br/>
           <strong>Ethics:</strong> UTAR UREC approval pending (Ref. UTAR/UREC/2025); no data are collected before approval. Participant may withdraw at any time without consequence.
         </div>
         <label className="consent-check">
           <input type="checkbox" checked={consentChecked} onChange={e => setConsentChecked(e.target.checked)} />
-          Participant has been informed and verbally consents to audio recording.
+          Participant has been informed and verbally consents to live transcription.
           Researcher ID: <strong style={{marginLeft:4}}>{config.researcherId}</strong>
         </label>
         <div style={{fontSize:12,color:"var(--muted)",marginBottom:14}}>
@@ -465,15 +483,15 @@ function App() {
           <div className="summary-row" key={i}>
             <span><strong>{e.code}</strong> — {e.instrument}</span>
             <span>
-              {e.isOverride && <span className="tag tag-orange" style={{marginRight:6}}>Override</span>}
+              {e.stt === "manual" && <span className="tag tag-orange" style={{marginRight:6}}>Typed</span>}
               <span className="tag tag-green">Score: {e.confirmedScore}</span>
             </span>
           </div>
         ))}
         <div style={{marginTop:18,padding:"10px 0",borderTop:"1px solid var(--lgrey)",fontSize:13}}>
-          <strong>Override rate:</strong> {Math.round(log.filter(e=>e.isOverride).length/Math.max(1,log.length)*100)}%
+          <strong>Live-transcribed:</strong> {log.filter(e=>e.stt==="browser").length} / {log.length} items
           &nbsp;·&nbsp;
-          <strong>Avg confidence:</strong> {SIMULATED_STT ? "n/a (simulated STT)" : (log.reduce((s,e)=>s+(e.confidence||0),0)/Math.max(1,log.length)*100).toFixed(0)+"%"}
+          <strong>With transcript:</strong> {log.filter(e=>e.transcript).length} / {log.length}
         </div>
         <div style={{display:"flex",gap:8,marginTop:14}}>
           <button className="btn btn-success" style={{flex:1}}
@@ -482,7 +500,7 @@ function App() {
           </button>
           <button className="btn btn-outline" style={{flex:1}}
             onClick={() => {
-              const d = JSON.stringify({ sessionId, ...config, stt: SIMULATED_STT ? "simulated" : "live",
+              const d = JSON.stringify({ sessionId, ...config, stt: "browser-web-speech; scores selected by interviewer",
                 exportedAt: new Date().toISOString(), items: log }, null, 2);
               const url = URL.createObjectURL(new Blob([d],{type:"application/json"}));
               const a = document.createElement("a");
@@ -493,8 +511,7 @@ function App() {
         </div>
         <button className="btn btn-outline" style={{width:"100%",marginTop:8}}
           onClick={() => { cancelPendingSTT(); setScreen("setup"); setLog([]); setItemIndex(0); setConsentChecked(false);
-            setRecState("idle"); setTranscript(""); setAutoScore(null); setManualScore(null); setConfidence(null);
-            setSessionId(""); setConfig(c=>({...c,participantId:""})); }}>
+            resetItemState(); setSessionId(""); setConfig(c=>({...c,participantId:""})); }}>
           New Session
         </button>
       </div>
@@ -509,10 +526,9 @@ function App() {
         <span className="session-badge">{sessionId}</span>
         <span style={{fontSize:12}}>{config.participantId} · {config.group.toUpperCase()} · {config.lang.toUpperCase()}</span>
       </div>
-      {SIMULATED_STT && (
+      {!SpeechRec && (
         <div role="note" style={{background:"#fff7ed",color:"#9a3412",borderBottom:"1px solid #fed7aa",padding:"8px 16px",fontSize:13}}>
-          ⚠ Prototype: speech-to-text is <strong>simulated</strong> — the transcript and suggested score are random placeholders
-          and are not saved. Select the participant's answer manually before confirming.
+          ⚠ Live transcription is not available in this browser (use Chrome or Edge). Type transcripts manually.
         </div>
       )}
 
@@ -545,9 +561,7 @@ function App() {
               {log.map((e,i) => (
                 <div className="log-entry" key={i}>
                   <span className="le-code">{e.code}</span>
-                  {e.isOverride
-                    ? <span className="le-override">OVR {e.confirmedScore}</span>
-                    : <span className="le-score">{e.confirmedScore}</span>}
+                  <span className="le-score">{e.confirmedScore}</span>
                   <div className="le-text">{e.transcript}</div>
                 </div>
               ))}
@@ -592,75 +606,54 @@ function App() {
                 <div className="record-status">
                   {recState === "idle" && "Tap to record participant response"}
                   {recState === "recording" && "Recording… tap ⏹ to stop"}
-                  {recState === "processing" && "Transcribing…"}
+                  {recState === "processing" && "Finalising transcript…"}
                   {recState === "done" && "Transcript ready — review below"}
+                  {sttNote && <div style={{color:"var(--danger)",marginTop:4}}>{sttNote}</div>}
                 </div>
               </div>
 
               {/* Transcript */}
-              {(recState === "done" || transcript) && (
+              {(
+
                 <>
                   <div style={{fontSize:12,color:"var(--muted)",marginBottom:4,fontWeight:600,textTransform:"uppercase",letterSpacing:.4}}>
                     Transcript (edit if needed)
                   </div>
                   <div className={`transcript-box ${recState === "done" ? "live" : ""}`}>
-                    <textarea rows={3} value={transcript}
+                    <textarea rows={3} value={transcript} readOnly={recState === "recording"}
+                      placeholder="Live transcript appears here; you can also type or correct it."
                       onChange={e => setTranscript(e.target.value)}/>
                   </div>
-                  {confidence !== null && (
-                    <div className="confidence-bar">
-                      <span>STT Confidence</span>
-                      <div className="conf-fill">
-                        <div className="conf-inner" style={{
-                          width:`${confidence*100}%`,
-                          background: confidence > 0.8 ? "var(--success)" : confidence > 0.6 ? "var(--warning)" : "var(--danger)"
-                        }}/>
-                      </div>
-                      <span>{(confidence*100).toFixed(0)}%</span>
-                    </div>
-                  )}
                 </>
               )}
 
               {/* Scoring */}
-              {recState === "done" && (
+              {recState !== "recording" && recState !== "processing" && (
                 <div className="score-section">
-                  <div className="score-label">
-                    Confirm Score
-                    {autoScore && <span style={{fontWeight:400,color:"var(--teal)",marginLeft:6}}>
-                      ({SIMULATED_STT ? "Simulated suggestion" : "Auto-suggested"}: {autoScore})
-                    </span>}
-                  </div>
+                  <div className="score-label">Participant's answer (select)</div>
                   <div className="likert-row">
                     {labels.map((label, idx) => {
                       const val = idx + 1;
-                      const isAuto = !SIMULATED_STT && val === autoScore && manualScore === null;
                       const isManual = val === manualScore;
                       return (
                         <button key={val}
-                          className={`likert-btn ${isManual ? "selected" : isAuto ? "auto-selected" : ""}`}
+                          className={`likert-btn ${isManual ? "selected" : ""}`}
                           onClick={() => setManualScore(val === manualScore ? null : val)}>
                           {label.split("\n").map((l,i) => <div key={i}>{l}</div>)}
                         </button>
                       );
                     })}
                   </div>
-                  {isOverride && (
-                    <div className="override-flag">
-                      ⚠ Manual override — will be flagged in QA log
-                    </div>
-                  )}
                 </div>
               )}
 
               <div className="nav-row">
                 <button className="btn btn-outline" disabled={itemIndex === 0}
-                  onClick={() => { cancelPendingSTT(); setItemIndex(i=>i-1); setRecState("idle");
-                    setTranscript(""); setAutoScore(null); setManualScore(null); setConfidence(null); }}>
+                  onClick={() => { cancelPendingSTT(); setItemIndex(i=>i-1); resetItemState(); }}>
                   ← Back
                 </button>
                 <button className="btn btn-primary"
-                  disabled={recState !== "done" || activeScore === null}
+                  disabled={recState === "recording" || recState === "processing" || activeScore === null}
                   onClick={confirmAndNext}>
                   Confirm &amp; Next →
                 </button>
@@ -713,9 +706,9 @@ function App() {
               <ul style={{fontSize:12,color:"var(--muted)",paddingLeft:16,lineHeight:1.8}}>
                 <li>Allow 5–10 s silence before stopping</li>
                 <li>Edit transcript for code-switching errors</li>
-                <li>Tamil: prefer manual entry if STT confidence &lt; 60%</li>
-                <li>Override is logged — note reason if asked</li>
-                <li>All audio stays on Malaysian server</li>
+                <li>Tamil: check the transcript closely; type it if recognition is poor</li>
+                <li>The score is always your selection, never automatic</li>
+                <li>Transcription uses the browser's online speech service (Google in Chrome, Microsoft in Edge)</li>
               </ul>
             </div>
           </div>
