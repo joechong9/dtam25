@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://your-backend.dtammy.utar.edu.my; img-src 'self' data: blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://your-backend.dtammy.utar.edu.my; img-src 'self' data: blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>DTAM-MY v2 | Telerehabilitation Research Questionnaire Suite</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -419,7 +419,7 @@
 <div id="root"></div>
 
 <script type="text/babel">
-const { useState, useEffect, useCallback, useMemo } = React;
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
 
 // ─── TRANSLATIONS ────────────────────────────────────────────────────────────
 const T = {
@@ -1088,15 +1088,21 @@ function scoreSurvey(group, answers) {
     Environment: ['wq8','wq9','wq12','wq13','wq14','wq23','wq24','wq25'],
   };
   const whoReversed = ['wq3','wq4','wq26'];
+  // Each domain is scored with at most one missing item; the score is then the mean of the answered
+  // items, i.e. the missing item takes the domain mean (Physical 6/7, Psychological 5/6, Social 2/3,
+  // Environment 7/8).
+  const WHO_MAX_MISSING = 1;
   const whoMap = {};
   Object.keys(answers).filter(k => k.startsWith('wq')).forEach(k => {
-    const v = parseInt(answers[k]);
+    const v = parseInt(answers[k], 10);
+    if (!Number.isFinite(v)) return;   // cleared / blank answers are missing, not NaN
     whoMap[k] = whoReversed.includes(k) ? (6 - v) : v;
   });
   Object.entries(whoDomains).forEach(([domain, keys]) => {
     const realKeys = keys.map(k => k.replace('r',''));
-    if (realKeys.every(k => whoMap[k] != null)) {
-      const mean = realKeys.reduce((a,k) => a + whoMap[k], 0) / realKeys.length;
+    const answered = realKeys.filter(k => whoMap[k] != null);
+    if (answered.length > 0 && answered.length >= realKeys.length - WHO_MAX_MISSING) {
+      const mean = answered.reduce((a,k) => a + whoMap[k], 0) / answered.length;
       const score100 = ((mean - 1) / 4) * 100;
       scores[`WHOQOL_${domain}`] = { value: Math.round(score100), label: `QoL – ${domain}`, max: 100,
         interp: score100 >= 60 ? 'Good' : score100 >= 40 ? 'Moderate' : 'Poor',
@@ -1147,13 +1153,30 @@ const DTAM_CONFIG = {
   STUDY_ID:     'DTAM-MY-2025',
 };
 
-function submitResponse(group, answers, scores) {
+/**
+ * @typedef {{value:number, label:string, max:number, interp:string, color:string}} Score
+ * @typedef {Object} ResponseRecord        Stored in localStorage[STORAGE_KEY] (array) and read by
+ *                                         telerehab_dashboard_v2.html and admin_portal_v2.html
+ * @property {string} id
+ * @property {string} studyId
+ * @property {string} version
+ * @property {string} timestamp            ISO 8601
+ * @property {'allied'|'caregiver'|'elderly'|'policy'|'public'} group
+ * @property {string} lang                 Language the questionnaire was answered in: en | bm | zh | ta
+ * @property {Object<string,string>} answers  Item id → option value ('0'..'4' ZBI, '1'..'5' Likert, English label for selects)
+ * @property {Object<string,Score>} scores    e.g. SUS, ZBI, TAM_PU, WHOQOL_Physical, MAST
+ * @property {{lang:string}} meta          Browser language (navigator.language)
+ */
+
+/** @returns {{id:string, saved:boolean, record:ResponseRecord}} */
+function submitResponse(group, answers, scores, surveyLang) {
   const record = {
     id:        `${DTAM_CONFIG.STUDY_ID}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
     studyId:   DTAM_CONFIG.STUDY_ID,
     version:   DTAM_CONFIG.VERSION,
     timestamp: new Date().toISOString(),
     group,
+    lang:      surveyLang,   // questionnaire language chosen by the participant (meta.lang is only the browser locale)
     answers,
     scores,
     meta: {
@@ -1164,11 +1187,20 @@ function submitResponse(group, answers, scores) {
   };
 
   // 1. Always save to localStorage (offline backup + dashboard feed)
+  let saved = false;
   try {
-    const existing = JSON.parse(localStorage.getItem(DTAM_CONFIG.STORAGE_KEY) || '[]');
+    let existing = [];
+    try {
+      const parsed = JSON.parse(localStorage.getItem(DTAM_CONFIG.STORAGE_KEY) || '[]');
+      if (Array.isArray(parsed)) existing = parsed;
+    } catch(parseErr) {
+      // Never overwrite unreadable stored data — keep a copy before starting a fresh list
+      localStorage.setItem(DTAM_CONFIG.STORAGE_KEY + '_corrupt_' + Date.now(), localStorage.getItem(DTAM_CONFIG.STORAGE_KEY));
+    }
     existing.push(record);
     localStorage.setItem(DTAM_CONFIG.STORAGE_KEY, JSON.stringify(existing));
-  } catch(e) { console.warn('localStorage save failed:', e); }
+    saved = true;
+  } catch(e) { console.warn('localStorage save failed:', e); }   // e.g. quota exceeded / storage blocked
 
   // 2. If API endpoint configured, also POST to server
   if (DTAM_CONFIG.API_ENDPOINT) {
@@ -1178,7 +1210,21 @@ function submitResponse(group, answers, scores) {
       .catch(err => console.warn('API submission failed (data saved locally):', err));
   }
 
-  return record.id;
+  return { id: record.id, saved, record };
+}
+
+// Shown on the report page when the local save failed, so the response is not silently lost
+const SAVE_FAILED = {
+  en: { msg:'This response could not be saved on this device. Please download it and give the file to the researcher.', btn:'Download response' },
+  bm: { msg:'Jawapan ini tidak dapat disimpan pada peranti ini. Sila muat turun dan serahkan fail kepada penyelidik.', btn:'Muat turun jawapan' },
+  zh: { msg:'此回答无法保存在本设备上。请下载并将文件交给研究人员。', btn:'下载回答' },
+  ta: { msg:'இந்தப் பதிலை இந்தச் சாதனத்தில் சேமிக்க முடியவில்லை. அதைப் பதிவிறக்கி கோப்பை ஆய்வாளரிடம் கொடுக்கவும்.', btn:'பதிலைப் பதிவிறக்கவும்' },
+};
+function downloadRecord(record) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(record, null, 2)], { type:'application/json' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = `${record.id}.json`; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 
@@ -1747,8 +1793,8 @@ const CONSENT_TRANS = {
     s6b: 'Kajian ini melibatkan risiko yang minimum. Tiada manfaat langsung kepada anda daripada penyertaan, tetapi respons anda akan menyumbang kepada pembangunan perkhidmatan telerehabilitasi yang lebih baik untuk warga emas Malaysia.',
     s7t: '7. Tempoh',
     s7b: 'Anggaran masa penyiapan: 15–30 minit bergantung kepada kumpulan pihak berkepentingan anda.',
-    s8t: '8. Kelulusan Etika',
-    s8b: 'Kajian ini telah dikemukakan kepada Jawatankuasa Etika Penyelidikan Universiti UTAR (UREC) untuk semakan. Kelulusan masih belum diperoleh, dan tiada data akan dikumpul sehingga kelulusan diberikan. Rujukan: UTAR/UREC/2025 (tertunda). Garis panduan GCP ICH E6(R2) dan Deklarasi Helsinki (WMA, 2013) dipatuhi sepanjang kajian ini.',
+    s8t: '8. Semakan Etika',
+    s8b: 'Kajian ini masih menunggu kelulusan etika daripada Jawatankuasa Etika Penyelidikan Universiti UTAR (UREC), dan tiada data akan dikumpul sehingga kelulusan diberikan. Rujukan: UTAR/UREC/2025 (tertunda). Garis panduan GCP ICH E6(R2) dan Deklarasi Helsinki (WMA, 2013) dipatuhi sepanjang kajian ini.',
     s9t: '9. Hubungi',
     s9b: 'Untuk pertanyaan, hubungi pejabat penyelidikan Fakulti Kejuruteraan dan Sains Lee Kong Chian (LKC FES) UTAR, Kampus Sungai Long.',
   },
@@ -1767,8 +1813,8 @@ const CONSENT_TRANS = {
     s6b: '本研究风险极低。参与对您没有直接益处，但您的回答将有助于为马来西亚老年人开发更好的远程康复服务。',
     s7t: '7. 所需时间',
     s7b: '预计完成时间：根据您的利益相关者群体，约需15至30分钟。',
-    s8t: '8. 伦理审批',
-    s8b: '本研究已提交拉曼大学（UTAR）大学研究伦理委员会（UREC）审查，目前尚待批准；在获得批准之前不会收集任何数据。参考编号：UTAR/UREC/2025（待定）。本研究全程遵守ICH E6(R2) GCP指南和赫尔辛基宣言（WMA，2013）。',
+    s8t: '8. 伦理审查',
+    s8b: '本研究正在等待拉曼大学（UTAR）大学研究伦理委员会（UREC）的伦理批准；在获得批准之前不会收集任何数据。参考编号：UTAR/UREC/2025（待定）。本研究全程遵守ICH E6(R2) GCP指南和赫尔辛基宣言（WMA，2013）。',
     s9t: '9. 联系方式',
     s9b: '如有疑问，请联系拉曼大学（UTAR）李光前工程与科学学院（LKC FES）双溪龙校区研究办公室。',
   },
@@ -1787,8 +1833,8 @@ const CONSENT_TRANS = {
     s6b: 'இந்த ஆராய்ச்சியில் குறைந்தபட்ச அபாயம் உள்ளது. பங்கேற்பதால் உங்களுக்கு நேரடி நன்மைகள் இல்லை, ஆனால் உங்கள் பதில்கள் மலேசிய முதியோருக்கான சிறந்த டெலிரீஹேபிலிடேஷன் சேவைகளை உருவாக்க பங்களிக்கும்.',
     s7t: '7. கால அளவு',
     s7b: 'மதிப்பிடப்பட்ட நேரம்: உங்கள் பங்குதாரர் குழுவைப் பொறுத்து 15–30 நிமிடங்கள்.',
-    s8t: '8. நெறிமுறை அங்கீகாரம்',
-    s8b: 'இந்த ஆராய்ச்சி UTAR பல்கலைக்கழக ஆராய்ச்சி நெறிமுறை குழுவின் (UREC) மதிப்பாய்வுக்குச் சமர்ப்பிக்கப்பட்டுள்ளது. அங்கீகாரம் இன்னும் நிலுவையில் உள்ளது; அங்கீகாரம் கிடைக்கும் வரை எந்தத் தரவும் சேகரிக்கப்படாது. குறிப்பு: UTAR/UREC/2025 (நிலுவையில்). ICH E6(R2) GCP வழிகாட்டுதல்கள் மற்றும் ஹெல்சின்கி பிரகடனம் (WMA, 2013) இந்த ஆராய்ச்சி முழுவதும் கடைப்பிடிக்கப்படுகின்றன.',
+    s8t: '8. நெறிமுறை மதிப்பாய்வு',
+    s8b: 'இந்த ஆராய்ச்சிக்கான UTAR பல்கலைக்கழக ஆராய்ச்சி நெறிமுறை குழுவின் (UREC) அங்கீகாரம் நிலுவையில் உள்ளது; அங்கீகாரம் கிடைக்கும் வரை எந்தத் தரவும் சேகரிக்கப்படாது. குறிப்பு: UTAR/UREC/2025 (நிலுவையில்). ICH E6(R2) GCP வழிகாட்டுதல்கள் மற்றும் ஹெல்சின்கி பிரகடனம் (WMA, 2013) இந்த ஆராய்ச்சி முழுவதும் கடைப்பிடிக்கப்படுகின்றன.',
     s9t: '9. தொடர்பு',
     s9b: 'கேள்விகளுக்கு, UTAR லீ கோங் சியான் பொறியியல் மற்றும் அறிவியல் பீடம் (LKC FES) ஆராய்ச்சி அலுவலகம், சுங்கை லாங் வளாகத்தை தொடர்பு கொள்ளவும்.',
   }
@@ -2599,6 +2645,8 @@ function App() {
   const [consentGiven, setConsentGiven] = useState(false);
   const [showError, setShowError] = useState(false);
   const [submittedId, setSubmittedId] = useState(null);
+  const [savedRecord, setSavedRecord] = useState(null);   // set only when the local save failed
+  const submittingRef = useRef(false);
   const t = T[lang];
 
   const flow = group ? FLOWS[group] : [];
@@ -2640,9 +2688,12 @@ function App() {
       setCurrentSectionIdx(prev => prev + 1);
       window.scrollTo(0,0);
     } else {
+      if (submittingRef.current) return;   // ignore a second click before the report renders
+      submittingRef.current = true;
       const finalScores = scoreSurvey(group, answers);
-      const id = submitResponse(group, answers, finalScores);
+      const { id, saved, record } = submitResponse(group, answers, finalScores, lang);
       setSubmittedId(id);
+      setSavedRecord(saved ? null : record);
       setPage('report');
       window.scrollTo(0,0);
     }
@@ -2664,12 +2715,17 @@ function App() {
     setAnswers({});
     setConsentGiven(false);
     setCurrentSectionIdx(0);
+    setSubmittedId(null);
+    setSavedRecord(null);
+    setShowError(false);
+    submittingRef.current = false;
     window.scrollTo(0,0);
   }
 
   const groupIcons = { allied:'🏥', caregiver:'💛', elderly:'🧓', policy:'🏛️', public:'🌏' };
 
-  // ── SHARED HEADER ──
+  // ── SHARED HEADER ── (called as a function: defining a component inside App gave it a new
+  // identity on every render, so React unmounted and remounted the header on each answer)
   const AppHeader = () => (
     <div className="app-header">
       <div className="logo">
@@ -2687,7 +2743,7 @@ function App() {
   // ── INTRO ──
   if (page === 'intro') return (
     <>
-      <AppHeader />
+      {AppHeader()}
 
       {/* ── Hero Banner ── */}
       <div className="intro-hero">
@@ -2807,7 +2863,7 @@ function App() {
   // ── LANDING (Group Selector) ──
   if (page === 'landing') return (
     <>
-      <AppHeader />
+      {AppHeader()}
       <div className="container">
         {/* Back link */}
         <div style={{marginBottom:'12px'}}>
@@ -2857,7 +2913,7 @@ function App() {
   // ── CONSENT ──
   if (page === 'consent') return (
     <>
-      <AppHeader />
+      {AppHeader()}
       <div className="container">
         <div className="card">
           <div className="card-title">📋 {t.consent}</div>
@@ -2881,8 +2937,8 @@ function App() {
               <div className="consent-body">This study involves minimal risk. There are no direct benefits to you from participation, but your responses will contribute to the development of better telerehabilitation services for elderly Malaysians. If you feel distressed at any point, please stop and contact the research team at UTAR.</div>
               <div className="consent-section">7. Duration</div>
               <div className="consent-body">Estimated completion time: 15–30 minutes depending on your stakeholder group.</div>
-              <div className="consent-section">8. Ethics Approval</div>
-              <div className="consent-body">This study has been submitted to the UTAR University Research Ethics Committee (UREC) for review. Approval is pending, and no data will be collected until it is granted. Reference: UTAR/UREC/2025 (pending). ICH E6(R2) GCP guidelines and the Declaration of Helsinki (WMA, 2013) are observed throughout this study.</div>
+              <div className="consent-section">8. Ethics Review</div>
+              <div className="consent-body">Ethics approval from the UTAR University Research Ethics Committee (UREC) is pending, and no data will be collected until it is granted. Reference: UTAR/UREC/2025 (pending). ICH E6(R2) GCP guidelines and the Declaration of Helsinki (WMA, 2013) are observed throughout this study.</div>
               <div className="consent-section">9. Contact</div>
               <div className="consent-body">For questions, contact the UTAR Lee Kong Chian Faculty of Engineering and Science (LKC FES) research office, Sungai Long Campus.</div>
             </>) : (() => {
@@ -2921,7 +2977,7 @@ function App() {
     const progress = ((currentSectionIdx) / totalSections) * 100;
     return (
       <>
-        <AppHeader />
+        {AppHeader()}
         <div className="container">
           {/* Progress */}
           <div className="card" style={{padding:'16px 20px'}}>
@@ -2966,10 +3022,17 @@ function App() {
     const scoreList = Object.entries(scores);
     return (
       <>
-        <AppHeader />
+        {AppHeader()}
         <div className="container">
           {/* Submission confirmation banner */}
-          {submittedId && (
+          {submittedId && savedRecord && (
+            <div role="alert" style={{background:'#fef2f2',border:'1px solid #fca5a5',borderRadius:'10px',padding:'12px 18px',marginBottom:'16px',display:'flex',alignItems:'center',gap:'12px',flexWrap:'wrap',fontSize:'var(--fs-sm)'}}>
+              <span style={{fontSize:'20px'}}>⚠️</span>
+              <div style={{flex:'1 1 240px',color:'#991b1b'}}>{(SAVE_FAILED[lang]||SAVE_FAILED.en).msg}</div>
+              <button className="btn btn-primary" onClick={() => downloadRecord(savedRecord)}>⬇ {(SAVE_FAILED[lang]||SAVE_FAILED.en).btn}</button>
+            </div>
+          )}
+          {submittedId && !savedRecord && (
             <div style={{background:'#dcfce7',border:'1px solid #86efac',borderRadius:'10px',padding:'12px 18px',marginBottom:'16px',display:'flex',alignItems:'center',gap:'12px',fontSize:'var(--fs-sm)'}}>
               <span style={{fontSize:'20px'}}>✅</span>
               <div>
@@ -3063,7 +3126,7 @@ function App() {
           <div style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap',marginBottom:'32px'}}>
             <button className="btn btn-primary" onClick={() => window.print()}>🖨️ {t.print}</button>
             <button className="btn btn-secondary" onClick={handleRestart}>🔄 {t.restart}</button>
-            <button className="btn btn-secondary" onClick={() => window.open('telerehab_dashboard.html','_blank')}
+            <button className="btn btn-secondary" onClick={() => window.open('telerehab_dashboard_v2.html','_blank')}
               style={{borderColor:'var(--teal)',color:'var(--teal)'}}>
               📊 {t.openDashboard}
             </button>

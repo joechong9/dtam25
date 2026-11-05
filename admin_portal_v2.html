@@ -678,7 +678,7 @@ input[type=text].api-input:focus,input[type=password].api-input:focus,input[type
         </div>
         <div class="setting-row" style="flex-direction:column;align-items:flex-start">
           <div><div class="setting-label">Gemini API Key (AI Insights in Survey App)</div><div class="setting-desc">Used by the Survey App's AI Insights feature. Get key at aistudio.google.com/apikey</div></div>
-          <input type="text" class="api-input" id="gemini-key-input" placeholder="AIza..." oninput="saveKey('gemini',this.value)"/>
+          <input type="password" autocomplete="off" class="api-input" id="gemini-key-input" placeholder="AIza..." oninput="saveKey('gemini',this.value)"/>
           <div style="margin-top:6px;font-size:11px;color:var(--muted)">Model: gemini-2.0-flash</div>
         </div>
       </div>
@@ -711,6 +711,43 @@ input[type=text].api-input:focus,input[type=password].api-input:focus,input[type
             </thead>
             <tbody id="users-table">
               <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Registration tokens -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">🎟️ Registration Tokens</div>
+            <div class="card-desc">Single-use codes that let a new team member create their own account on the sign-in page.
+              Only a hash is stored; the code is shown once. Accounts and tokens are stored in this browser,
+              so the person must register on <strong>this device</strong>.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
+          <div style="flex:1 1 200px">
+            <div class="setting-label" style="margin-bottom:4px">Label (optional)</div>
+            <input type="text" class="api-input" id="tok-label" maxlength="60" placeholder="e.g. RA – Aisyah" style="width:100%"/>
+          </div>
+          <div>
+            <div class="setting-label" style="margin-bottom:4px">Expires after</div>
+            <select id="tok-days" class="api-input" style="width:auto">
+              <option value="1">1 day</option>
+              <option value="7" selected>7 days</option>
+              <option value="30">30 days</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="font-size:12px;padding:8px 14px" onclick="generateRegToken()">+ Generate Token</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr><th>Label</th><th>Created</th><th>Expires</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody id="tokens-table">
+              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No tokens issued yet.</td></tr>
             </tbody>
           </table>
         </div>
@@ -903,7 +940,7 @@ input[type=text].api-input:focus,input[type=password].api-input:focus,input[type
 <div class="modal-overlay" id="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <h3 id="modal-title"></h3>
-    <p id="modal-msg"></p>
+    <p id="modal-msg" style="white-space:pre-line"></p>
     <div class="modal-btns" id="modal-btns"></div>
   </div>
 </div>
@@ -963,11 +1000,49 @@ input[type=text].api-input:focus,input[type=password].api-input:focus,input[type
 
 const USERS_KEY = 'dtam_admin_users_v2';
 
-// Hash a password with SHA-256 via Web Crypto API (async)
+/**
+ * @typedef {Object} Account
+ * @property {string} username      Lower-cased email address (unique key)
+ * @property {string} passwordHash  Hex digest (PBKDF2 when `kdf` is set, legacy unsalted SHA-256 otherwise)
+ * @property {string} [salt]        Hex salt for PBKDF2 records
+ * @property {string} [kdf]         Key-derivation identifier, e.g. 'pbkdf2-sha256-210000'
+ * @property {string} display       Display name
+ * @property {boolean} builtin
+ * @property {string} createdAt     ISO timestamp
+ */
+
+const toHex = buf => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+const fromHex = hex => new Uint8Array((hex.match(/../g) || []).map(h => parseInt(h, 16)));
+const KDF_ID = 'pbkdf2-sha256-210000';
+const KDF_ITERATIONS = 210000;
+
+// Legacy: unsalted SHA-256 (kept only to verify and upgrade accounts created by earlier versions)
 async function hashPassword(password) {
-  const enc = new TextEncoder();
-  const buf = await crypto.subtle.digest('SHA-256', enc.encode(password));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+  return toHex(buf);
+}
+
+async function pbkdf2Hex(password, saltHex) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name:'PBKDF2', hash:'SHA-256', salt: fromHex(saltHex), iterations: KDF_ITERATIONS }, key, 256);
+  return toHex(bits);
+}
+
+/** Create the stored fields for a new password: per-account random salt + PBKDF2 digest. */
+async function makePasswordRecord(password) {
+  const salt = toHex(crypto.getRandomValues(new Uint8Array(16)));
+  return { passwordHash: await pbkdf2Hex(password, salt), salt, kdf: KDF_ID };
+}
+
+/** @param {Account} account */
+async function verifyPassword(account, password) {
+  if (account.kdf === KDF_ID && account.salt) return (await pbkdf2Hex(password, account.salt)) === account.passwordHash;
+  return (await hashPassword(password)) === account.passwordHash;
+}
+
+/** Escape a value for safe interpolation into HTML (text or quoted attribute). */
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 function loadCreatedAccounts() {
@@ -982,10 +1057,124 @@ function saveCreatedAccounts(arr) {
   localStorage.setItem(USERS_KEY, JSON.stringify(arr));
 }
 
-// [v2] Registration tokens set by admin after first login (stored hashed)
+// ── Registration tokens (issued in Settings, redeemed on the sign-in page) ──
+/**
+ * @typedef {Object} RegToken
+ * @property {string} id
+ * @property {string} hash        SHA-256 of the normalised code (the code itself is never stored)
+ * @property {string} label
+ * @property {string} createdAt   ISO
+ * @property {string} createdBy   username of the issuing admin
+ * @property {string} expiresAt   ISO
+ * @property {string} [usedAt]
+ * @property {string} [usedBy]
+ * @property {string} [revokedAt]
+ */
 const REG_TOKENS_KEY = 'dtam_reg_tokens';
+const TOKEN_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no 0/O/1/I to avoid misreading
+/** @returns {(RegToken|string)[]} string entries are legacy plaintext tokens */
 function getRegTokens() {
-  try { return JSON.parse(localStorage.getItem(REG_TOKENS_KEY) || '[]'); } catch(e) { return []; }
+  try { const t = JSON.parse(localStorage.getItem(REG_TOKENS_KEY) || '[]'); return Array.isArray(t) ? t : []; } catch(e) { return []; }
+}
+function saveRegTokens(arr) { localStorage.setItem(REG_TOKENS_KEY, JSON.stringify(arr)); }
+const normaliseToken = code => String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+function tokenStatus(t) {
+  if (t.usedAt)    return { key:'used',    text:`Used by ${t.usedBy || 'unknown'}` };
+  if (t.revokedAt) return { key:'revoked', text:'Revoked' };
+  if (Date.now() >= new Date(t.expiresAt).getTime()) return { key:'expired', text:'Expired' };
+  return { key:'active', text:'Active' };
+}
+
+function currentAdmin() {
+  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}').username || ''; } catch(e) { return ''; }
+}
+
+async function generateRegToken() {
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  const raw = Array.from(bytes, b => TOKEN_ALPHABET[b % TOKEN_ALPHABET.length]).join('');   // 32 divides 256: unbiased
+  const code = raw.match(/.{4}/g).join('-');                                                   // XXXX-XXXX-XXXX
+  const days = parseInt(document.getElementById('tok-days').value, 10) || 7;
+  const labelEl = document.getElementById('tok-label');
+  /** @type {RegToken} */
+  const token = {
+    id: 'tok_' + Date.now().toString(36) + toHex(crypto.getRandomValues(new Uint8Array(3))),
+    hash: await hashPassword(normaliseToken(code)),
+    label: labelEl.value.trim(),
+    createdAt: new Date().toISOString(),
+    createdBy: currentAdmin(),
+    expiresAt: new Date(Date.now() + days * 86400000).toISOString(),
+  };
+  saveRegTokens([...getRegTokens(), token]);
+  labelEl.value = '';
+  renderTokensTable();
+  showModal('Registration Token Created',
+    `${code}\n\nGive this code to ${token.label || 'the new team member'}. It works once, on this device's sign-in page ` +
+    `(Create Account), until ${new Date(token.expiresAt).toLocaleString()}. It will not be shown again.`,
+    [
+      { label:'Copy code', cls:'btn-secondary', action: async (ev) => {
+          try { await navigator.clipboard.writeText(code); ev.target.textContent = 'Copied ✓'; }
+          catch(e) { ev.target.textContent = 'Copy failed — select the code above'; }
+        } },
+      { label:'Done', cls:'btn-primary', action: closeModal },
+    ]);
+}
+
+function renderTokensTable() {
+  const tbody = document.getElementById('tokens-table');
+  if (!tbody) return;
+  const tokens = getRegTokens().filter(t => typeof t === 'object' && t);
+  if (!tokens.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No tokens issued yet.</td></tr>';
+    return;
+  }
+  const badge = { active:'active', used:'done', expired:'pending', revoked:'pending' };
+  tbody.innerHTML = tokens.slice().reverse().map(t => {
+    const st = tokenStatus(t);
+    return `<tr>
+      <td style="font-weight:600">${esc(t.label || '—')}</td>
+      <td style="font-size:11px;color:var(--muted)">${esc(new Date(t.createdAt).toLocaleString())}${t.createdBy ? '<br/>by ' + esc(t.createdBy) : ''}</td>
+      <td style="font-size:11px;color:var(--muted)">${esc(new Date(t.expiresAt).toLocaleString())}</td>
+      <td><span class="status-badge ${badge[st.key]}">${esc(st.text)}</span></td>
+      <td>${st.key === 'active'
+        ? `<button class="btn btn-danger" style="font-size:11px;padding:4px 10px" data-tok="${esc(t.id)}" onclick="revokeRegToken(this.dataset.tok)">Revoke</button>`
+        : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function revokeRegToken(id) {
+  showModal('Revoke Token', 'This token will stop working immediately. Continue?', [
+    { label:'Cancel', cls:'btn-secondary', action: closeModal },
+    { label:'Revoke', cls:'btn-danger', action: () => {
+        saveRegTokens(getRegTokens().map(t => (typeof t === 'object' && t.id === id) ? { ...t, revokedAt: new Date().toISOString() } : t));
+        closeModal(); renderTokensTable();
+      } },
+  ]);
+}
+
+/**
+ * Find a redeemable token for the entered code.
+ * @returns {Promise<{index:number}|null>}
+ */
+async function findActiveToken(code) {
+  const norm = normaliseToken(code);
+  if (norm.length < 8) return null;
+  const hash = await hashPassword(norm);
+  const tokens = getRegTokens();
+  const index = tokens.findIndex(t => typeof t === 'string'
+    ? normaliseToken(t) === norm                                 // legacy plaintext entry
+    : t && t.hash === hash && tokenStatus(t).key === 'active');
+  return index >= 0 ? { index } : null;
+}
+
+/** Mark a token used (legacy plaintext entries are removed). */
+function consumeToken(index, username) {
+  const tokens = getRegTokens();
+  const t = tokens[index];
+  if (typeof t === 'string') tokens.splice(index, 1);
+  else if (t) tokens[index] = { ...t, usedAt: new Date().toISOString(), usedBy: username };
+  saveRegTokens(tokens);
 }
 
 // Show first-run setup if no accounts exist
@@ -1012,8 +1201,23 @@ function showSetupWizard() {
 }
 
 const SESSION_KEY = 'dtam_admin_session';
-let MAX_ATTEMPTS  = 5;
-let loginAttempts = parseInt(sessionStorage.getItem('dtam_login_attempts') || '0');
+const MAX_ATTEMPTS  = 5;
+const LOCKOUT_MS    = 5 * 60 * 1000;
+const LOCK_KEY      = 'dtam_login_lock_until';
+let loginAttempts = parseInt(sessionStorage.getItem('dtam_login_attempts') || '0', 10);
+let loginBusy = false;
+
+function lockRemainingMs() {
+  const until = parseInt(sessionStorage.getItem(LOCK_KEY) || '0', 10);
+  if (until && Date.now() >= until) {
+    // Lockout expired: reset the counter
+    sessionStorage.removeItem(LOCK_KEY);
+    sessionStorage.removeItem('dtam_login_attempts');
+    loginAttempts = 0;
+    return 0;
+  }
+  return Math.max(0, until - Date.now());
+}
 
 function checkSession() {
   const sess = sessionStorage.getItem(SESSION_KEY);
@@ -1035,9 +1239,10 @@ function checkSession() {
 }
 
 async function doLogin() {
-  if (loginAttempts >= MAX_ATTEMPTS) {
-    showLoginError('Too many failed attempts. Please refresh the page and try again.');
-    document.getElementById('login-btn').disabled = true;
+  if (loginBusy) return;   // Enter key + button click can fire while hashing is in flight
+  const lockMs = lockRemainingMs();
+  if (lockMs > 0) {
+    showLoginError(`Too many failed attempts. Try again in ${Math.ceil(lockMs / 60000)} min.`);
     return;
   }
 
@@ -1048,13 +1253,25 @@ async function doLogin() {
 
   if (!user || !pass) { showLoginError('Please enter both username and password.'); return; }
 
-  // [v2] Compare SHA-256 hash — never compare plaintext
-  const hash = await hashPassword(pass);
-  const account = loadAllAccounts().find(a => a.username.toLowerCase() === user && a.passwordHash === hash);
+  // Compare derived hashes — never compare plaintext
+  loginBusy = true;
+  let account = null;
+  try {
+    const candidate = loadAllAccounts().find(a => a.username.toLowerCase() === user);
+    if (candidate && await verifyPassword(candidate, pass)) account = candidate;
+    // Transparently upgrade legacy unsalted SHA-256 records to salted PBKDF2
+    if (account && account.kdf !== KDF_ID) {
+      const rec = await makePasswordRecord(pass);
+      saveCreatedAccounts(loadCreatedAccounts().map(a => a.username === account.username ? { ...a, ...rec } : a));
+    }
+  } finally {
+    loginBusy = false;
+  }
 
   if (account) {
     loginAttempts = 0;
     sessionStorage.removeItem('dtam_login_attempts');
+    sessionStorage.removeItem(LOCK_KEY);
     sessionStorage.setItem(SESSION_KEY, JSON.stringify({
       username: account.username,
       display:  account.display,
@@ -1068,10 +1285,10 @@ async function doLogin() {
     passEl.classList.add('error');
     passEl.value = '';
     const remaining = MAX_ATTEMPTS - loginAttempts;
+    if (remaining <= 0) sessionStorage.setItem(LOCK_KEY, String(Date.now() + LOCKOUT_MS));
     showLoginError(remaining > 0
       ? `Invalid credentials. ${remaining} attempt${remaining!==1?'s':''} remaining.`
-      : 'Account locked. Please refresh the page.');
-    if (remaining <= 0) document.getElementById('login-btn').disabled = true;
+      : `Too many failed attempts. Try again in ${LOCKOUT_MS / 60000} min.`);
     setTimeout(() => { userEl.classList.remove('error'); passEl.classList.remove('error'); }, 600);
     passEl.focus();
   }
@@ -1128,7 +1345,13 @@ function checkPwStrength(pw, barId='pw-bar', labelId='pw-label') {
 }
 
 // ── REGISTER (login page) ─────────────────────────────
+let regBusy = false;
 async function doRegister() {
+  if (regBusy) return;   // double-click / Enter while hashing could register twice with one token
+  regBusy = true;
+  try { await doRegisterInner(); } finally { regBusy = false; }
+}
+async function doRegisterInner() {
   const nameEl  = document.getElementById('reg-name');
   const emailEl = document.getElementById('reg-email');
   const passEl  = document.getElementById('reg-pass');
@@ -1154,29 +1377,35 @@ async function doRegister() {
   if (pass.length < 8)   return showErr('Password must be at least 8 characters.');
   if (pass !== pass2)    return showErr('Passwords do not match.');
   // [v2] First-run (no accounts yet) skips token check; subsequent registrations validate token
-  const isFirstRun = document.getElementById('reg-btn').getAttribute('data-firstrun') === '1';
+  const isFirstRun = loadAllAccounts().length === 0;
+  let tokenMatch = null;
   if (!isFirstRun) {
-    const tokens = getRegTokens();
-    if (!tokens.includes(code)) return showErr('Invalid registration token. Contact the PI for your token.');
+    tokenMatch = await findActiveToken(code);
+    if (!tokenMatch) return showErr('Invalid, expired or already-used registration token. Ask the PI for a new token.');
   }
 
   const all = loadAllAccounts();
   if (all.some(a => a.username.toLowerCase() === email))
     return showErr('An account with this email already exists.');
 
-  // [v2] Hash password before storage
-  const passwordHash = await hashPassword(pass);
+  // Salted PBKDF2 before storage
   const newAccount = {
     username: email,
-    passwordHash,
+    ...(await makePasswordRecord(pass)),
     display:  name,
     builtin:  false,
     createdAt: new Date().toISOString(),
   };
 
+  // Re-check right before writing: the token may have been used or revoked while hashing
+  if (tokenMatch) {
+    tokenMatch = await findActiveToken(code);
+    if (!tokenMatch) return showErr('This registration token is no longer valid.');
+  }
   const created = loadCreatedAccounts();
   created.push(newAccount);
   saveCreatedAccounts(created);
+  if (tokenMatch) consumeToken(tokenMatch.index, email);
 
   // If this was the first-run setup, restore the registration code field and button
   if (document.getElementById('reg-btn').getAttribute('data-firstrun') === '1') {
@@ -1230,9 +1459,9 @@ async function submitAddUser() {
   if (all.some(a => a.username.toLowerCase() === email))
     return showErr('An account with this email already exists.');
 
+  const rec = await makePasswordRecord(pass);
   const created = loadCreatedAccounts();
-  const pwHash = await hashPassword(pass);
-  created.push({ username:email, passwordHash:pwHash, display:name, builtin:false, createdAt:new Date().toISOString() });
+  created.push({ username:email, ...rec, display:name, builtin:false, createdAt:new Date().toISOString() });
   saveCreatedAccounts(created);
   closeAddUser();
   renderUsersTable();
@@ -1247,13 +1476,13 @@ function renderUsersTable() {
   const accounts = loadAllAccounts();
   tbody.innerHTML = accounts.map(a => `
     <tr>
-      <td style="font-weight:600">${a.display}</td>
-      <td style="font-size:12px;font-family:monospace">${a.username}</td>
+      <td style="font-weight:600">${esc(a.display)}</td>
+      <td style="font-size:12px;font-family:monospace">${esc(a.username)}</td>
       <td><span class="status-badge ${a.builtin ? 'active' : 'done'}">${a.builtin ? '🔒 Built-in' : '👤 Created'}</span></td>
       <td style="font-size:11px;color:var(--muted)">${a.createdAt ? new Date(a.createdAt).toLocaleDateString() : 'System'}</td>
       <td>${a.builtin ? '<span style="color:var(--muted);font-size:12px">—</span>'
         : `<button class="btn btn-danger" style="font-size:11px;padding:4px 10px"
-             onclick="deleteUser('${a.username}')">Delete</button>`}</td>
+             data-user="${esc(a.username)}" onclick="deleteUser(this.dataset.user)">Delete</button>`}</td>
     </tr>`).join('');
 }
 
@@ -1262,7 +1491,7 @@ function deleteUser(username) {
     `Remove account for "${username}"? This cannot be undone.`,
     [
       { label:'Cancel',  cls:'btn-secondary', action:'closeModal()' },
-      { label:'Delete',  cls:'btn-danger',    action:`confirmDeleteUser('${username}')` },
+      { label:'Delete',  cls:'btn-danger',    action:() => confirmDeleteUser(username) },
     ]);
 }
 
@@ -1375,11 +1604,16 @@ function importOmrJson(event) {
     try {
       const data = JSON.parse(e.target.result);
       // Accept single scan object or array of scans
-      const scans = Array.isArray(data) ? data : [data];
+      const scans = (Array.isArray(data) ? data : [data]).filter(s => s && typeof s === 'object' && !Array.isArray(s));
+      if (!scans.length) throw new Error('no scan objects');
       const existing = loadOmrScans();
-      // Deduplicate by participant_id + timestamp
-      const deduped = scans.filter(s =>
-        !existing.some(ex => ex.participant_id === s.participant_id && ex.timestamp === s.timestamp));
+      // Deduplicate by participant_id + timestamp (against stored scans and within this file)
+      const seen = new Set(existing.map(ex => ex.participant_id + '|' + ex.timestamp));
+      const deduped = scans.filter(s => {
+        const k = s.participant_id + '|' + s.timestamp;
+        if (seen.has(k)) return false;
+        seen.add(k); return true;
+      });
       if (!deduped.length) {
         showModal('Already Imported', 'This file has already been imported (duplicate participant_id + timestamp).', [{label:'OK',cls:'btn-secondary',action:'closeModal()'}]);
         return;
@@ -1408,13 +1642,13 @@ function updateOmrTable(scans) {
     const missing = res.filter(r => r.no_response).length;
     const ambig   = res.filter(r => r.ambiguous).length;
     const sc      = s.scores || {};
-    const tamVal  = sc.tam?.tam_mean  ? sc.tam.tam_mean+'/5'  : '—';
-    const susVal  = sc.sus?.score     ? sc.sus.score+'/100'   : '—';
-    const zbiVal  = sc.zbi?.total     !== undefined ? sc.zbi.total+'/88' : '—';
+    const tamVal  = sc.tam?.tam_mean != null ? esc(sc.tam.tam_mean)+'/5'  : '—';
+    const susVal  = sc.sus?.score    != null ? esc(sc.sus.score)+'/100'   : '—';
+    const zbiVal  = sc.zbi?.total    != null ? esc(sc.zbi.total)+'/88'    : '—';
     const flag    = missing > 0 || ambig > 0;
     return `<tr>
-      <td style="font-family:monospace;font-size:12px;font-weight:700">${s.participant_id||'—'}</td>
-      <td>${s.sheet||'—'}</td>
+      <td style="font-family:monospace;font-size:12px;font-weight:700">${esc(s.participant_id||'—')}</td>
+      <td>${esc(s.sheet||'—')}</td>
       <td style="font-size:11px">${s.timestamp ? new Date(s.timestamp).toLocaleString() : '—'}</td>
       <td style="text-align:center">${res.length}</td>
       <td style="text-align:center;color:${missing>0?'var(--danger)':'var(--muted)'}">${missing||'0'}</td>
@@ -1438,15 +1672,15 @@ function exportOmrCSV() {
   scans.forEach(s => {
     (s.results||[]).forEach(r => {
       rows.push([
-        s.participant_id||'', s.sheet||'', s.timestamp||'',
-        r.page||'', r.section_id||'', r.code||'',
-        `"${(r.label||'').replace(/"/g,'""')}"`,
-        r.selectedValue||'', r.ambiguous?'1':'0',
-        r.maxFill !== undefined ? (r.maxFill*100).toFixed(0)+'%' : ''
-      ].join(','));
+        s.participant_id, s.sheet, s.timestamp,
+        r.page, r.section_id, r.code, r.label,
+        r.selectedValue,            // 0 is a valid response (e.g. ZBI "Never") — do not coerce to ''
+        r.ambiguous?'1':'0',
+        typeof r.maxFill === 'number' ? (r.maxFill*100).toFixed(0)+'%' : ''
+      ].map(csvCell).join(','));
     });
   });
-  downloadText(rows.join('\n'), `dtam_omr_scans_${dateStr()}.csv`);
+  downloadText(rows.join('\n'), `dtam_omr_scans_${dateStr()}.csv`, 'text/csv');
 }
 function exportOmrJSON() {
   const scans = loadOmrScans();
@@ -1504,7 +1738,7 @@ function updateActivityFeed(surveys, interviews, omrScans) {
   feed.innerHTML = all.map(a => `
     <div class="activity-item">
       <div class="act-dot ${a.type}"></div>
-      <div><div class="act-text">${a.label} — <strong>${GROUP_LABELS[a.group]||a.group||'Unknown'}</strong></div>
+      <div><div class="act-text">${esc(a.label)} — <strong>${esc(GROUP_LABELS[a.group]||a.group||'Unknown')}</strong></div>
       <div class="act-time">${new Date(a.time).toLocaleString()}</div></div>
     </div>`).join('');
 }
@@ -1515,9 +1749,9 @@ function updateParticipantTable(surveys) {
   if (!surveys.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-muted" style="text-align:center;padding:20px">No survey responses found.</td></tr>'; return; }
   tbody.innerHTML = surveys.slice().reverse().map(r => `
     <tr>
-      <td style="font-family:monospace;font-size:11px">${(r.id||'—').slice(0,12)}</td>
-      <td>${GROUP_ICONS[r.group]||''} ${GROUP_LABELS[r.group]||r.group||'—'}</td>
-      <td>${r.lang ? r.lang.toUpperCase() : '—'}</td>
+      <td style="font-family:monospace;font-size:11px">${esc(String(r.id||'—').slice(0,12))}</td>
+      <td>${GROUP_ICONS[r.group]||''} ${esc(GROUP_LABELS[r.group]||r.group||'—')}</td>
+      <td>${r.lang ? esc(String(r.lang).toUpperCase()) : '—'}</td>
       <td>${r.submittedAt ? new Date(r.submittedAt).toLocaleString() : (r.timestamp ? new Date(r.timestamp).toLocaleString() : '—')}</td>
       <td><span class="status-badge done">✓ Complete</span></td>
     </tr>`).join('');
@@ -1532,9 +1766,9 @@ function updateInterviewTable(interviews) {
   }
   tbody.innerHTML = interviews.slice().reverse().map(r => `
     <tr>
-      <td style="font-family:monospace;font-size:11px">${(r.id||'—').slice(0,12)}</td>
-      <td>${GROUP_ICONS[r.group]||''} ${GROUP_LABELS[r.group]||r.group||'—'}</td>
-      <td>${r.interviewer||'—'}</td>
+      <td style="font-family:monospace;font-size:11px">${esc(String(r.id||'—').slice(0,12))}</td>
+      <td>${GROUP_ICONS[r.group]||''} ${esc(GROUP_LABELS[r.group]||r.group||'—')}</td>
+      <td>${esc(r.interviewer||'—')}</td>
       <td>${r.duration ? Math.ceil(r.duration/60) + ' min' : '—'}</td>
       <td>${r.endedAt ? new Date(r.endedAt).toLocaleString() : (r.startedAt ? new Date(r.startedAt).toLocaleString() : '—')}</td>
       <td><span class="status-badge ${r.completed ? 'done' : 'pending'}">${r.completed ? '✓ Complete' : '⏳ In Progress'}</span></td>
@@ -1570,26 +1804,32 @@ function exportSurveyCSV() {
   const data = loadSurveys();
   if (!data.length) { showModal('No Data','No survey responses to export.',[]); return; }
   const keys = ['id','group','lang','submittedAt'];
-  const rows = [keys.join(','), ...data.map(r => keys.map(k => `"${(r[k]||'').toString().replace(/"/g,'""')}"`).join(','))];
-  downloadText(rows.join('\n'), `dtam_my_surveys_${dateStr()}.csv`);
+  const rows = [keys.join(','), ...data.map(r => keys.map(k => csvCell(r[k])).join(','))];
+  downloadText(rows.join('\n'), `dtam_my_surveys_${dateStr()}.csv`, 'text/csv');
 }
 function exportInterviewCSV() {
   const data = loadInterviews();
   if (!data.length) { showModal('No Data','No interview sessions to export.',[]); return; }
   const keys = ['id','group','interviewer','startedAt','endedAt','duration','completed'];
-  const rows = [keys.join(','), ...data.map(r => keys.map(k => `"${(r[k]||'').toString().replace(/"/g,'""')}"`).join(','))];
-  downloadText(rows.join('\n'), `dtam_my_interviews_${dateStr()}.csv`);
+  const rows = [keys.join(','), ...data.map(r => keys.map(k => csvCell(r[k])).join(','))];
+  downloadText(rows.join('\n'), `dtam_my_interviews_${dateStr()}.csv`, 'text/csv');
 }
 function exportInterviewJSON() {
   const data = loadInterviews();
   if (!data.length) { showModal('No Data','No interview sessions to export.',[]); return; }
   downloadText(JSON.stringify(data, null, 2), `dtam_my_interviews_${dateStr()}.json`);
 }
-function downloadText(text, filename) {
+/** Quote a CSV cell; null/undefined become empty, but 0 and false are kept. */
+function csvCell(v) {
+  return `"${String(v ?? '').replace(/"/g,'""')}"`;
+}
+function downloadText(text, filename, type = 'text/plain') {
+  const url = URL.createObjectURL(new Blob([text], {type}));
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([text], {type:'text/plain'}));
+  a.href = url;
   a.download = filename;
   a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);   // release the blob
 }
 function dateStr() { return new Date().toISOString().slice(0,10); }
 function openDashboard() { window.open('telerehab_dashboard_v2.html','_blank'); }
@@ -1615,11 +1855,25 @@ function doeClear(type) {
 }
 
 // ── MODAL ──────────────────────────────────────────────
+/**
+ * @param {string} title
+ * @param {string} msg
+ * @param {{label:string, cls:string, action:(string|Function)}[]} [btns]
+ *   `action` may be a function (preferred) or a legacy inline-handler string.
+ */
 function showModal(title, msg, btns) {
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-msg').textContent   = msg;
-  document.getElementById('modal-btns').innerHTML = btns.map(b =>
-    `<button class="btn ${b.cls}" onclick="${b.action}">${b.label}</button>`).join('');
+  if (!btns || !btns.length) btns = [{ label:'OK', cls:'btn-secondary', action: closeModal }];
+  const wrap = document.getElementById('modal-btns');
+  wrap.replaceChildren(...btns.map(b => {
+    const btn = document.createElement('button');
+    btn.className = 'btn ' + b.cls;
+    btn.textContent = b.label;
+    if (typeof b.action === 'function') btn.addEventListener('click', b.action);
+    else btn.setAttribute('onclick', b.action);
+    return btn;
+  }));
   document.getElementById('modal-overlay').style.display = 'flex';
 }
 function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
@@ -1632,7 +1886,7 @@ function showSection(name, el) {
   if (el) el.classList.add('active');
   const titles = {dashboard:'Dashboard',tools:'All Tools',progress:'Study Progress',participants:'Survey Participants',sessions:'Interview Sessions',export:'Export & Reports',settings:'Settings',omr:'OMR Scanner'};
   document.getElementById('topbar-title').textContent = titles[name] || name;
-  if (name === 'settings') renderUsersTable();
+  if (name === 'settings') { renderUsersTable(); renderTokensTable(); }
 }
 
 // ── CLAUDE CHAT ────────────────────────────────────────
@@ -1646,10 +1900,11 @@ function toggleChat() {
   document.getElementById('chat-window').style.flexDirection = 'column';
 }
 
+let chatBusy = false;
 async function sendChat() {
   const input = document.getElementById('chat-input');
   const msg = input.value.trim();
-  if (!msg) return;
+  if (!msg || chatBusy) return;   // Enter key bypasses the disabled send button
 
   if (!_claudeKey && !llmProxy()) {
     const k = prompt('Enter your Anthropic API key to enable the Claude assistant.\n\nGet a free key at: https://console.anthropic.com/settings/keys');
@@ -1658,7 +1913,8 @@ async function sendChat() {
     document.getElementById('claude-key-input').value = _claudeKey;
   }
 
-  appendChat('user', msg);
+  chatBusy = true;
+  appendChat('user', msg);   // rendered as text, not HTML
   input.value = '';
   document.getElementById('chat-send').disabled = true;
   const typingId = appendChat('model', '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>', true);
@@ -1714,19 +1970,24 @@ async function sendChat() {
       ? reply + '\n\n⚠ DTAM drift check - verify before using:\n' + drift.join('\n')
       : reply);
   } catch(e) {
+    // Drop the unanswered user turn so history keeps alternating user/assistant
+    if (chatHistory[chatHistory.length - 1] === userMsg) chatHistory.pop();
     updateChat(typingId, '⚠ ' + e.message);
   } finally {
+    chatBusy = false;
     document.getElementById('chat-send').disabled = false;
   }
 }
 
-function appendChat(role, html, isTyping=false) {
+let chatMsgSeq = 0;
+/** Append a chat bubble. Only the built-in typing indicator is passed as HTML (`isTyping`); everything else is text. */
+function appendChat(role, content, isTyping=false) {
   const msgs = document.getElementById('chat-msgs');
-  const id = 'msg-' + Date.now();
+  const id = 'msg-' + (++chatMsgSeq);   // Date.now() collided when two bubbles were added in the same ms
   const div = document.createElement('div');
   div.className = 'chat-msg ' + (role==='user' ? 'user' : 'model');
   div.id = id;
-  div.innerHTML = html;
+  if (isTyping) div.innerHTML = content; else div.textContent = content;
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
   return id;
@@ -1745,6 +2006,10 @@ setInterval(() => {
   // Only auto-refresh if logged in
   if (sessionStorage.getItem(SESSION_KEY)) refreshAll();
 }, 30000);
+// Refresh immediately when the questionnaire / interview / OMR apps write in another tab
+window.addEventListener('storage', e => {
+  if ([SURVEY_KEY, INTERVIEW_KEY, OMR_KEY].includes(e.key) && sessionStorage.getItem(SESSION_KEY)) refreshAll();
+});
 </script>
 </body>
 </html>

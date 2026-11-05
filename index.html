@@ -1299,7 +1299,7 @@
 
   <div class="chat-input-row">
     <input class="chat-input" id="chatInput" type="text" placeholder="Ask about the study…"
-      onkeydown="if(event.key==='Enter')sendMessage()"/>
+      onkeydown="if(event.key==='Enter'&&!event.isComposing)sendMessage()"/>
     <button class="chat-send" id="chatSendBtn" onclick="sendMessage()">➤</button>
   </div>
 </div>
@@ -1992,7 +1992,7 @@ function setLang(lang){
 
   // reset chatbot with new language greeting
   const msgs = document.getElementById('chatMessages');
-  if(msgs){ msgs.innerHTML = ''; addBotMsg(T.chat.greeting, T.chat.quick); }
+  if(msgs){ chatGen++; msgs.innerHTML = ''; addBotMsg(T.chat.greeting, T.chat.quick); document.getElementById('chatSendBtn').disabled = false; }
 }
 
 // ─── Knowledge base ────────────────────────────────────────────────────────────
@@ -2109,7 +2109,7 @@ Used exclusively with the <b>Caregiver</b> stakeholder group to assess caregivin
     reply:`Your privacy is fully protected under <b>PDPA 2010 (Act 709)</b> — Malaysia's Personal Data Protection Act.<br><br>
 🔒 All responses are <b>anonymous and confidential</b><br>
 🗄️ Data is stored on <b>Malaysian-territory servers</b> only<br>
-📋 Ethics application submitted to UTAR UREC — <b>approval pending</b> (ICH E6(R2) GCP)<br>
+📋 UTAR UREC ethics application — <b>awaiting submission</b>; approval pending (ICH E6(R2) GCP)<br>
 ✅ Compliant with the <b>Declaration of Helsinki</b> and <b>CIOMS Guidelines 2016</b><br><br>
 You may withdraw from the study at any time without consequence.`,
     quick:['What is PDPA?','Who is the research team?','How do I participate?']
@@ -2269,7 +2269,7 @@ Skor domain 0–100. Sasaran: peningkatan ≥10% pada 12 minggu (p&lt;0.05).`,
     { reply:`Privasi anda dilindungi sepenuhnya di bawah <b>PDPA 2010 (Akta 709)</b>.<br><br>
 🔒 Semua respons adalah <b>tanpa nama dan sulit</b><br>
 🗄️ Data disimpan di <b>pelayan berpangkalan Malaysia</b> sahaja<br>
-📋 Permohonan etika dikemukakan kepada UTAR UREC — <b>kelulusan belum diterima</b><br>
+📋 Permohonan etika UTAR UREC — <b>belum dikemukakan</b>; kelulusan belum diterima<br>
 ✅ Mematuhi <b>Deklarasi Helsinki</b> dan <b>Garis Panduan CIOMS 2016</b><br><br>
 Anda boleh menarik diri daripada kajian pada bila-bila masa.`,
       quick:['Apakah PDPA?','Siapakah pasukan penyelidikan?','Bagaimana untuk sertai?'] },
@@ -2366,7 +2366,7 @@ Penyertaan anda membantu meningkatkan perkhidmatan telepemuliharaan untuk warga 
       quick:['使用了哪些工具？','如何参与？'] },
     { reply:`您的隐私受<b>PDPA 2010（第709法令）</b>全面保护。<br><br>
 🔒 所有回答<b>匿名且保密</b> · 🗄️ 数据仅存储在<b>马来西亚境内服务器</b><br>
-📋 伦理申请已提交 UTAR UREC — <b>审批中</b> · ✅ 符合<b>赫尔辛基宣言</b><br><br>
+📋 UTAR UREC 伦理申请 — <b>尚未提交</b>，批准待定 · ✅ 符合<b>赫尔辛基宣言</b><br><br>
 您可随时退出研究。`,
       quick:['什么是 PDPA？','研究团队是谁？','如何参与？'] },
     { reply:`<b>PDPA 2010（第709法令）</b>是马来西亚个人数据保护法。<br><br>
@@ -2448,7 +2448,7 @@ UTAR 研究伦理委员会（UREC）提供机构监督。`,
     { reply:`உங்கள் தனியுரிமை <b>PDPA 2010 (சட்டம் 709)</b> கீழ் முழுமையாக பாதுகாக்கப்படுகிறது.<br><br>
 🔒 அனைத்து பதில்களும் <b>அநாமதேயமானவை</b><br>
 🗄️ தரவு <b>மலேசிய சேவையகங்களில்</b> மட்டும் சேமிக்கப்படுகிறது<br>
-📋 UTAR UREC-க்கு நெறிமுறை விண்ணப்பம் சமர்ப்பிக்கப்பட்டது — <b>ஒப்புதல் நிலுவையில்</b>`,
+📋 UTAR UREC நெறிமுறை விண்ணப்பம் — <b>இன்னும் சமர்ப்பிக்கப்படவில்லை</b>; ஒப்புதல் நிலுவையில்`,
       quick:['PDPA என்றால் என்ன?','ஆராய்ச்சி குழு யார்?','எவ்வாறு பங்கேற்பது?'] },
     { reply:`<b>PDPA 2010 (சட்டம் 709)</b> மலேசியாவின் தனிப்பட்ட தரவு பாதுகாப்பு சட்டம்.<br><br>
 இந்த ஆராய்ச்சி: தேவையான குறைந்தபட்ச தரவை மட்டும் சேகரிக்கிறது; மலேசிய சேவையகங்களில் மட்டும் சேமிக்கிறது; சம்மதமின்றி மூன்றாம் தரப்பினரிடம் பகிர்வதில்லை.`,
@@ -2501,6 +2501,11 @@ const FALLBACK_TRANS = {
 // ─── State ─────────────────────────────────────────────────────────────────────
 let chatOpen = false;
 let badgeShown = true;
+let chatGen = 0;   // bumped when the chat is reset (language switch) so pending replies are dropped
+
+function escHtml(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 
 function toggleChat(){
   chatOpen = !chatOpen;
@@ -2538,7 +2543,7 @@ function addUserMsg(text){
   const msgs = document.getElementById('chatMessages');
   const wrap = document.createElement('div');
   wrap.className='msg user';
-  wrap.innerHTML=`<div><div class="msg-bubble">${text}</div><div class="msg-time">${now()}</div></div>`;
+  wrap.innerHTML=`<div><div class="msg-bubble">${escHtml(text)}</div><div class="msg-time">${now()}</div></div>`;   // visitor text is never HTML
   msgs.appendChild(wrap);
   setQuickReplies([]);
   msgs.scrollTop = msgs.scrollHeight;
@@ -2594,7 +2599,9 @@ function handleInput(text){
   document.getElementById('chatSendBtn').disabled=true;
   addUserMsg(text);
   showTyping();
+  const gen = chatGen;
   setTimeout(()=>{
+    if (gen !== chatGen) return;   // chat was reset (e.g. language switch) while this reply was pending
     removeTyping();
     const {reply, quick} = findResponse(text);
     addBotMsg(reply, quick);

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>DTAM-MY v2 | Research Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -518,8 +518,7 @@ tr:hover td{background:#fafafa;}
               padding:8px 20px;font-weight:700;font-size:13px;cursor:pointer">
             ↗ Open OMR Scanner
           </button>
-          <button onclick="document.getElementById('omr-embed').style.display=
-              document.getElementById('omr-embed').style.display==='none'?'block':'none'"
+          <button onclick="toggleOmrEmbed()"
             style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);
               border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer">
             ⬛ Embed Here
@@ -673,7 +672,7 @@ tr:hover td{background:#fafafa;}
       <div style="font-size:12px;color:#888;margin-bottom:6px">
         ⚠️ Embedded view — for full functionality open in a new tab above.
       </div>
-      <iframe src="omr_scanner.html"
+      <iframe data-src="omr_scanner.html"
         style="width:100%;height:80vh;border:2px solid #D8E4F0;border-radius:10px"
         title="DTAM-MY OMR Scanner"></iframe>
     </div>
@@ -690,8 +689,26 @@ const GROUP_LABELS  = { allied:'Allied Health', caregiver:'Caregiver', elderly:'
 const GROUP_COLORS  = { allied:'#0E8B8B', caregiver:'#E07B39', elderly:'#1B3A6B', policy:'#6366f1', public:'#10b981' };
 const PALETTE       = ['#0E8B8B','#1B3A6B','#E07B39','#6366f1','#10b981','#f59e0b','#ec4899'];
 
+/**
+ * Shape written by telerehab_questionnaire_app_v2.html (see ResponseRecord there).
+ * @typedef {{id:string, timestamp:string, group:string, lang?:string,
+ *            answers:Object<string,string>, scores:Object<string,{value:number}>,
+ *            meta?:{lang?:string}}} ResponseRecord
+ */
+/** @type {ResponseRecord[]} */
 let allData = [];
 let charts  = {};
+
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function toggleOmrEmbed() {
+  const box = document.getElementById('omr-embed');
+  const frame = box.querySelector('iframe');
+  if (!frame.src && frame.dataset.src) frame.src = frame.dataset.src;   // load on first open only
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function loadData() {
@@ -704,9 +721,10 @@ function mean(arr) {
   return nums.length ? nums.reduce((a,b) => a+b,0) / nums.length : null;
 }
 
-function scorePill(val, max) {
+function scorePill(val, max, higherIsWorse = false) {
   if (val == null) return '—';
-  const pct = max === 100 ? val : (val / max) * 100;
+  let pct = max === 100 ? val : (val / max) * 100;
+  if (higherIsWorse) pct = 100 - pct;   // e.g. ZBI burden
   const cls = pct >= 60 ? 'good' : pct >= 40 ? 'mod' : 'poor';
   return `<span class="score-pill ${cls}">${typeof val === 'number' ? (Number.isInteger(val) ? val : val.toFixed(1)) : val}</span>`;
 }
@@ -725,6 +743,16 @@ function countBy(arr, fn) {
 function mkChart(id, type, data, options={}) {
   const ctx = document.getElementById(id);
   if (!ctx) return;
+  if (typeof Chart === 'undefined') {   // CDN unreachable: show a note instead of crashing every later render
+    if (!ctx.dataset.noChart) {
+      ctx.dataset.noChart = '1';
+      const note = document.createElement('div');
+      note.style.cssText = 'font-size:12px;color:#9ca3af;padding:24px;text-align:center';
+      note.textContent = 'Chart library could not be loaded (offline?). Data tables and exports still work.';
+      ctx.replaceWith(note);
+    }
+    return;
+  }
   if (charts[id]) { charts[id].destroy(); }
   charts[id] = new Chart(ctx, { type, data, options: {
     responsive: true, maintainAspectRatio: false,
@@ -778,6 +806,7 @@ function renderPhaseBars() {
 // ─── MAIN RENDER ─────────────────────────────────────────────────────────────
 function refreshData() {
   allData = loadData();
+  if (allData.length) document.getElementById('empty-state')?.remove(); else showEmpty();
   document.getElementById('last-updated').textContent = new Date().toLocaleTimeString('en-MY');
   renderKPIs();
   renderOverviewCharts();
@@ -865,27 +894,31 @@ function renderOverviewCharts() {
 
   // Timeline (last 30 days)
   const days = 30;
-  const dayBuckets = {};
+  const dayKey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const dayBuckets = {}, dayLabels = [];
   for (let i = days-1; i >= 0; i--) {
     const d = new Date(); d.setDate(d.getDate()-i);
-    dayBuckets[d.toLocaleDateString('en-MY',{month:'short',day:'numeric'})] = 0;
+    dayBuckets[dayKey(d)] = 0;
+    dayLabels.push(d.toLocaleDateString('en-MY',{month:'short',day:'numeric'}));
   }
   allData.forEach(r => {
-    const d = new Date(r.timestamp).toLocaleDateString('en-MY',{month:'short',day:'numeric'});
-    if (d in dayBuckets) dayBuckets[d]++;
+    const t = new Date(r.timestamp);
+    if (isNaN(t)) return;
+    const k = dayKey(t);
+    if (k in dayBuckets) dayBuckets[k]++;
   });
   mkChart('chart-timeline','line',{
-    labels: Object.keys(dayBuckets),
+    labels: dayLabels,
     datasets:[{ label:'Responses', data: Object.values(dayBuckets),
       borderColor: '#0E8B8B', backgroundColor: 'rgba(14,139,139,.1)',
       fill:true, tension:.4, pointRadius:3, pointHoverRadius:5 }]
   });
 
-  // Language (from meta.lang)
-  const langMap = { 'en':'English', 'bm':'Bahasa Malaysia', 'zh':'Chinese', 'ta':'Tamil' };
+  // Language: questionnaire language (r.lang); older records only have the browser locale (meta.lang)
+  const langMap = { 'en':'English', 'bm':'Bahasa Malaysia', 'ms':'Bahasa Malaysia', 'zh':'Chinese', 'ta':'Tamil' };
   const langCounts = countBy(allData, r => {
-    const l = (r.meta?.lang||'').slice(0,2).toLowerCase();
-    return langMap[l] || 'English';
+    const l = (r.lang || r.meta?.lang || '').slice(0,2).toLowerCase();
+    return langMap[l] || 'Other / unknown';
   });
   mkChart('chart-lang','doughnut',{
     labels: Object.keys(langCounts),
@@ -984,7 +1017,10 @@ function renderScoreCharts() {
     const mn   = vals.length ? mean(vals) : null;
     const mi   = vals.length ? Math.min(...vals) : null;
     const mx   = vals.length ? Math.max(...vals) : null;
-    const interp = mn == null ? '—' : row.max===100 ? (mn>=70?'Acceptable+':mn>=60?'Moderate':'Poor') : (mn>=4?'High':mn>=3?'Moderate':'Low');
+    const interp = mn == null ? '—'
+      : row.key === 'ZBI' ? (mn<=20?'Little/No burden':mn<=40?'Mild-Moderate':mn<=60?'Moderate-Severe':'Severe')
+      : row.max===100 ? (mn>=70?'Acceptable+':mn>=60?'Moderate':'Poor')
+      : (mn>=4?'High':mn>=3?'Moderate':'Low');
     return `<tr>
       <td><strong>${row.name}</strong></td>
       <td style="color:var(--muted)">${row.groups}</td>
@@ -992,7 +1028,7 @@ function renderScoreCharts() {
       <td>${mn!=null?mn.toFixed(1):'—'}</td>
       <td>${mi!=null?(Number.isInteger(mi)?mi:mi.toFixed(1)):'—'}</td>
       <td>${mx!=null?(Number.isInteger(mx)?mx:mx.toFixed(1)):'—'}</td>
-      <td>${scorePill(mn!=null?Math.round(mn):null, row.max)}</td>
+      <td>${scorePill(mn, row.max, row.key === 'ZBI')} <span style="font-size:11px;color:var(--muted)">${interp}</span></td>
     </tr>`;
   }).join('');
 }
@@ -1016,7 +1052,7 @@ function renderDemoCharts() {
       backgroundColor:'#0E8B8B',borderRadius:6,label:'Responses'}]
   });
 
-  const states=['Johor','Kedah','Kelantan','Kuala Lumpur','Melaka','Negeri Sembilan','Pahang','Penang','Perak','Selangor'];
+  const states=['Johor','Kedah','Kelantan','Kuala Lumpur','Labuan','Melaka','Negeri Sembilan','Pahang','Penang','Perak','Perlis','Putrajaya','Sabah','Sarawak','Selangor','Terengganu'];
   const stateAll=countBy(allData,r=>r.answers?.d4||'Other');
   mkChart('chart-state','bar',{
     labels:states,
@@ -1047,19 +1083,19 @@ function renderResponses() {
   tbody.innerHTML = [...filtered].reverse().slice(0,200).map((r,i) => {
     const scores = r.scores || {};
     const keyScores = [
-      scores.SUS     ? `SUS ${scores.SUS.value}` : '',
-      scores.ZBI     ? `ZBI ${scores.ZBI.value}` : '',
-      scores.TAM_PU  ? `PU ${scores.TAM_PU.value}` : '',
-      scores.MAST    ? `MAST ${scores.MAST.value}` : '',
+      scores.SUS    ?.value != null ? `SUS ${scores.SUS.value}` : '',
+      scores.ZBI    ?.value != null ? `ZBI ${scores.ZBI.value}` : '',
+      scores.TAM_PU ?.value != null ? `PU ${scores.TAM_PU.value}` : '',
+      scores.MAST   ?.value != null ? `MAST ${scores.MAST.value}` : '',
     ].filter(Boolean).slice(0,3).join(' · ') || '—';
 
     return `<tr>
       <td style="color:var(--muted)">${filtered.length - i}</td>
-      <td><code style="font-size:10px;background:var(--lgrey);padding:2px 5px;border-radius:3px">${(r.id||'').slice(-8)}</code></td>
-      <td style="white-space:nowrap">${fmtDate(r.timestamp)}</td>
-      <td><span class="badge-group" style="background:${GROUP_COLORS[r.group]}22;color:${GROUP_COLORS[r.group]}">${GROUP_LABELS[r.group]||r.group}</span></td>
+      <td><code style="font-size:10px;background:var(--lgrey);padding:2px 5px;border-radius:3px">${esc(String(r.id||'').slice(-8))}</code></td>
+      <td style="white-space:nowrap">${esc(fmtDate(r.timestamp))}</td>
+      <td><span class="badge-group" style="background:${GROUP_COLORS[r.group]||'#6b7280'}22;color:${GROUP_COLORS[r.group]||'#6b7280'}">${esc(GROUP_LABELS[r.group]||r.group)}</span></td>
       <td>${Object.keys(r.answers||{}).length}</td>
-      <td style="font-size:11px;color:var(--muted)">${keyScores}</td>
+      <td style="font-size:11px;color:var(--muted)">${esc(keyScores)}</td>
     </tr>`;
   }).join('');
 
@@ -1079,10 +1115,12 @@ function exportCSV() {
     ...scoreKeys.map(k => r.scores?.[k]?.value ?? ''),
   ]);
   const csv = [header, ...rows].map(row => row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const url = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' }));
   const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.href = url;
   a.download = `dtam_my_responses_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // ── CLEAR DATA ────────────────────────────────────────────────────────────────
@@ -1114,9 +1152,10 @@ function showEmpty() {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 refreshData();
-if (!allData.length) showEmpty();
 renderPhaseBars();
 setInterval(() => { allData = loadData(); renderKPIs(); }, 30000);
+// Re-render everything as soon as the questionnaire saves a response in another tab
+window.addEventListener('storage', e => { if (e.key === STORAGE_KEY || e.key === null) refreshData(); });
 </script>
 </body>
 </html>
