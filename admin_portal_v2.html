@@ -710,6 +710,43 @@ input[type=text].api-input:focus{border-color:var(--teal)}
           </table>
         </div>
       </div>
+
+      <!-- Registration tokens -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">🎟️ Registration Tokens</div>
+            <div class="card-desc">Single-use codes that let a new team member create their own account on the sign-in page.
+              Only a hash is stored; the code is shown once. Accounts and tokens are stored in this browser,
+              so the person must register on <strong>this device</strong>.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
+          <div style="flex:1 1 200px">
+            <div class="setting-label" style="margin-bottom:4px">Label (optional)</div>
+            <input type="text" class="api-input" id="tok-label" maxlength="60" placeholder="e.g. RA – Aisyah" style="width:100%"/>
+          </div>
+          <div>
+            <div class="setting-label" style="margin-bottom:4px">Expires after</div>
+            <select id="tok-days" class="api-input" style="width:auto">
+              <option value="1">1 day</option>
+              <option value="7" selected>7 days</option>
+              <option value="30">30 days</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="font-size:12px;padding:8px 14px" onclick="generateRegToken()">+ Generate Token</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr><th>Label</th><th>Created</th><th>Expires</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody id="tokens-table">
+              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No tokens issued yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- ════════════════ OMR SCANNER ════════════════ -->
@@ -898,7 +935,7 @@ input[type=text].api-input:focus{border-color:var(--teal)}
 <div class="modal-overlay" id="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <h3 id="modal-title"></h3>
-    <p id="modal-msg"></p>
+    <p id="modal-msg" style="white-space:pre-line"></p>
     <div class="modal-btns" id="modal-btns"></div>
   </div>
 </div>
@@ -1015,10 +1052,124 @@ function saveCreatedAccounts(arr) {
   localStorage.setItem(USERS_KEY, JSON.stringify(arr));
 }
 
-// [v2] Registration tokens set by admin after first login (stored hashed)
+// ── Registration tokens (issued in Settings, redeemed on the sign-in page) ──
+/**
+ * @typedef {Object} RegToken
+ * @property {string} id
+ * @property {string} hash        SHA-256 of the normalised code (the code itself is never stored)
+ * @property {string} label
+ * @property {string} createdAt   ISO
+ * @property {string} createdBy   username of the issuing admin
+ * @property {string} expiresAt   ISO
+ * @property {string} [usedAt]
+ * @property {string} [usedBy]
+ * @property {string} [revokedAt]
+ */
 const REG_TOKENS_KEY = 'dtam_reg_tokens';
+const TOKEN_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no 0/O/1/I to avoid misreading
+/** @returns {(RegToken|string)[]} string entries are legacy plaintext tokens */
 function getRegTokens() {
-  try { return JSON.parse(localStorage.getItem(REG_TOKENS_KEY) || '[]'); } catch(e) { return []; }
+  try { const t = JSON.parse(localStorage.getItem(REG_TOKENS_KEY) || '[]'); return Array.isArray(t) ? t : []; } catch(e) { return []; }
+}
+function saveRegTokens(arr) { localStorage.setItem(REG_TOKENS_KEY, JSON.stringify(arr)); }
+const normaliseToken = code => String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+function tokenStatus(t) {
+  if (t.usedAt)    return { key:'used',    text:`Used by ${t.usedBy || 'unknown'}` };
+  if (t.revokedAt) return { key:'revoked', text:'Revoked' };
+  if (Date.now() >= new Date(t.expiresAt).getTime()) return { key:'expired', text:'Expired' };
+  return { key:'active', text:'Active' };
+}
+
+function currentAdmin() {
+  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}').username || ''; } catch(e) { return ''; }
+}
+
+async function generateRegToken() {
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  const raw = Array.from(bytes, b => TOKEN_ALPHABET[b % TOKEN_ALPHABET.length]).join('');   // 32 divides 256: unbiased
+  const code = raw.match(/.{4}/g).join('-');                                                   // XXXX-XXXX-XXXX
+  const days = parseInt(document.getElementById('tok-days').value, 10) || 7;
+  const labelEl = document.getElementById('tok-label');
+  /** @type {RegToken} */
+  const token = {
+    id: 'tok_' + Date.now().toString(36) + toHex(crypto.getRandomValues(new Uint8Array(3))),
+    hash: await hashPassword(normaliseToken(code)),
+    label: labelEl.value.trim(),
+    createdAt: new Date().toISOString(),
+    createdBy: currentAdmin(),
+    expiresAt: new Date(Date.now() + days * 86400000).toISOString(),
+  };
+  saveRegTokens([...getRegTokens(), token]);
+  labelEl.value = '';
+  renderTokensTable();
+  showModal('Registration Token Created',
+    `${code}\n\nGive this code to ${token.label || 'the new team member'}. It works once, on this device's sign-in page ` +
+    `(Create Account), until ${new Date(token.expiresAt).toLocaleString()}. It will not be shown again.`,
+    [
+      { label:'Copy code', cls:'btn-secondary', action: async (ev) => {
+          try { await navigator.clipboard.writeText(code); ev.target.textContent = 'Copied ✓'; }
+          catch(e) { ev.target.textContent = 'Copy failed — select the code above'; }
+        } },
+      { label:'Done', cls:'btn-primary', action: closeModal },
+    ]);
+}
+
+function renderTokensTable() {
+  const tbody = document.getElementById('tokens-table');
+  if (!tbody) return;
+  const tokens = getRegTokens().filter(t => typeof t === 'object' && t);
+  if (!tokens.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No tokens issued yet.</td></tr>';
+    return;
+  }
+  const badge = { active:'active', used:'done', expired:'pending', revoked:'pending' };
+  tbody.innerHTML = tokens.slice().reverse().map(t => {
+    const st = tokenStatus(t);
+    return `<tr>
+      <td style="font-weight:600">${esc(t.label || '—')}</td>
+      <td style="font-size:11px;color:var(--muted)">${esc(new Date(t.createdAt).toLocaleString())}${t.createdBy ? '<br/>by ' + esc(t.createdBy) : ''}</td>
+      <td style="font-size:11px;color:var(--muted)">${esc(new Date(t.expiresAt).toLocaleString())}</td>
+      <td><span class="status-badge ${badge[st.key]}">${esc(st.text)}</span></td>
+      <td>${st.key === 'active'
+        ? `<button class="btn btn-danger" style="font-size:11px;padding:4px 10px" data-tok="${esc(t.id)}" onclick="revokeRegToken(this.dataset.tok)">Revoke</button>`
+        : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function revokeRegToken(id) {
+  showModal('Revoke Token', 'This token will stop working immediately. Continue?', [
+    { label:'Cancel', cls:'btn-secondary', action: closeModal },
+    { label:'Revoke', cls:'btn-danger', action: () => {
+        saveRegTokens(getRegTokens().map(t => (typeof t === 'object' && t.id === id) ? { ...t, revokedAt: new Date().toISOString() } : t));
+        closeModal(); renderTokensTable();
+      } },
+  ]);
+}
+
+/**
+ * Find a redeemable token for the entered code.
+ * @returns {Promise<{index:number}|null>}
+ */
+async function findActiveToken(code) {
+  const norm = normaliseToken(code);
+  if (norm.length < 8) return null;
+  const hash = await hashPassword(norm);
+  const tokens = getRegTokens();
+  const index = tokens.findIndex(t => typeof t === 'string'
+    ? normaliseToken(t) === norm                                 // legacy plaintext entry
+    : t && t.hash === hash && tokenStatus(t).key === 'active');
+  return index >= 0 ? { index } : null;
+}
+
+/** Mark a token used (legacy plaintext entries are removed). */
+function consumeToken(index, username) {
+  const tokens = getRegTokens();
+  const t = tokens[index];
+  if (typeof t === 'string') tokens.splice(index, 1);
+  else if (t) tokens[index] = { ...t, usedAt: new Date().toISOString(), usedBy: username };
+  saveRegTokens(tokens);
 }
 
 // Show first-run setup if no accounts exist
@@ -1189,7 +1340,13 @@ function checkPwStrength(pw, barId='pw-bar', labelId='pw-label') {
 }
 
 // ── REGISTER (login page) ─────────────────────────────
+let regBusy = false;
 async function doRegister() {
+  if (regBusy) return;   // double-click / Enter while hashing could register twice with one token
+  regBusy = true;
+  try { await doRegisterInner(); } finally { regBusy = false; }
+}
+async function doRegisterInner() {
   const nameEl  = document.getElementById('reg-name');
   const emailEl = document.getElementById('reg-email');
   const passEl  = document.getElementById('reg-pass');
@@ -1216,9 +1373,10 @@ async function doRegister() {
   if (pass !== pass2)    return showErr('Passwords do not match.');
   // [v2] First-run (no accounts yet) skips token check; subsequent registrations validate token
   const isFirstRun = loadAllAccounts().length === 0;
+  let tokenMatch = null;
   if (!isFirstRun) {
-    const tokens = getRegTokens();
-    if (!tokens.includes(code)) return showErr('Invalid registration token. Contact the PI for your token.');
+    tokenMatch = await findActiveToken(code);
+    if (!tokenMatch) return showErr('Invalid, expired or already-used registration token. Ask the PI for a new token.');
   }
 
   const all = loadAllAccounts();
@@ -1234,9 +1392,15 @@ async function doRegister() {
     createdAt: new Date().toISOString(),
   };
 
+  // Re-check right before writing: the token may have been used or revoked while hashing
+  if (tokenMatch) {
+    tokenMatch = await findActiveToken(code);
+    if (!tokenMatch) return showErr('This registration token is no longer valid.');
+  }
   const created = loadCreatedAccounts();
   created.push(newAccount);
   saveCreatedAccounts(created);
+  if (tokenMatch) consumeToken(tokenMatch.index, email);
 
   // If this was the first-run setup, restore the registration code field and button
   if (document.getElementById('reg-btn').getAttribute('data-firstrun') === '1') {
@@ -1679,7 +1843,7 @@ function showSection(name, el) {
   if (el) el.classList.add('active');
   const titles = {dashboard:'Dashboard',tools:'All Tools',progress:'Study Progress',participants:'Survey Participants',sessions:'Interview Sessions',export:'Export & Reports',settings:'Settings',omr:'OMR Scanner'};
   document.getElementById('topbar-title').textContent = titles[name] || name;
-  if (name === 'settings') renderUsersTable();
+  if (name === 'settings') { renderUsersTable(); renderTokensTable(); }
 }
 
 // ── CLAUDE CHAT ────────────────────────────────────────

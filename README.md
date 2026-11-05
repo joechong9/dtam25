@@ -29,6 +29,7 @@ Deep links into the scanner: `omr_scanner_v2.html?sheet=ELDERLY` or `omr_scanner
 | `dtam_my_interviews` (localStorage) | Part C interview | admin portal | array of `{id, group, interviewer, language, site, startedAt, endedAt, duration, recordedSecs, questions, answered, completed}`, metadata only, no transcripts |
 | `dtam_omr_scans` (localStorage) | admin portal (JSON import) | admin portal | array of OMR scanner exports `{participant_id, sheet, timestamp, scores, results}` |
 | `dtam_admin_users_v2` (localStorage) | admin portal | admin portal | accounts with salted PBKDF2 password hashes |
+| `dtam_reg_tokens` (localStorage) | admin portal (Settings) | admin portal (Create Account) | single-use registration tokens: SHA-256 hash, label, expiry, used/revoked state; the code itself is never stored |
 | `dtam_partc_draft` (sessionStorage) | Part C interview | Part C interview | running interview draft; cleared when the tab closes |
 
 `group` keys: `allied`, `caregiver`, `elderly`, `policy`, `public`. `lang` is the questionnaire language
