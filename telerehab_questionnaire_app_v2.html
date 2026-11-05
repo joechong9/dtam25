@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://your-backend.dtammy.utar.edu.my; img-src 'self' data: blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://your-backend.dtammy.utar.edu.my; img-src 'self' data: blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>DTAM-MY v2 | Telerehabilitation Research Questionnaire Suite</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -419,7 +419,7 @@
 <div id="root"></div>
 
 <script type="text/babel">
-const { useState, useEffect, useCallback, useMemo } = React;
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
 
 // ─── TRANSLATIONS ────────────────────────────────────────────────────────────
 const T = {
@@ -1147,13 +1147,30 @@ const DTAM_CONFIG = {
   STUDY_ID:     'DTAM-MY-2025',
 };
 
-function submitResponse(group, answers, scores) {
+/**
+ * @typedef {{value:number, label:string, max:number, interp:string, color:string}} Score
+ * @typedef {Object} ResponseRecord        Stored in localStorage[STORAGE_KEY] (array) and read by
+ *                                         telerehab_dashboard_v2.html and admin_portal_v2.html
+ * @property {string} id
+ * @property {string} studyId
+ * @property {string} version
+ * @property {string} timestamp            ISO 8601
+ * @property {'allied'|'caregiver'|'elderly'|'policy'|'public'} group
+ * @property {string} lang                 Language the questionnaire was answered in: en | bm | zh | ta
+ * @property {Object<string,string>} answers  Item id → option value ('0'..'4' ZBI, '1'..'5' Likert, English label for selects)
+ * @property {Object<string,Score>} scores    e.g. SUS, ZBI, TAM_PU, WHOQOL_Physical, MAST
+ * @property {{lang:string}} meta          Browser language (navigator.language)
+ */
+
+/** @returns {{id:string, saved:boolean, record:ResponseRecord}} */
+function submitResponse(group, answers, scores, surveyLang) {
   const record = {
     id:        `${DTAM_CONFIG.STUDY_ID}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
     studyId:   DTAM_CONFIG.STUDY_ID,
     version:   DTAM_CONFIG.VERSION,
     timestamp: new Date().toISOString(),
     group,
+    lang:      surveyLang,   // questionnaire language chosen by the participant (meta.lang is only the browser locale)
     answers,
     scores,
     meta: {
@@ -1164,11 +1181,20 @@ function submitResponse(group, answers, scores) {
   };
 
   // 1. Always save to localStorage (offline backup + dashboard feed)
+  let saved = false;
   try {
-    const existing = JSON.parse(localStorage.getItem(DTAM_CONFIG.STORAGE_KEY) || '[]');
+    let existing = [];
+    try {
+      const parsed = JSON.parse(localStorage.getItem(DTAM_CONFIG.STORAGE_KEY) || '[]');
+      if (Array.isArray(parsed)) existing = parsed;
+    } catch(parseErr) {
+      // Never overwrite unreadable stored data — keep a copy before starting a fresh list
+      localStorage.setItem(DTAM_CONFIG.STORAGE_KEY + '_corrupt_' + Date.now(), localStorage.getItem(DTAM_CONFIG.STORAGE_KEY));
+    }
     existing.push(record);
     localStorage.setItem(DTAM_CONFIG.STORAGE_KEY, JSON.stringify(existing));
-  } catch(e) { console.warn('localStorage save failed:', e); }
+    saved = true;
+  } catch(e) { console.warn('localStorage save failed:', e); }   // e.g. quota exceeded / storage blocked
 
   // 2. If API endpoint configured, also POST to server
   if (DTAM_CONFIG.API_ENDPOINT) {
@@ -1178,7 +1204,21 @@ function submitResponse(group, answers, scores) {
       .catch(err => console.warn('API submission failed (data saved locally):', err));
   }
 
-  return record.id;
+  return { id: record.id, saved, record };
+}
+
+// Shown on the report page when the local save failed, so the response is not silently lost
+const SAVE_FAILED = {
+  en: { msg:'This response could not be saved on this device. Please download it and give the file to the researcher.', btn:'Download response' },
+  bm: { msg:'Jawapan ini tidak dapat disimpan pada peranti ini. Sila muat turun dan serahkan fail kepada penyelidik.', btn:'Muat turun jawapan' },
+  zh: { msg:'此回答无法保存在本设备上。请下载并将文件交给研究人员。', btn:'下载回答' },
+  ta: { msg:'இந்தப் பதிலை இந்தச் சாதனத்தில் சேமிக்க முடியவில்லை. அதைப் பதிவிறக்கி கோப்பை ஆய்வாளரிடம் கொடுக்கவும்.', btn:'பதிலைப் பதிவிறக்கவும்' },
+};
+function downloadRecord(record) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(record, null, 2)], { type:'application/json' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = `${record.id}.json`; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 
@@ -2597,6 +2637,8 @@ function App() {
   const [consentGiven, setConsentGiven] = useState(false);
   const [showError, setShowError] = useState(false);
   const [submittedId, setSubmittedId] = useState(null);
+  const [savedRecord, setSavedRecord] = useState(null);   // set only when the local save failed
+  const submittingRef = useRef(false);
   const t = T[lang];
 
   const flow = group ? FLOWS[group] : [];
@@ -2638,9 +2680,12 @@ function App() {
       setCurrentSectionIdx(prev => prev + 1);
       window.scrollTo(0,0);
     } else {
+      if (submittingRef.current) return;   // ignore a second click before the report renders
+      submittingRef.current = true;
       const finalScores = scoreSurvey(group, answers);
-      const id = submitResponse(group, answers, finalScores);
+      const { id, saved, record } = submitResponse(group, answers, finalScores, lang);
       setSubmittedId(id);
+      setSavedRecord(saved ? null : record);
       setPage('report');
       window.scrollTo(0,0);
     }
@@ -2662,12 +2707,17 @@ function App() {
     setAnswers({});
     setConsentGiven(false);
     setCurrentSectionIdx(0);
+    setSubmittedId(null);
+    setSavedRecord(null);
+    setShowError(false);
+    submittingRef.current = false;
     window.scrollTo(0,0);
   }
 
   const groupIcons = { allied:'🏥', caregiver:'💛', elderly:'🧓', policy:'🏛️', public:'🌏' };
 
-  // ── SHARED HEADER ──
+  // ── SHARED HEADER ── (called as a function: defining a component inside App gave it a new
+  // identity on every render, so React unmounted and remounted the header on each answer)
   const AppHeader = () => (
     <div className="app-header">
       <div className="logo">
@@ -2685,7 +2735,7 @@ function App() {
   // ── INTRO ──
   if (page === 'intro') return (
     <>
-      <AppHeader />
+      {AppHeader()}
 
       {/* ── Hero Banner ── */}
       <div className="intro-hero">
@@ -2805,7 +2855,7 @@ function App() {
   // ── LANDING (Group Selector) ──
   if (page === 'landing') return (
     <>
-      <AppHeader />
+      {AppHeader()}
       <div className="container">
         {/* Back link */}
         <div style={{marginBottom:'12px'}}>
@@ -2855,7 +2905,7 @@ function App() {
   // ── CONSENT ──
   if (page === 'consent') return (
     <>
-      <AppHeader />
+      {AppHeader()}
       <div className="container">
         <div className="card">
           <div className="card-title">📋 {t.consent}</div>
@@ -2919,7 +2969,7 @@ function App() {
     const progress = ((currentSectionIdx) / totalSections) * 100;
     return (
       <>
-        <AppHeader />
+        {AppHeader()}
         <div className="container">
           {/* Progress */}
           <div className="card" style={{padding:'16px 20px'}}>
@@ -2964,10 +3014,17 @@ function App() {
     const scoreList = Object.entries(scores);
     return (
       <>
-        <AppHeader />
+        {AppHeader()}
         <div className="container">
           {/* Submission confirmation banner */}
-          {submittedId && (
+          {submittedId && savedRecord && (
+            <div role="alert" style={{background:'#fef2f2',border:'1px solid #fca5a5',borderRadius:'10px',padding:'12px 18px',marginBottom:'16px',display:'flex',alignItems:'center',gap:'12px',flexWrap:'wrap',fontSize:'var(--fs-sm)'}}>
+              <span style={{fontSize:'20px'}}>⚠️</span>
+              <div style={{flex:'1 1 240px',color:'#991b1b'}}>{(SAVE_FAILED[lang]||SAVE_FAILED.en).msg}</div>
+              <button className="btn btn-primary" onClick={() => downloadRecord(savedRecord)}>⬇ {(SAVE_FAILED[lang]||SAVE_FAILED.en).btn}</button>
+            </div>
+          )}
+          {submittedId && !savedRecord && (
             <div style={{background:'#dcfce7',border:'1px solid #86efac',borderRadius:'10px',padding:'12px 18px',marginBottom:'16px',display:'flex',alignItems:'center',gap:'12px',fontSize:'var(--fs-sm)'}}>
               <span style={{fontSize:'20px'}}>✅</span>
               <div>
@@ -3061,7 +3118,7 @@ function App() {
           <div style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap',marginBottom:'32px'}}>
             <button className="btn btn-primary" onClick={() => window.print()}>🖨️ {t.print}</button>
             <button className="btn btn-secondary" onClick={handleRestart}>🔄 {t.restart}</button>
-            <button className="btn btn-secondary" onClick={() => window.open('telerehab_dashboard.html','_blank')}
+            <button className="btn btn-secondary" onClick={() => window.open('telerehab_dashboard_v2.html','_blank')}
               style={{borderColor:'var(--teal)',color:'var(--teal)'}}>
               📊 {t.openDashboard}
             </button>
