@@ -68,6 +68,8 @@ test('verbal interview: live transcript saved, score always chosen by the interv
     for (let i = 0; i < 20 && !(await page.$('text=Session Complete')); i++) await answer('ok', 3);
     const dl = page.waitForEvent('download'); await page.click('text=Export JSON');
     const j = JSON.parse(fs.readFileSync(await (await dl).path(), 'utf8'));
+    assert.equal(j.mode, 'verbal', 'capture mode recorded');
+    assert.equal(j.interviewMode, 'assisted', 'interview mode setting kept');
     const codes = j.items.map(e => e.code);
     assert.equal(codes.length, new Set(codes).size, 'no duplicate items');
     const first = j.items.find(e => e.transcript === 'actually good');
