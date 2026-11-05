@@ -7,7 +7,7 @@ This runbook updates a server that already serves an older version of the apps. 
 Several participant-facing changes in this release are recorded as **pending amendments** in the protocol (Research Suite, protocol §11 log):
 
 - Policy-Maker item `pol2` reworded to the Health White Paper (2023)
-- Consent notices: 7-year retention; speech-to-text disclosure
+- Consent notices: 5-year retention; speech-to-text disclosure
 - Part C: speech-to-text opt-in; distress/AE/SAE record form
 - Four new Elderly items (time since stroke, rehabilitation setting, travel distance, telerehab received)
 
@@ -88,7 +88,7 @@ Open the browser developer console (F12) on each page; there should be no red er
 | `telerehab_dashboard_v2.html` | Charts render; the OMR tab shows the embedded scanner |
 | `omr_scanner.html?sheet=ELDERLY` | The Elderly sheet is preselected; the camera prompt appears when you start a capture |
 | `partc_interview_v2.html` | Speech-to-text is off by default; switching it on adds the notice to the consent screen |
-| `verbal_interview_ui_v2.html` | Loads; the consent notice says 7 years |
+| `verbal_interview_ui_v2.html` | Loads; the consent notice says 5 years |
 | `DTAM_MY_Research_Suite.html` | GCP 19/22; the protocol §11 log lists the pending amendments |
 | Response headers | `curl -sI https://YOUR-HOST/index.html` shows `Content-Security-Policy: frame-ancestors 'self'…` and `X-Content-Type-Options: nosniff` |
 

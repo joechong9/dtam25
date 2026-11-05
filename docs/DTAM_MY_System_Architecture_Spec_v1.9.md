@@ -80,7 +80,7 @@ The workspace mixes *implemented code* with *designed-but-unbuilt* architecture 
 | 1.6 | 2026-11-05 | Command-paper details verified against the tabled edition supplied by the PI: Command Paper No. 29 of 2023, submitted to the House of Representatives / Senate, dated 13 June 2023. Printed page numbers match the MOH web edition, so all §12.6 page references stand. |
 | 1.7 | 2026-11-05 | Pre-pilot items completed in code. Crisis contacts verified; the outdated MIASA number was replaced. The 7 ETHICS_STATUS baseline defects were fixed with approved wording that withholds the reference, and the harness baseline is now empty. The Part C consent screen discloses speech-to-text when it is on. Pending amendments were recorded in the protocol §11 log. Draft PIS wording added (§12.4). New finding F-28 (retention period). BM/ZH strings refined after review. |
 | 1.8 | 2026-11-05 | F-28 resolved by PI decision: retention is **7 years post-publication** everywhere. The Part C and verbal-interview consent notices now match Protocol §7, and a pending-amendment entry was added to the §11 log. |
-| 1.9 | 2026-11-05 | PI decisions applied. F-02/F-07: keep both instrument versions, record capture mode, analyse shared items (Item Crosswalk v1.0). F-06/F-06b: four protocol-named Elderly items drafted, hidden until UREC amendment and CVI approval. F-15: protocol §10 adopts the §13.2 ML design. F-20: App Development 90% in both views. F-19: optional hardened deployment build plus server security headers (`deploy/`, `DEPLOY.md`). Stale wording corrected. |
+| 1.9 | 2026-11-05 | F-28 re-decided by the PI: retention is **5 years post-publication** everywhere, superseding v1.8. Protocol §7, the §11 pending-amendment entry, and the Part C and verbal-interview consent notices now say 5 years. PI decisions applied. F-02/F-07: keep both instrument versions, record capture mode, analyse shared items (Item Crosswalk v1.0). F-06/F-06b: four protocol-named Elderly items drafted, hidden until UREC amendment and CVI approval. F-15: protocol §10 adopts the §13.2 ML design. F-20: App Development 90% in both views. F-19: optional hardened deployment build plus server security headers (`deploy/`, `DEPLOY.md`). Stale wording corrected. |
 
 
 ### 0.5 Merged state (v1.5)
@@ -990,7 +990,7 @@ Light tasks such as QA format checks are routed to a Haiku-tier model for cost; 
 - **PDPA 2010 (Act 709)**, with its seven Personal Data Protection Principles: General, Notice & Choice, Disclosure, Security, Retention, Data Integrity, Access.
 - **ICH E6(R2) GCP**, Declaration of Helsinki, CIOMS 2016 (GCP-01–04).
 - **UTAR UREC** ethics policy (GCP-07). The study is UREC-approved; GCP-20 stays unticked only because the reference is not published in this public repo.
-- **Retention:** 7 years post-publication (Protocol §7).
+- **Retention:** 5 years post-publication, then secure deletion (Protocol §7).
 - **Withdrawal:** at any time; data retained unless deletion is requested (Protocol §4, citing PDPA s.30 `[NEEDS VERIFICATION: section number]`).
 
 ### 12.2 Controls present in the code base ✅
@@ -1051,7 +1051,7 @@ The Part C app now shows the equivalent notice on its consent screen, and adds i
 | Audit | `audit_log` written by triggers on INSERT/UPDATE/DELETE (who, when, table, row, old/new hash), plus FHIR `AuditEvent` export (I5) |
 | Device | IndexedDB outbox encrypted with WebCrypto (AES-GCM; key derived per session); auto-purge after acknowledged sync |
 | Withdrawal | Participants receive their pseudo-ID on the C2 report screen (`submittedId`); `DELETE … WHERE pseudo_id = ?` cascades and is logged |
-| Retention | Scheduled job flags records at 7 years post-publication for review and destruction |
+| Retention | Scheduled job flags records at 5 years post-publication for review and destruction |
 
 <a id="s12-6"></a>
 ### 12.6 Citation and policy-reference screening
@@ -1253,7 +1253,7 @@ Status: **✅ Fixed (v1.1/v1.2)** = this branch; **✅ Fixed (`main`)** = fixed 
 | F-25 | High | No tool captures AE/SAE or distress-protocol events, although Protocol §6 requires 24-hour SAE reporting | Protocol §6 `:282`; no code | **✅ Fixed (v1.2).** C6 "⚠ Distress / AE" record (type, outcome, 7 protocol steps, PI-notified time); SAE alert; exported; the admin import flags SAEs with the 24-hour reminder | §[9.1](#s9) |
 | F-26 | Low | C5's embedded OMR scanner `<iframe src="omr_scanner.html">` is blocked by C5's own CSP (`default-src 'none'` with no `frame-src`) | C5 line 5, `:676` | **✅ Fixed (`main`).** `frame-src 'self'`; the embedded scanner loads | §[5.5](#s5) |
 | F-27 | Low | Admin Settings asked for a Gemini API key for an "AI Insights" feature that does not exist; the key was never used | C4 Settings | **✅ Fixed (v1.2).** Setting removed | §[10](#s10) |
-| F-28 | Medium | Retention periods disagree: the Part C consent notice says recordings are kept **5 years** post-publication; Protocol §7 says data are retained **7 years** post-publication | C6 `renderConsent`; C8 protocol §7 | **✅ Fixed (v1.8).** PI decision: 7 years. The Part C and verbal consent notices now say 7 years, matching Protocol §7 (the PIS must say the same) | §[12.5](#s12-5) |
+| F-28 | Medium | Retention periods disagree: the Part C consent notice says recordings are kept **5 years** post-publication; Protocol §7 says data are retained **7 years** post-publication | C6 `renderConsent`; C8 protocol §7 | **✅ Fixed (v1.9).** PI decision: 5 years (supersedes the v1.8 decision of 7 years). Protocol §7 and the Part C and verbal consent notices say 5 years (the PIS must say the same) | §[12.5](#s12-5) |
 
 
 **Open items (v1.9).** None of these can be fixed in client code alone:
