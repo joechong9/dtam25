@@ -1,0 +1,15 @@
+{
+  "name": "dtam25-deploy",
+  "private": true,
+  "description": "Optional hardened deployment build for the DTAM-MY apps (see DEPLOY.md). Development needs no build step.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "@babel/standalone": "7.23.2",
+    "chart.js": "4.4.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  }
+}

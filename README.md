@@ -26,11 +26,19 @@ React, Babel, Chart.js and OpenCV.js load from CDNs, so the first load needs an 
 above (see `dtam_manifest.json`); never edit content into them. Deep links into the scanner work in both forms:
 `omr_scanner.html?sheet=ELDERLY` or `omr_scanner.html#ELDERLY`.
 
+## Deploying
+
+Development needs no build step. For the study server, `deploy/` provides an optional hardened build (pre-compiled JSX with no `'unsafe-eval'`, self-hosted libraries with SRI) and security-header snippets for Apache and nginx. See **`DEPLOY.md`** for the full runbook: ethics check, preserving server settings, backup, upload, smoke tests and rollback.
+
+```bash
+cd deploy && npm ci && npm run build   # output: deploy/dist/
+```
+
 ## Shared browser storage (same origin)
 
 | Key | Written by | Read by | Shape |
 |---|---|---|---|
-| `dtam_my_responses` (localStorage) | questionnaire | dashboard, admin portal | array of `ResponseRecord`: `{id, timestamp, group, lang, answers, scores:{KEY:{value,…}}, meta:{lang}}` |
+| `dtam_my_responses` (localStorage) | questionnaire | dashboard, admin portal | array of `ResponseRecord`: `{id, timestamp, group, lang, mode, answers, scores:{KEY:{value,…}}, meta:{lang}}` (`mode` is `digital`; OMR exports carry `mode: "paper"`, verbal exports `mode: "verbal"`; see `docs/DTAM_MY_Item_Crosswalk_v1.0.md`) |
 | `dtam_my_interviews` (localStorage) | Part C interview; admin portal (session JSON import from other devices) | admin portal | array of `{id, group, interviewer, language, site, startedAt, endedAt, duration, recordedSecs, questions, answered, completed, incidents:[{type, recordedAt}]}`, metadata only, no transcripts or incident descriptions |
 | `dtam_omr_scans` (localStorage) | admin portal (JSON import) | admin portal | array of OMR scanner exports `{participant_id, sheet, timestamp, scores, results}` |
 | `dtam_admin_users_v2` (localStorage) | admin portal | admin portal | accounts with salted PBKDF2 password hashes |

@@ -485,10 +485,10 @@ function computeScores(results) {
 }
 
 function resultsToCSV(results, pid, sheetKey, ts) {
-  const hdr = ['participant_id','sheet','timestamp','page','section','code','label','response','ambiguous','confidence','overridden','auto_response'];
+  const hdr = ['participant_id','sheet','mode','timestamp','page','section','code','label','response','ambiguous','confidence','overridden','auto_response'];
   const cell = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
   const rows = results.map(r=>[
-    pid,sheetKey,ts,r.page,r.section_id,r.code,r.label,
+    pid,sheetKey,'paper',ts,r.page,r.section_id,r.code,r.label,
     r.selectedValue,r.ambiguous?'1':'0',
     (r.maxFill*100).toFixed(0)+'%',
     r.overridden?'1':'0', r.overridden?(r.autoValue??''):''
@@ -931,7 +931,7 @@ function App() {
 
   const exportJSON=()=>{
     const ts=new Date().toISOString();
-    downloadBlob(JSON.stringify({participant_id:pid,sheet:sheetKey,timestamp:ts,scores,results},null,2),
+    downloadBlob(JSON.stringify({participant_id:pid,sheet:sheetKey,mode:'paper',timestamp:ts,scores,results},null,2),
       `omr_${sheetKey}_${pid||'UNKNOWN'}_${ts.slice(0,10)}.json`,'application/json');
   };
 

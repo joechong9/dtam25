@@ -783,7 +783,7 @@ function renderPhaseBars() {
   const phases = [
     { label:'Ph 1 · Ethics & Design',  pct:90,  color:'#16a34a', note:'Protocol v2.0 · GCP 86% · Dossier ready' },
     { label:'Ph 2 · Questionnaires',   pct:100, color:'#16a34a', note:'12 docs · 5 OMR sheet types · 4 languages' },
-    { label:'Ph 3 · App Development',  pct:90,  color:'#0E8B8B', note:'PWA + APK + OMR Scanner done · Backend hosting TBD' },
+    { label:'Ph 3 · App Development',  pct:90,  color:'#0E8B8B', note:'PWA + APK + OMR Scanner done · Server deployed' },
     { label:'Ph 4 · Pilot Study',      pct:0,   color:'#E07B39', note:'n=70 · UREC approved' },
     { label:'Ph 5 · Data Collection',  pct:0,   color:'#6366f1', note:'n=370 total · 5 groups' },
     { label:'Ph 6 · Analytics',        pct:0,   color:'#1B3A6B', note:'EFA · PLS-SEM · WHOQOL change' },
@@ -1108,9 +1108,9 @@ function exportCSV() {
   if (!allData.length) { alert('No data to export yet.'); return; }
   const allKeys = [...new Set(allData.flatMap(r => Object.keys(r.answers||{})))].sort();
   const scoreKeys = [...new Set(allData.flatMap(r => Object.keys(r.scores||{})))];
-  const header = ['id','timestamp','group','survey_lang','browser_lang', ...allKeys, ...scoreKeys.map(k=>`score_${k}`)];
+  const header = ['id','timestamp','group','mode','survey_lang','browser_lang', ...allKeys, ...scoreKeys.map(k=>`score_${k}`)];
   const rows = allData.map(r => [
-    r.id, r.timestamp, r.group, r.lang ?? '', r.meta?.lang ?? '',
+    r.id, r.timestamp, r.group, r.mode ?? 'digital', r.lang ?? '', r.meta?.lang ?? '',
     ...allKeys.map(k => r.answers?.[k] ?? ''),
     ...scoreKeys.map(k => r.scores?.[k]?.value ?? ''),
   ]);

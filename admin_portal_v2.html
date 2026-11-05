@@ -1716,12 +1716,12 @@ function exportOmrCSV() {
   if (!scans.length) { showModal('No Data','No OMR results to export. Import JSON files first.',[{label:'OK',cls:'btn-secondary',action:'closeModal()'}]); return; }
   // Flatten: one row per item per scan
   const rows = [];
-  const hdr = ['participant_id','sheet','timestamp','page','section','code','label','response','ambiguous','confidence','overridden','auto_response'];
+  const hdr = ['participant_id','sheet','mode','timestamp','page','section','code','label','response','ambiguous','confidence','overridden','auto_response'];
   rows.push(hdr.join(','));
   scans.forEach(s => {
     (s.results||[]).forEach(r => {
       rows.push([
-        s.participant_id, s.sheet, s.timestamp,
+        s.participant_id, s.sheet, s.mode || 'paper', s.timestamp,
         r.page, r.section_id, r.code, r.label,
         r.selectedValue,            // 0 is a valid response (e.g. ZBI "Never") — do not coerce to ''
         r.ambiguous?'1':'0',
@@ -1856,7 +1856,7 @@ function exportSurveyCSV() {
   const data = loadSurveys();
   if (!data.length) { showModal('No Data','No survey responses to export.',[]); return; }
   // Field names follow the questionnaire record (records carry `timestamp`, not `submittedAt`)
-  const cols = { id: r => r.id, group: r => r.group, survey_lang: r => r.lang,
+  const cols = { id: r => r.id, group: r => r.group, mode: r => r.mode || 'digital', survey_lang: r => r.lang,
                  browser_lang: r => r.meta && r.meta.lang, timestamp: r => r.timestamp || r.submittedAt };
   const keys = Object.keys(cols);
   const rows = [keys.join(','), ...data.map(r => keys.map(k => csvCell(cols[k](r))).join(','))];

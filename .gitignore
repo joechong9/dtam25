@@ -1,2 +1,4 @@
 __pycache__/
 *.pyc
+deploy/node_modules/
+deploy/dist/
