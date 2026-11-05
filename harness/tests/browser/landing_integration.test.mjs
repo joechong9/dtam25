@@ -21,24 +21,28 @@ test('landing chat: visitor text escaped, stale reply dropped on language switch
   } finally { await env.close(); }
 });
 
-test('ethics wording: approval pending and application not yet submitted, in all four languages', async () => {
+// Canonical status (harness/dtam_constants.json ethics.status): UREC-approved.
+const PENDING_RX = /pending|awaiting|not yet submitted|menunggu|tertunda|belum dikemukakan|待定|尚未|等待|நிலுவை|சமர்ப்பிக்கப்படவில்லை/i;
+
+test('ethics wording: UREC approval stated, no pending wording, in all four languages', async () => {
   const env = await setup('file');
   try {
     const idx = await open(env, 'index.html');
     const chat = await idx.page.evaluate(() => ['en', 'bm', 'zh', 'ta'].map(l => {
       window._lang = l; const d = document.createElement('div'); d.innerHTML = findResponse('privacy').reply; return d.textContent;
     }));
-    assert.match(chat[0], /awaiting submission/); assert.match(chat[1], /belum dikemukakan/);
-    assert.match(chat[2], /尚未提交/); assert.match(chat[3], /இன்னும் சமர்ப்பிக்கப்படவில்லை/);
+    assert.match(chat[0], /approval received/); assert.match(chat[1], /telah diterima/);
+    assert.match(chat[2], /已获得/); assert.match(chat[3], /அங்கீகாரம் பெறப்பட்டது/);
+    chat.forEach(t => assert.doesNotMatch(t, PENDING_RX));
     const q = await open(env, 'telerehab_questionnaire_app_v2.html'); await q.page.waitForSelector('.btn-hero');
-    const expectations = { EN: /approval .* is pending/, BM: /menunggu kelulusan/, '中文': /等待/, 'தமிழ்': /நிலுவையில்/ };
+    const expectations = { EN: /reviewed and approved/, BM: /diluluskan/, '中文': /审查和批准/, 'தமிழ்': /அங்கீகரிக்கப்பட்டது/ };
     for (const [btn, rx] of Object.entries(expectations)) {
       await q.page.click(`.lang-btn:text-is("${btn}")`);
       await q.page.click('.btn-hero'); await q.page.click('.group-card >> nth=0'); await q.page.click('.btn-primary.btn-lg');
       const sec8 = await q.page.evaluate(() => { const s = [...document.querySelectorAll('.consent-section')].find(x => x.textContent.startsWith('8')); return s.nextElementSibling.textContent; });
       const sec5 = await q.page.evaluate(() => { const s = [...document.querySelectorAll('.consent-section')].find(x => x.textContent.startsWith('5')); return s.nextElementSibling.textContent; });
       assert.match(sec8, rx, `consent §8 (${btn})`);
-      assert.doesNotMatch(sec8, /submitted|dikemukakan kepada|已提交|சமர்ப்பிக்கப்பட்டுள்ளது/, `no submission claim (${btn})`);
+      assert.doesNotMatch(sec8, PENDING_RX, `no pending wording (${btn})`);
       assert.match(sec5, /device|peranti|设备|சாதன/, `consent §5 mentions on-device storage (${btn})`);
       await q.page.goto(env.base + 'telerehab_questionnaire_app_v2.html'); await q.page.waitForSelector('.btn-hero');
     }

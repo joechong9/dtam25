@@ -45,7 +45,7 @@ test('verbal interview: live transcript saved, score always chosen by the interv
     await page.fill('input[placeholder="e.g. R001"]', 'R1'); await page.fill('input[placeholder="e.g. ELD-001"]', 'E1');
     await page.click('text=Proceed to Consent');
     const consent = await page.textContent('.consent-box');
-    assert.match(consent, /does not save an audio file/); assert.match(consent, /approval pending/);
+    assert.match(consent, /does not save an audio file/); assert.match(consent, /UREC approved/);
     await page.check('input[type=checkbox]'); await page.click('text=Begin Interview');
     const rec = page.locator('.record-btn');
     const answer = async (spoken, score) => {
