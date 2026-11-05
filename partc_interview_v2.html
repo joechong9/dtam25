@@ -619,17 +619,19 @@ function renderConsent() {
       <strong>Research Study:</strong> DTAM-MY Telerehabilitation Assessment — UTAR PhD Research (24UED03838)<br/><br/>
       <strong>Group:</strong> ${grp.label} &nbsp;·&nbsp; <strong>Estimated Duration:</strong> ${grp.duration}<br/>
       <strong>Analysis Method:</strong> ${grp.method}<br/><br/>
-      <strong>PDPA 2010 Notice:</strong> This session will be audio-recorded solely for research transcription.
-      Recordings are stored on Malaysian-territory servers (AES-256 encrypted), retained for 7 years
-      post-publication, then securely deleted. Participation is voluntary; withdrawal is permitted at any time.
+      <strong>PDPA 2010 Notice:</strong> This app does not save an audio file. Transcripts and notes are kept on
+      this device until the researcher exports them, then stored on Malaysian-territory servers (AES-256 encrypted),
+      retained for 5 years post-publication, then securely deleted. Participation is voluntary; withdrawal is
+      permitted at any time.
       ${S.sttEnabled ? `<br/><br/><strong>Speech-to-text notice:</strong> Live transcription is switched on for this session.
-      The browser sends the participant's speech to its provider's cloud speech service, which may be outside Malaysia.
-      Tell the participant this before starting; switch it off in setup if they do not agree.` : ""}
+      The browser sends the participant's speech to its provider's cloud speech service (Google in Chrome, Microsoft in
+      Edge), which may be outside Malaysia. Tell the participant this before starting; switch it off in setup if they do
+      not agree, and type the transcript instead.` : ""}
     </div>
     <label class="consent-check">
       <input type="checkbox" id="cb_consent" ${S.consentChecked?"checked":""}/>
       Participant has been read the information sheet, has had the opportunity to ask questions,
-      and verbally consents to audio recording${S.sttEnabled ? " and to live speech-to-text processing by the browser provider's cloud service" : ""}. Researcher: <strong style="margin-left:4px">${esc(S.researcherId)}</strong>
+      and verbally consents to the interview being transcribed${S.sttEnabled ? " and to live speech-to-text processing by the browser provider's cloud service" : ""}. Researcher: <strong style="margin-left:4px">${esc(S.researcherId)}</strong>
     </label>
     <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
       Session ID: <strong>${genSessionId()}</strong><br/>

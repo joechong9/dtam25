@@ -50,7 +50,15 @@ cd deploy && npm ci && npm run build   # output: deploy/dist/
 files that write them.
 
 All of this lives in one browser profile on one device: export regularly (CSV/JSON) and clear data after export
-according to the study's data-management plan. Registration tokens can therefore only be redeemed on the device
+according to the study's data-management plan.
+
+CSV exports start with a UTF-8 byte-order mark so Excel shows Chinese and Tamil correctly (in R use
+`read.csv(f, fileEncoding = "UTF-8-BOM")` or `readr::read_csv`). Text cells beginning with `=`, `+`, `-` or `@`
+are prefixed with `'` so spreadsheets do not run them as formulas; plain numbers are unchanged.
+
+What leaves the device: the Part C and verbal interview apps transcribe speech with the browser's speech
+service (Google in Chrome, Microsoft in Edge), and the admin assistant sends typed messages plus aggregate
+counts to Anthropic's API. Both are outside Malaysia; the consent text and the admin portal say so. Registration tokens can therefore only be redeemed on the device
 where they were issued.
 
 ## Harness
@@ -64,6 +72,7 @@ where they were issued.
 | `harness/dtam_harness.py` | Drift, constants, translation-parity, OMR-geometry and manifest checks; baseline ratchet; rule sync; hook entry points |
 | `harness/baseline.json` | Known open defects. CI fails only on findings beyond these |
 | `harness/tests/` | Fixtures for every rule, plus parser, hook and proxy tests |
+| `harness/tests/browser/` | Playwright tests for every app (file:// and HTTP), with the CDN libraries pinned locally |
 | `.claude/settings.json` | Claude Code hooks: status at session start, scan on every edit, gate on stop |
 | `.github/workflows/harness.yml` | The same checks on every push and pull request |
 | `proxy/` | Optional Cloudflare Worker that keeps the Anthropic key out of the browser |
@@ -72,6 +81,7 @@ where they were issued.
 python3 harness/dtam_harness.py check
 python3 -m unittest discover -s harness/tests -v
 node harness/tests/test_proxy.mjs
+(cd harness/tests/browser && npm ci && npm test)
 ```
 
 See `CLAUDE.md` for the agent workflow and `harness/SKILL_PATCHES.md` for the
