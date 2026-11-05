@@ -815,9 +815,10 @@ function App() {
   // [v2] M4 — Pre-select sheet from the URL: ?sheet=ALLIED_HEALTH (admin portal) or #ALLIED_HEALTH (dashboard)
   const [sheetKey,  setSheetKey]  = useState(() => {
     try {
-      const q = new URLSearchParams(window.location.search).get('sheet');
-      const h = decodeURIComponent(window.location.hash.slice(1));
-      return [q, h].find(k => k && SHEET_CONFIGS[k]) || 'CAREGIVER';
+      // Accept ?sheet=ELDERLY and #ELDERLY (the dashboard links use the hash form)
+      const p = new URLSearchParams(window.location.search).get('sheet')
+        || decodeURIComponent(window.location.hash.replace(/^#/, ''));
+      return (p && SHEET_CONFIGS[p]) ? p : 'CAREGIVER';
     } catch(e) { return 'CAREGIVER'; }
   });
   const [pid,       setPid]       = useState('');

@@ -1,0 +1,44 @@
+name: DTAM harness
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Harness self-tests (rule fixtures, parser, hooks)
+        run: python3 -m unittest discover -s harness/tests -v
+
+      - name: Proxy tests
+        run: node harness/tests/test_proxy.mjs
+
+      - name: Generated blocks in sync with source files
+        run: python3 harness/dtam_harness.py sync
+
+      - name: Drift, constants, parity, OMR, manifest checks (ratchet vs baseline)
+        run: python3 harness/dtam_harness.py check
+
+      - name: Report open defects
+        if: always()
+        run: |
+          {
+            echo "## DTAM harness"
+            echo '```'
+            python3 harness/dtam_harness.py check || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
