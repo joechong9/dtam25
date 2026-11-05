@@ -1,7 +1,7 @@
 # DTAM-MY System Architecture Specification
 
 **Digital Telerehabilitation Assessment Model — Malaysia (DTAM-MY)**
-**Document ID:** DTAM_MY_System_Architecture_Spec_v1.3 · **Status:** Draft for supervisory review · **Date:** 5 November 2026
+**Document ID:** DTAM_MY_System_Architecture_Spec_v1.4 · **Status:** Draft for supervisory review · **Date:** 5 November 2026
 
 | Field | Value |
 |---|---|
@@ -75,6 +75,7 @@ The workspace mixes *implemented code* with *designed-but-unbuilt* architecture 
 | 1.1 | 2026-11-05 | Roadmap step 0 applied in code: F-01, F-04, F-13, F-14, F-18, F-21 and F-24 resolved (see §16 status column). GCP-06 reopened → 18/22. SRI deferred. New finding F-26. Line references in §5–§18 remain as of `ccf443b`; small offsets apply in edited files. |
 | 1.2 | 2026-11-05 | All findings that can be fixed in client code are resolved: F-02b, F-03, F-04b, F-06 (TUQ, TAM-BI), F-07 (ZBI rule), F-08 (PBKDF2), F-09, F-11, F-12, F-14 (Part C), F-16, F-17, F-19 (SRI via jsDelivr), F-20 (sheet count), F-22, F-23, F-25, F-26, F-27. Remaining open items need research decisions or a backend (see §16 open-items summary). |
 | 1.3 | 2026-11-05 | GCP-06 rectified: re-anchored to the *Health White Paper for Malaysia* (Ministry of Health Malaysia, 2023; approved by Parliament June 2023) and restored to compliant, so the score is back to 19/22 (86%). HWP added to the landing-page policy anchors, the compliance card, the questionnaire ethics badges and the protocol governing standards. |
+| 1.4 | 2026-11-05 | HWP citation checked against the MOH PDF supplied by the PI. Title and publisher confirmed; page-level evidence added (§12.6). No command-paper number appears in the MOH web edition. The parliamentary approval date is attributed to news reports. GCP-06 now carries section references (§3.1.1, §3.1.4). |
 
 ---
 
@@ -102,7 +103,7 @@ The components work together through a **browser-local data bus** (`localStorage
 
 **Top findings for supervisory attention** (full list in §[16](#s16)):
 
-1. **Blocked citation in the compliance record (F-01) — ✅ resolved in v1.1.** The "National Digital Health Blueprint 2023–2030" appeared as GCP-06 (counted towards 19/22), as live questionnaire item `pol2`, in helper text and ethics badges, and on the landing page. It has been removed everywhere. `pol2` is reworded neutrally ("Current national digital health policy provides clear guidance…"), In v1.3 GCP-06 was re-anchored to the **Health White Paper for Malaysia (MOH, 2023)**, a real command paper approved by Parliament in June 2023 that commits to telehealth, electronic lifetime health records and health information exchange. The score is back to **19/22 (86%)**. Page-level citations still need adding from the PDF `[NEEDS VERIFICATION: page refs]`.
+1. **Blocked citation in the compliance record (F-01) — ✅ resolved in v1.1.** The "National Digital Health Blueprint 2023–2030" appeared as GCP-06 (counted towards 19/22), as live questionnaire item `pol2`, in helper text and ethics badges, and on the landing page. It has been removed everywhere. `pol2` is reworded neutrally ("Current national digital health policy provides clear guidance…"), In v1.3 GCP-06 was re-anchored to the **Health White Paper for Malaysia (MOH, 2023)**, a real command paper approved by Parliament in June 2023 that commits to telehealth, electronic lifetime health records and health information exchange. The score is back to **19/22 (86%)**. The page-level evidence is in §12.6, checked against the MOH PDF.
 2. **Three incompatible item-coding schemes (F-02).** The digital questionnaire, the paper/OMR route and the verbal route use different item counts and codes for the same instrument (e.g., TAM has 7 items digitally and 10 on paper; UTAUT2 has 10 digital items covering all 7 constructs, while the paper version has 18 items covering 6 constructs and omits Performance Expectancy and Price Value). Responses from different modes cannot be pooled for EFA/PLS-SEM without a harmonisation layer (§[7.6](#s7-6)).
 3. **Broken data contracts (F-03, F-04).** The admin portal reads interview records from a storage key that no app writes, and the Part C export schema does not match what the portal expects. The admin portal reads `r.lang` while the questionnaire stores `meta.lang`.
 4. **Client-side-only security (F-08–F-12).** Authentication, password hashing (unsalted SHA-256) and the 8-hour session are enforced only in the browser. Participant data sits unencrypted in `localStorage`. Before real participant data is collected, the planned controls (pgcrypto AES-256, audit_log, RBAC) must exist on a server.
@@ -1028,10 +1029,26 @@ Chromium-based browsers implement `SpeechRecognition` by sending audio to a vend
 | Reference | Location | Status |
 |---|---|---|
 | "National Digital Health Blueprint 2023–2030" / "NDHB" | C8 GCP-06 (`:258`), C8 Policy item B2 (`:353`), C8 protocol text (`:277`, `:287`), C1 (`:652`, `:993`, `:1355`, `:1407`, `:1488`, `:1540`, `:1621`, `:1673`, `:1754`, `:1806`, `:2125`, `:2186`), C2 (`:496`, `:578`, `:660`, `:742`, `:929`, `:955`, `:1422`, `:1563`, `:1704`, `:2113`, `:2125`, `:2254`, `:2266`, `:2395`, `:2407`) | ✅ **Removed in v1.1** from C1, C2 (`pol2` in EN/BM/ZH/TA, `mast10`/`pol2` helper text, ethics badge lists), C5 and C8. **v1.3:** GCP-06 re-anchored to the Health White Paper for Malaysia (MOH, 2023) and restored to compliant (19/22). The C8 amendment log records the change as a pending amendment |
-| "Health White Paper (2023)" | S9 executive summary; v1.3 GCP-06 anchor | ✅ **Verified.** *Health White Paper for Malaysia: Strengthening people's health, future-proofing the nation's health system*, Ministry of Health Malaysia, 2023. Parliament approved it in June 2023, and it covers telehealth, EMR/ELHR and health information exchange. Sources: moh.gov.my PDF (via search index) plus NST, The Star and Malay Mail reports. Still to do: subtitle wording, command-paper number and page references from the PDF `[NEEDS VERIFICATION]` |
+| "Health White Paper (2023)" | S9 executive summary; GCP-06 anchor | ✅ **Verified against the MOH PDF (v1.4).** Ministry of Health Malaysia (2023). *Health White Paper for Malaysia: Strengthening people's health, future-proofing the nation's health system*. Kuala Lumpur: Ministry of Health for the Government of Malaysia (title p. 1; ©2023 MOH, p. 3). The MOH web edition prints no command-paper number. The document says it "will be tabled" in Parliament (pp. 10, 63); the June 2023 approval is from news reports (NST, The Star, Malay Mail). See the evidence table below |
 | "12th Malaysia Plan" | C1 `polMp` | Real plan; confirm the specific digital-health commitments cited `[NEEDS VERIFICATION]` |
 | Instrument citations: Davis 1989; Venkatesh et al. 2012; Parmanto et al. 2016; Brooke 1996; WHO 1996; Zarit et al. 1980; Kidholm et al. 2012; WHO 2001; Braun & Clarke 2006 | C2, C3, C8 | Standard and widely cited; confirm full references in the thesis bibliography |
 | Crisis lines (Befrienders 03-7627 2929; MIASA 03-2780 6803) | Protocol §6 | Operational contact details. Re-verify before pilot, because numbers change `[NEEDS VERIFICATION]` |
+
+
+**GCP-06 evidence: DTAM-MY design ↔ Health White Paper for Malaysia (MOH, 2023)**
+
+| DTAM-MY element | HWP evidence (verbatim where quoted) | Page |
+|---|---|---|
+| Telerehabilitation delivered at home | Primary health care services include "promotive, preventive, curative, rehabilitative and palliative care", delivered "at the PHC facility, at the patient's home or online/remotely" (fn 44) | 32 |
+| Telehealth as an access strategy | "…significantly improved with the implementation of telehealth"; "use of tele-health"; "telemedicine especially for hard to reach populations… virtual consultation" | 11, 33, 36 |
+| Rehabilitation professions in the care pathway (Allied Health group) | Exhibit 1 patient journey: teleconsultation, "use of telemedicine", referral to physiotherapy and occupational therapy | 39 |
+| FHIR R4 interfaces (Domain 6; I2/I3/I5) | "Shareable and interoperable EMR and ELHR will be implemented to enable seamless and secure exchange of information between providers"; MOH ICT Masterplan "development of a Health Information Exchange (HIE)"; "secure EMR and LHR with interoperability between healthcare providers" | 34–36 |
+| PDPA-aligned data protection; consent | "Data ownership will reside with the individual… ensuring personal health data privacy and confidentiality"; strengthening "regulatory capacity governing health data privacy and protection"; data regulation "to ensure protection, privacy and confidentiality of data" | 36, 37, 54 |
+| Elderly post-stroke focus | Strategic review of "the health system's preparedness to address future needs of the ageing population"; long-term care for "fragile older persons" with rehabilitative providers | 34, 37–38 |
+| Urban/rural sampling (42/28 pilot) | Equity: "rural clinics to long-term care facilities" served via digitalisation; regional disparities, Sabah and Sarawak | 11, 37 |
+| Research and ML component | §3.4.4 research, innovation and evidence-based approaches; AI-assisted analytics; managed researcher access to national health data | 54–55 |
+
+*Scope caveat for the thesis:* the HWP is a reform proposal whose "detailed implementation plans will be fleshed out in the next phase" (p. 14), and it does not use the term "telerehabilitation". Cite it as **policy alignment** (remote rehabilitative care, telehealth, interoperability and data protection), not as a mandate for telerehabilitation.
 
 ---
 
