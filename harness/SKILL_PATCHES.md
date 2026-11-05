@@ -1,5 +1,12 @@
 # Proposed patches to the account-level `dtam-*` skills
 
+**Status (2026-11-05): corrected copies of 11 skills were delivered as
+`dtam_skills_corrected.zip`, ready to upload.** They apply Patches 1, 3, 4 and 5
+below, plus two additions found later: the UREC approval status (pending — never
+state approval) and supervisor ranks. Patch 2 concerns files in PostGrad Work
+(Bundle Compiler, Report Assembler, Citation Auditor, Loop Engine), which are not
+in this repository, so it remains to be done there.
+
 The skills are synced from the claude.ai account, so a repository session cannot
 edit them. Apply these in the skill editor (or with the `skill-creator` skill). They
 finish recommendation 3 (one source of truth) and the portability fix.

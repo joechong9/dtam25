@@ -16,19 +16,39 @@
   },
   "sample": {
     "total_n": 370,
-    "groups": { "allied": 100, "caregiver": 100, "elderly": 100, "policy": 20, "public": 50 },
+    "groups": {
+      "allied": 100,
+      "caregiver": 100,
+      "elderly": 100,
+      "policy": 20,
+      "public": 50
+    },
     "pilot_n": 70,
     "pilot_urban": 42,
     "pilot_rural": 28,
     "pilot_effective_completers": 45,
-    "pilot_allowed_numbers": [70, 42, 28, 45]
+    "pilot_allowed_numbers": [
+      70,
+      42,
+      28,
+      45
+    ]
   },
   "gcp": {
     "score": 19,
     "max": 22,
-    "ethics_thresholds_allowed": ["≥20/22", ">=20/22", "<17/22"]
+    "ethics_thresholds_allowed": [
+      "≥20/22",
+      ">=20/22",
+      "<17/22"
+    ]
   },
-  "languages": ["en", "bm", "zh", "ta"],
+  "languages": [
+    "en",
+    "bm",
+    "zh",
+    "ta"
+  ],
   "stakeholder_groups": 5,
   "frameworks": [
     "MAST (Kidholm et al., 2012)",
@@ -47,19 +67,40 @@
   ],
   "domain6": "System Interoperability (FHIR R4, 5 interfaces)",
   "palette": {
-    "NAVY": "#1B3A6B", "TEAL": "#0E8B8B", "LTEAL": "#D6F0F0",
-    "LNAVY": "#D8E4F0", "LGREY": "#F2F5F8", "ORANGE": "#E07B39"
+    "NAVY": "#1B3A6B",
+    "TEAL": "#0E8B8B",
+    "LTEAL": "#D6F0F0",
+    "LNAVY": "#D8E4F0",
+    "LGREY": "#F2F5F8",
+    "ORANGE": "#E07B39"
   },
   "omr_geometry_mm": {
     "_comment": "A4 landscape OMR layout. Regression rules: any app that re-declares these must match.",
-    "PAGE_W": 297, "PAGE_H": 210,
-    "LM": 12, "RM": 12, "TM": 10, "BM": 10,
-    "A_W": 154, "GAP": 4, "B_W": 115,
-    "BR": 2.6, "BSPC": 8
+    "PAGE_W": 297,
+    "PAGE_H": 210,
+    "LM": 12,
+    "RM": 12,
+    "TM": 10,
+    "BM": 10,
+    "A_W": 154,
+    "GAP": 4,
+    "B_W": 115,
+    "BR": 2.6,
+    "BSPC": 8
   },
   "llm": {
     "_comment": "Default model for in-app assistants. Change here, then run: python3 harness/dtam_harness.py sync --write",
     "chat_model": "claude-haiku-5-5",
-    "chat_model_options": ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-haiku-4-5"]
+    "chat_model_options": [
+      "claude-haiku-5-5",
+      "claude-sonnet-5-5",
+      "claude-haiku-4-5"
+    ]
+  },
+  "ethics": {
+    "_comment": "While status is 'pending', any claim of UREC approval (EN/BM/ZH/TA) is an error. When approval is granted: set status to 'approved', fill reference, run check, and update every place it lists.",
+    "status": "pending",
+    "committee": "UTAR University Research Ethics Committee (UREC)",
+    "reference": "UTAR/UREC/2025 (pending)"
   }
 }

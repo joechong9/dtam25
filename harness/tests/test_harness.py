@@ -124,6 +124,39 @@ class ConstantsFixtures(unittest.TestCase):
         self.assertEqual(self.hits("the pilot is NOT n=50"), [])
         self.assertEqual(self.hits("General Public (n=50)"), [])
 
+    def test_ethics_status_pending(self):
+        hit = ["This study has been reviewed and approved by the UTAR UREC.",
+               "<strong>Ethics:</strong> UTAR UREC approved.",
+               "Kajian ini telah disemak dan diluluskan oleh Jawatankuasa Etika",
+               "'Diluluskan UTAR UREC'",
+               "本研究已经过伦理委员会审查和批准。",
+               "'UTAR UREC批准'",
+               "குழுவால் மதிப்பாய்வு செய்யப்பட்டு அங்கீகரிக்கப்பட்டது.",
+               "'UTAR UREC அங்கீகாரம்'"]
+        ok = ["Approval is pending, and no data will be collected until it is granted.",
+              "Available after UREC ethics clearance",
+              "'Kelulusan UTAR UREC Tertunda'",
+              "本研究已提交拉曼大学（UTAR）大学研究伦理委员会（UREC）审查，目前尚待批准",
+              "'UTAR UREC批准待定'",
+              "'UTAR UREC அங்கீகாரம் நிலுவையில்'",
+              "8. Ethics Approval",
+              "MREC registration follows UREC approval"]
+        for t in hit:
+            with self.subTest(t=t):
+                self.assertEqual(self.hits(t), ["ETHICS_STATUS"])
+        for t in ok:
+            with self.subTest(t=t):
+                self.assertEqual(self.hits(t), [])
+
+    def test_supervisor_title(self):
+        self.assertEqual(self.hits("📧 Dr Kwan Ban Hoe — kwanbh@utar.edu.my"), ["SUPERVISOR_TITLE"])
+        self.assertEqual(self.hits("<div>Ir Dr Goh Choon Hian</div>"), ["SUPERVISOR_TITLE"])
+        self.assertEqual(self.hits("Assoc. Prof. Dr. Kwan Ban Hoe"), [])
+        self.assertEqual(self.hits("A/Prof. Ir. Dr Goh Choon Hian"), [])
+        self.assertEqual(self.hits("<b>Dr Kwan Ban Hoe</b><br>Associate Professor, LKC FES"), [])
+        self.assertEqual(self.hits("<b>Dr Kwan Ban Hoe</b> — 副教授"), [])
+        self.assertEqual(self.hits("<b>Ir Dr Goh Choon Hian</b> — Prof. Madya · Penyelia Bersama"), [])
+
     def test_supervisor(self):
         self.assertEqual(self.hits("Main Supervisor: Assoc. Prof. Dr. Tan Wei Ming"), ["SUPERVISOR_NAME"])
         self.assertEqual(self.hits("Main Supervisor: Assoc. Prof. Dr. Kwan Ban Hoe"), [])

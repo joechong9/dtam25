@@ -179,6 +179,15 @@ TOTAL_RX = re.compile(r"\b(total|overall|jumlah|keseluruhan)\b[^\n.;<]{0,40}?\bn
                       re.IGNORECASE)
 PILOT_RX = re.compile(r"\b(pilot|rintis)\b[^\n.;<]{0,30}?\bn\s*=\s*(\d{1,4})\b|(试点|試點|முன்னோட்ட)[^\n.;<]{0,20}?\bn\s*=\s*(\d{1,4})\b",
                       re.IGNORECASE)
+APPROVAL_CLAIM_RX = re.compile(
+    r"reviewed\s+and\s+approved|UREC[- ]approved|approved\s+by\s+(?:the\s+)?(?:UTAR|UREC)"
+    r"|ethics\s+approval\s+(?:has\s+been\s+|was\s+)?(?:granted|obtained)"
+    r"|disemak\s+dan\s+diluluskan|diluluskan\s+oleh\s+(?:Jawatankuasa|UTAR|UREC)|Diluluskan\s+UTAR\s+UREC"
+    r"|审查和批准|审核并批准|已(?:获|经)[^。待]{0,20}批准|UREC批准(?!待)"
+    r"|அங்கீகரிக்கப்பட்டது|UREC\s+அங்கீகாரம்(?!\s*நிலுவை)",
+    re.IGNORECASE)
+RANK_BEFORE_RX = re.compile(r"(Assoc\.?\s*Prof|A/Prof|Associate\s+Prof|Prof\.?\s*Madya|PM\.?)[^<\n]{0,14}$", re.IGNORECASE)
+RANK_AFTER_RX = re.compile(r"^[^\n]{0,40}?(Associate\s+Prof|Assoc\.?\s*Prof|Prof(?:esor|\.)?\s*Madya|副教授|இணைப்\s*பேராசிரியர்|இணை)", re.IGNORECASE)
 SUP_RX = re.compile(
     r"(Main Supervisor|Co-Supervisor|Supervisor|Penyelia(?:\s+Utama|\s+Bersama)?)\s*[:：]\s*"
     r"((?:Assoc\.?\s*Prof\.?|A/Prof\.?|Prof\.?|Ir\.?|Dr\.?|Ts\.?)\s*)*"
@@ -218,6 +227,26 @@ def check_constants(ctx: Ctx, path: Path, text: str):
                                f"Pilot n drift. Canonical pilot n={c['sample']['pilot_n']} "
                                f"(42 urban + 28 rural; 45 effective completers). Per-group targets "
                                f"of n=50 are legitimate - confirm context."))
+    if c.get("ethics", {}).get("status") == "pending":
+        for m in APPROVAL_CLAIM_RX.finditer(text):
+            if suppressed(ctx, text, m.start(), m.end(), "ETHICS_STATUS"):
+                continue
+            out.append(finding("ETHICS_STATUS", "error", r, line_of(text, m.start()), m.group(0),
+                               "Claims UREC approval, but ethics status is 'pending' "
+                               "(dtam_constants.json ethics.status). State that approval is pending; "
+                               "participant-facing text must not overstate ethics status."))
+    for name in (c["supervisors"]["main"], c["supervisors"]["co"]):
+        for m in re.finditer(re.escape(name), text):
+            before = text[max(0, m.start() - 22):m.start()]
+            after = text[m.end():m.end() + 60]
+            if RANK_BEFORE_RX.search(before) or RANK_AFTER_RX.search(after):
+                continue
+            if suppressed(ctx, text, m.start(), m.end(), "SUPERVISOR_TITLE"):
+                continue
+            out.append(finding("SUPERVISOR_TITLE", "warn", r, line_of(text, m.start()),
+                               before.strip()[-12:] + " " + name,
+                               "Supervisor named without academic rank. Use 'Assoc. Prof. Dr. Kwan Ban Hoe' / "
+                               "'Assoc. Prof. Ir. Dr. Goh Choon Hian' (or state the rank right after the name)."))
     names = [c["supervisors"]["main"], c["supervisors"]["co"]]
     keys = {" ".join(n.split()[:2]).lower() for n in names}
     for m in SUP_RX.finditer(text):
