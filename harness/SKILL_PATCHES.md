@@ -44,6 +44,9 @@ must change in all three". Point all three at `drift_rules.json` instead:
 - Report Assembler and Citation Auditor (HTML): add the
   `/* DTAM_RULES:BEGIN */ /* DTAM_RULES:END */` markers and let
   `dtam_harness.py sync --write` fill them, as `admin_portal_v2.html` now does.
+  The files can live outside this repo, so from PostGrad Work run:
+  `python3 <dtam25>/harness/dtam_harness.py sync --write DTAM_MY_Report_Assembler_v1.0.html DTAM_MY_Citation_Auditor_v1.0.html`
+  (without `--write` it reports whether they are in sync and exits 1 if not).
 - Loop Engine: register a verifier that shells out to
   `dtam_harness.py check --json FILES` and maps `new` findings to LES findings.
 

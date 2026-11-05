@@ -235,6 +235,23 @@ class RatchetAndSync(unittest.TestCase):
         for r in rules:
             re.compile(r["p"])
 
+    def test_sync_external_file(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            app = Path(d) / "DTAM_MY_Report_Assembler_v1.0.html"
+            app.write_text("<script>\n/* DTAM_RULES:BEGIN */\n/* DTAM_RULES:END */\nrun();\n</script>",
+                           encoding="utf-8")
+            bare = Path(d) / "no_markers.html"
+            bare.write_text("<script>run();</script>", encoding="utf-8")
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(h.main(["sync", str(app)]), 1)           # out of sync, dry run
+                self.assertEqual(h.main(["sync", "--write", str(app)]), 0)
+                self.assertEqual(h.main(["sync", str(app)]), 0)           # now in sync
+                self.assertEqual(h.main(["sync", str(bare)]), 1)          # markers missing
+            out = app.read_text(encoding="utf-8")
+            self.assertIn("const DTAM_DRIFT_RULES = ", out)
+            self.assertTrue(out.endswith("run();\n</script>"))
+
     def test_mask_generated(self):
         t = "a\n" + h.generated_block(CTX) + "\nNDHB"
         masked = h.mask_generated(t)
