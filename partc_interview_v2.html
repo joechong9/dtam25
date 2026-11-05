@@ -485,7 +485,7 @@ function render() {
 const DISTRESS_STEPS = [
   "Interviewer paused and assessed distress level",
   "Offered to stop or pause the session",
-  "Provided written crisis contacts (Befrienders 03-7627 2929; MIASA 03-2780 6803)",
+  "Provided written crisis contacts (Befrienders KL 03-7627 2929; MIASA 1800 180 066 / WhatsApp 03-9765 6088; emergency 999)",
   "Notified PI within 1 hour",
   "PI documented event and assessed AE/SAE classification",
   "Referred to clinical team (if required)",
@@ -622,11 +622,14 @@ function renderConsent() {
       <strong>PDPA 2010 Notice:</strong> This session will be audio-recorded solely for research transcription.
       Recordings are stored on Malaysian-territory servers (AES-256 encrypted), retained for 5 years
       post-publication, then securely deleted. Participation is voluntary; withdrawal is permitted at any time.
+      ${S.sttEnabled ? `<br/><br/><strong>Speech-to-text notice:</strong> Live transcription is switched on for this session.
+      The browser sends the participant's speech to its provider's cloud speech service, which may be outside Malaysia.
+      Tell the participant this before starting; switch it off in setup if they do not agree.` : ""}
     </div>
     <label class="consent-check">
       <input type="checkbox" id="cb_consent" ${S.consentChecked?"checked":""}/>
       Participant has been read the information sheet, has had the opportunity to ask questions,
-      and verbally consents to audio recording. Researcher: <strong style="margin-left:4px">${esc(S.researcherId)}</strong>
+      and verbally consents to audio recording${S.sttEnabled ? " and to live speech-to-text processing by the browser provider's cloud service" : ""}. Researcher: <strong style="margin-left:4px">${esc(S.researcherId)}</strong>
     </label>
     <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
       Session ID: <strong>${genSessionId()}</strong><br/>

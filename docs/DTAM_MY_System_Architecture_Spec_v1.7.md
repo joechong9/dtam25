@@ -1,7 +1,7 @@
 # DTAM-MY System Architecture Specification
 
 **Digital Telerehabilitation Assessment Model — Malaysia (DTAM-MY)**
-**Document ID:** DTAM_MY_System_Architecture_Spec_v1.6 · **Status:** Draft for supervisory review · **Date:** 5 November 2026
+**Document ID:** DTAM_MY_System_Architecture_Spec_v1.7 · **Status:** Draft for supervisory review · **Date:** 5 November 2026
 
 | Field | Value |
 |---|---|
@@ -64,7 +64,7 @@ The workspace mixes *implemented code* with *designed-but-unbuilt* architecture 
 ### 0.3 Conventions
 
 - Code references use `file:line` (lines as of commit `ccf443b`).
-- Component IDs **C1–C8** (§[5](#s5)), design-pattern IDs **DP-01–DP-16** (§[6](#s6)), data-entity IDs **E1–E8** (§[7](#s7)) and audit-finding IDs **F-01–F-27** (§[16](#s16)) are used for cross-referencing throughout.
+- Component IDs **C1–C8** (§[5](#s5)), design-pattern IDs **DP-01–DP-16** (§[6](#s6)), data-entity IDs **E1–E8** (§[7](#s7)) and audit-finding IDs **F-01–F-28** (§[16](#s16)) are used for cross-referencing throughout.
 - "Group" refers to the five stakeholder groups: Allied Health (`allied`), Caregiver (`caregiver`), Elderly post-stroke patient (`elderly`), Policy-Maker (`policy`), General Public (`public`).
 
 ### 0.4 Revision history
@@ -78,6 +78,7 @@ The workspace mixes *implemented code* with *designed-but-unbuilt* architecture 
 | 1.4 | 2026-11-05 | HWP citation checked against the MOH PDF supplied by the PI. Title and publisher confirmed; page-level evidence added (§12.6). No command-paper number appears in the MOH web edition. The parliamentary approval date is attributed to news reports. GCP-06 now carries section references (§3.1.1, §3.1.4). |
 | 1.5 | 2026-11-05 | Merged with `main` (PRs joechong9/dtam25#2, #3, #5, #6). Where both branches fixed the same issue, `main`'s implementation is kept (see §0.5). Aligned with `harness/dtam_constants.json`: UREC is **approved**; the policy anchor is the Health White Paper (2023). The fabricated citation is no longer named in this document. |
 | 1.6 | 2026-11-05 | Command-paper details verified against the tabled edition supplied by the PI: Command Paper No. 29 of 2023, submitted to the House of Representatives / Senate, dated 13 June 2023. Printed page numbers match the MOH web edition, so all §12.6 page references stand. |
+| 1.7 | 2026-11-05 | Pre-pilot items completed in code. Crisis contacts verified; the outdated MIASA number was replaced. The 7 ETHICS_STATUS baseline defects were fixed with approved wording that withholds the reference, and the harness baseline is now empty. The Part C consent screen discloses speech-to-text when it is on. Pending amendments were recorded in the protocol §11 log. Draft PIS wording added (§12.4). New finding F-28 (retention period). BM/ZH strings refined after review. |
 
 
 ### 0.5 Merged state (v1.5)
@@ -1028,6 +1029,12 @@ Chromium-based browsers implement `SpeechRecognition` by sending audio to a vend
 2. **Malaysian-hosted ASR** behind the 📐 backend (`/api/stt`, as already anticipated by C7).
 3. If browser STT is retained: disclose it explicitly in the PIS and consent form, use it only for interviewer-dictated *notes* rather than raw participant speech, and record that choice in GCP-05.
 
+**Draft Participant Information Sheet wording (v1.7; for UREC-approved PIS amendment):**
+
+> *Live transcription (optional).* With your permission, the researcher may use the web browser's speech-to-text feature to type out what you say during the interview. When this feature is on, your spoken words are sent over the internet to the browser provider's speech service, which may be located outside Malaysia, and are turned into text. No audio file is kept by the study app. You may ask for this feature to be switched off at any time; the researcher will then take written notes instead. Saying no will not affect your participation.
+
+The Part C app now shows the equivalent notice on its consent screen, and adds it to the consent checkbox, whenever speech-to-text is enabled.
+
 <a id="s12-5"></a>
 ### 12.5 Target security architecture (📐)
 
@@ -1051,7 +1058,7 @@ Chromium-based browsers implement `SpeechRecognition` by sending audio to a vend
 | "Health White Paper (2023)" | S9 executive summary; GCP-06 anchor | ✅ **Verified against the MOH web edition (v1.4) and the tabled command paper (v1.6).** Ministry of Health Malaysia (2023). *Health White Paper for Malaysia: Strengthening people's health, future-proofing the nation's health system*. Kuala Lumpur: Ministry of Health for the Government of Malaysia (title p. 1; ©2023 MOH, p. 3). **Command Paper No. 29 of 2023**, "Submitted in the House of Representatives / Senate in accordance with orders", dated **13 June 2023** (cover of the tabled edition; matches `harness/dtam_constants.json`). The MOH web edition omits this cover sheet. The text says it "will be tabled" in Parliament (pp. 10, 63). The tabled cover is dated 13 June 2023; the subsequent approval in June 2023 is from news reports (NST, The Star, Malay Mail). See the evidence table below |
 | "12th Malaysia Plan" | C1 `polMp` | Real plan; confirm the specific digital-health commitments cited `[NEEDS VERIFICATION]` |
 | Instrument citations: Davis 1989; Venkatesh et al. 2012; Parmanto et al. 2016; Brooke 1996; WHO 1996; Zarit et al. 1980; Kidholm et al. 2012; WHO 2001; Braun & Clarke 2006 | C2, C3, C8 | Standard and widely cited; confirm full references in the thesis bibliography |
-| Crisis lines (Befrienders 03-7627 2929; MIASA 03-2780 6803) | Protocol §6 | Operational contact details. Re-verify before pilot, because numbers change `[NEEDS VERIFICATION]` |
+| Crisis lines (Protocol §6; Part C distress form) | C8 protocol §6; C6 `DISTRESS_STEPS` | ✅ **Verified 2026-11-05 (v1.7).** Befrienders KL **03-7627 2929** (24 h, free; befrienders.org.my). **MIASA:** the previous number 03-2780 6803 did not match any current source and was replaced by the MIASA crisis helpline **1800 180 066** (24 h) and WhatsApp **03-9765 6088** (miasa.org.my; The Star, 2025). Emergency **999** added. Re-check before each data-collection wave |
 
 
 **GCP-06 evidence: DTAM-MY design ↔ Health White Paper for Malaysia (MOH, 2023; Command Paper No. 29 of 2023)**
@@ -1242,16 +1249,18 @@ Status: **✅ Fixed (v1.1/v1.2)** = this branch; **✅ Fixed (`main`)** = fixed 
 | F-25 | High | No tool captures AE/SAE or distress-protocol events, although Protocol §6 requires 24-hour SAE reporting | Protocol §6 `:282`; no code | **✅ Fixed (v1.2).** C6 "⚠ Distress / AE" record (type, outcome, 7 protocol steps, PI-notified time); SAE alert; exported; the admin import flags SAEs with the 24-hour reminder | §[9.1](#s9) |
 | F-26 | Low | C5's embedded OMR scanner `<iframe src="omr_scanner.html">` is blocked by C5's own CSP (`default-src 'none'` with no `frame-src`) | C5 line 5, `:676` | **✅ Fixed (`main`).** `frame-src 'self'`; the embedded scanner loads | §[5.5](#s5) |
 | F-27 | Low | Admin Settings asked for a Gemini API key for an "AI Insights" feature that does not exist; the key was never used | C4 Settings | **✅ Fixed (v1.2).** Setting removed | §[10](#s10) |
+| F-28 | Medium | Retention periods disagree: the Part C consent notice says recordings are kept **5 years** post-publication; Protocol §7 says data are retained **7 years** post-publication | C6 `renderConsent`; C8 protocol §7 | Open: PI decision; align the consent text, PIS and protocol to one period (participant-facing) | §[12.5](#s12-5) |
 
 
 **Open items after v1.2.** None of these can be fixed in client code alone:
 
 | Needs | Findings |
 |---|---|
+| **Native-speaker sign-off** | BM/ZH/TA strings added by this branch: TUQ and TAM-BI labels, 'Below threshold', and the ethics sentence on the landing-page compliance card (self-reviewed in v1.7; needs human sign-off) |
 | **Research decision** (instrument content) | F-02 canonical item set per instrument; F-06 ICF/policy/public scoring rules and missing items; F-06b SDG items (telerehab access, travel distance); F-07 one battery per group; F-17 General Public interview guide |
 | **Backend + Malaysian hosting** (roadmap step 2) | F-05 central data store; F-08 server-side auth/RBAC; F-10 encryption at rest |
 | **Build pipeline / hosting headers** | F-19 pre-compiled JSX (drops `'unsafe-eval'`), self-hosted OpenCV with SRI, CSP and `frame-ancestors` as HTTP headers |
-| **PI judgement / documentation** | F-15 adopt the §13.2 ML design in the protocol; F-20 phase percentages |
+| **PI judgement / documentation** | F-15 adopt the §13.2 ML design in the protocol; F-20 phase percentages; F-28 one retention period across consent, PIS and protocol; formal amendment of the protocol and PIS (the pending entries are in the C8 §11 log) |
 
 Also fixed in v1.2, outside the numbered findings: the admin activity feed sorted ISO date strings numerically (NaN), so the order was random; the admin survey CSV read non-existent `lang`/`submittedAt` fields; and "No Data" modals had no close button.
 
