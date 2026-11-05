@@ -115,6 +115,26 @@ class DriftRuleFixtures(unittest.TestCase):
         for rule in CTX.rules_doc["rules"]:
             self.assertIn(rule["id"], covered, f"add a should-hit fixture for {rule['id']}")
 
+    def test_labels_and_fixes_do_not_trip_any_rule(self):
+        # The generated DTAM_RULES block lands in page source (admin portal, PostGrad Work
+        # library apps). Other scanners (pre-commit claims gate, pre-upload gate) read it
+        # unmasked, so no label or fix text may contain a string any rule forbids.
+        for r in CTX.rules:
+            for q in CTX.rules:
+                for field in ("label", "fix"):
+                    with self.subTest(rule=r["id"], field=field, by=q["id"]):
+                        self.assertIsNone(q["rx"].search(r[field]))
+
+    def test_generated_block_has_no_literal_forbidden_names(self):
+        # Literal-string scanners (e.g. a pre-commit claims gate) read the block as plain
+        # text with word boundaries; rule ids like NDHB_EN and escaped patterns are fine.
+        block = h.generated_block(CTX)
+        for pat in (r"National Digital Health Blue ?print", r"\bNDH[BR]\b", r"Lim et al\.? \(2017\)",
+                    r"\bFICT\b", r"MOH Telemedicine Guidelines \(2015\)", r"Ageing-in-Place Policy",
+                    r"Dasar Penuaan di Tempat"):
+            with self.subTest(pattern=pat):
+                self.assertIsNone(re.search(pat, block, re.I))
+
     def test_patterns_are_js_compatible(self):
         for rule in CTX.rules_doc["rules"]:
             self.assertNotIn("(?<", rule["pattern"], "lookbehind/named groups break JS")
