@@ -124,27 +124,54 @@ class ConstantsFixtures(unittest.TestCase):
         self.assertEqual(self.hits("the pilot is NOT n=50"), [])
         self.assertEqual(self.hits("General Public (n=50)"), [])
 
-    def test_ethics_status_pending(self):
-        hit = ["This study has been reviewed and approved by the UTAR UREC.",
-               "<strong>Ethics:</strong> UTAR UREC approved.",
-               "Kajian ini telah disemak dan diluluskan oleh Jawatankuasa Etika",
-               "'Diluluskan UTAR UREC'",
-               "本研究已经过伦理委员会审查和批准。",
-               "'UTAR UREC批准'",
-               "குழுவால் மதிப்பாய்வு செய்யப்பட்டு அங்கீகரிக்கப்பட்டது.",
-               "'UTAR UREC அங்கீகாரம்'"]
-        ok = ["Approval is pending, and no data will be collected until it is granted.",
-              "Available after UREC ethics clearance",
-              "'Kelulusan UTAR UREC Tertunda'",
-              "本研究已提交拉曼大学（UTAR）大学研究伦理委员会（UREC）审查，目前尚待批准",
-              "'UTAR UREC批准待定'",
-              "'UTAR UREC அங்கீகாரம் நிலுவையில்'",
-              "8. Ethics Approval",
-              "MREC registration follows UREC approval"]
-        for t in hit:
+    APPROVAL_CLAIMS = ["This study has been reviewed and approved by the UTAR UREC.",
+                       "<strong>Ethics:</strong> UTAR UREC approved.",
+                       "Kajian ini telah disemak dan diluluskan oleh Jawatankuasa Etika",
+                       "'Diluluskan UTAR UREC'",
+                       "本研究已经过伦理委员会审查和批准。",
+                       "'UTAR UREC批准'",
+                       "குழுவால் மதிப்பாய்வு செய்யப்பட்டு அங்கீகரிக்கப்பட்டது.",
+                       "'UTAR UREC அங்கீகாரம்'"]
+    PENDING_CLAIMS = ["Ethics approval from the UTAR University Research Ethics Committee (UREC) is pending, and no data will be collected until it is granted.",
+                      "'UTAR UREC Approval Pending'",
+                      "Reference: UTAR/UREC/2025 (pending).",
+                      "Ethics Reference: [Pending UREC submission]",
+                      "{desc:'Pending ethics submission'}",
+                      "n=70 · pending ethics clearance (UREC)",
+                      "📋 UTAR UREC ethics application — <b>awaiting submission</b>; approval pending",
+                      "Three procedural items pending ethics ref number and MREC registration.",
+                      "Kajian ini masih menunggu kelulusan etika daripada Jawatankuasa",
+                      "📋 Permohonan etika UTAR UREC — <b>belum dikemukakan</b>",
+                      "'Kelulusan UTAR UREC Tertunda'",
+                      "本研究正在等待拉曼大学（UTAR）大学研究伦理委员会（UREC）的伦理批准",
+                      "📋 UTAR UREC 伦理申请 — <b>尚未提交</b>",
+                      "'UTAR UREC批准待定'",
+                      "UREC நெறிமுறை விண்ணப்பம் — <b>இன்னும் சமர்ப்பிக்கப்படவில்லை</b>",
+                      "'UTAR UREC அங்கீகாரம் நிலுவையில்'"]
+    NEUTRAL = ["Available after UREC ethics clearance", "8. Ethics Approval",
+               "MREC registration follows UREC approval", "⏳ Distribution planned for Phase 4 (pilot)",
+               "✈ TestFlight — நிலுவையில்"]
+
+    def _with_status(self, status):
+        old = CTX.constants["ethics"]["status"]
+        CTX.constants["ethics"]["status"] = status
+        self.addCleanup(lambda: CTX.constants["ethics"].__setitem__("status", old))
+
+    def test_ethics_status_pending_flags_approval_claims(self):
+        self._with_status("pending")
+        for t in self.APPROVAL_CLAIMS:
             with self.subTest(t=t):
                 self.assertEqual(self.hits(t), ["ETHICS_STATUS"])
-        for t in ok:
+        for t in self.NEUTRAL:
+            with self.subTest(t=t):
+                self.assertEqual(self.hits(t), [])
+
+    def test_ethics_status_approved_flags_pending_claims(self):
+        self._with_status("approved")
+        for t in self.PENDING_CLAIMS:
+            with self.subTest(t=t):
+                self.assertEqual(set(self.hits(t)), {"ETHICS_STATUS"})  # some sentences hold two pending phrases
+        for t in self.APPROVAL_CLAIMS + self.NEUTRAL:
             with self.subTest(t=t):
                 self.assertEqual(self.hits(t), [])
 
