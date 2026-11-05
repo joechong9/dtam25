@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://your-backend.dtammy.utar.edu.my; img-src 'self' data: blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://your-backend.dtammy.utar.edu.my; img-src 'self' data: blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>DTAM-MY v2 | Telerehabilitation Research Questionnaire Suite</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" integrity="sha384-tMH8h3BGESGckSAVGZ82T9n90ztNXxvdwvdM6UoR56cYcf+0iGXBliJ29D+wZ/x8" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" integrity="sha384-bm7MnzvK++ykSwVJ2tynSE5TRdN+xL418osEVF2DE/L/gfWHj91J2Sphe582B1Bh" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.2/babel.min.js" integrity="sha384-aGlMNK3U/x0wl4lEH5jD1PGhJlX9hApuPmIiA5gtiYCOQ1J8ejIdC0btaU/TMoBD" crossorigin="anonymous"></script>
 <style>
   :root {
     --navy: #1B3A6B; --teal: #0E8B8B; --lteal: #D6F0F0; --lnavy: #D8E4F0;
@@ -1002,7 +1002,7 @@ const SCORE_LABELS = {
     U2_PE:'Performance Expectancy', U2_EE:'Effort Expectancy',
     U2_SI:'Social Influence', U2_FC:'Facilitating Conditions',
     U2_HM:'Hedonic Motivation', U2_PV:'Price Value', U2_HT:'Habit',
-    MAST:'MAST Composite',
+    MAST:'MAST Composite', TAM_BI:'Behavioural Intention', TUQ:'Telehealth Usability (TUQ)',
   },
   bm: {
     SUS:'Skor Kebolehgunaan Sistem', ZBI:'Bebanan Penjaga (ZBI)',
@@ -1012,7 +1012,7 @@ const SCORE_LABELS = {
     U2_PE:'Jangkaan Prestasi', U2_EE:'Jangkaan Usaha',
     U2_SI:'Pengaruh Sosial', U2_FC:'Keadaan Memudahkan',
     U2_HM:'Motivasi Hedonis', U2_PV:'Nilai Harga', U2_HT:'Tabiat',
-    MAST:'Komposit MAST',
+    MAST:'Komposit MAST', TAM_BI:'Niat Tingkah Laku', TUQ:'Kebolehgunaan Telekesihatan (TUQ)',
   },
   zh: {
     SUS:'系统可用性得分', ZBI:'照顾者负担 (ZBI)',
@@ -1022,7 +1022,7 @@ const SCORE_LABELS = {
     U2_PE:'绩效期望', U2_EE:'努力期望',
     U2_SI:'社会影响', U2_FC:'便利条件',
     U2_HM:'享乐动机', U2_PV:'价格价值', U2_HT:'习惯',
-    MAST:'MAST综合得分',
+    MAST:'MAST综合得分', TAM_BI:'行为意向', TUQ:'远程医疗可用性 (TUQ)',
   },
   ta: {
     SUS:'அமைப்பு பயன்பாட்டு மதிப்பெண்', ZBI:'பராமரிப்பாளர் சுமை (ZBI)',
@@ -1032,26 +1032,26 @@ const SCORE_LABELS = {
     U2_PE:'செயல்திறன் எதிர்பார்ப்பு', U2_EE:'முயற்சி எதிர்பார்ப்பு',
     U2_SI:'சமூக தாக்கம்', U2_FC:'வசதியான நிலைமைகள்',
     U2_HM:'இன்ப உந்துதல்', U2_PV:'விலை மதிப்பு', U2_HT:'பழக்கம்',
-    MAST:'MAST கூட்டுமதிப்பெண்',
+    MAST:'MAST கூட்டுமதிப்பெண்', TAM_BI:'நடத்தை நோக்கம்', TUQ:'தொலை சுகாதார பயன்பாட்டுத் தன்மை (TUQ)',
   },
 };
 const SCORE_INTERP = {
   en: { Excellent:'Excellent', Acceptable:'Acceptable', Poor:'Poor',
         High:'High', Moderate:'Moderate', Low:'Low', Good:'Good',
         'Little/No Burden':'Little/No Burden', 'Mild-Moderate':'Mild-Moderate',
-        'Moderate-Severe':'Moderate-Severe', Severe:'Severe' },
+        'Moderate-Severe':'Moderate-Severe', Severe:'Severe', 'Below threshold':'Below threshold' },
   bm: { Excellent:'Cemerlang', Acceptable:'Boleh Diterima', Poor:'Lemah',
         High:'Tinggi', Moderate:'Sederhana', Low:'Rendah', Good:'Baik',
         'Little/No Burden':'Sedikit/Tiada Bebanan', 'Mild-Moderate':'Ringan-Sederhana',
-        'Moderate-Severe':'Sederhana-Teruk', Severe:'Teruk' },
+        'Moderate-Severe':'Sederhana-Teruk', Severe:'Teruk', 'Below threshold':'Di bawah ambang' },
   zh: { Excellent:'优秀', Acceptable:'可接受', Poor:'差',
         High:'高', Moderate:'中等', Low:'低', Good:'好',
         'Little/No Burden':'轻微/无负担', 'Mild-Moderate':'轻度-中度',
-        'Moderate-Severe':'中度-严重', Severe:'严重' },
+        'Moderate-Severe':'中度-严重', Severe:'严重', 'Below threshold':'低于阈值' },
   ta: { Excellent:'சிறந்தது', Acceptable:'ஏற்கத்தக்கது', Poor:'மோசம்',
         High:'அதிகம்', Moderate:'மிதமான', Low:'குறைவு', Good:'நல்லது',
         'Little/No Burden':'சிறிய/சுமை இல்லை', 'Mild-Moderate':'லேசான-மிதமான',
-        'Moderate-Severe':'மிதமான-கடுமையான', Severe:'கடுமையானது' },
+        'Moderate-Severe':'மிதமான-கடுமையான', Severe:'கடுமையானது', 'Below threshold':'வரம்புக்குக் கீழே' },
 };
 
 function scoreSurvey(group, answers) {
@@ -1119,6 +1119,18 @@ function scoreSurvey(group, answers) {
   if (tamPEOU.every(k => answers[k])) {
     const v = tamPEOU.reduce((a,k) => a + parseInt(answers[k]),0) / tamPEOU.length;
     scores.TAM_PEOU = { value: +v.toFixed(1), label: 'Perceived Ease of Use', max: 5, interp: v>=4?'High':v>=3?'Moderate':'Low', color: v>=4?'#16a34a':v>=3?'#ca8a04':'#dc2626' };
+  }
+
+  if (tamBI.every(k => answers[k])) {
+    const v = parseInt(answers.tam7);
+    scores.TAM_BI = { value: v, label: 'Behavioural Intention', max: 5, interp: v>=4?'High':v>=3?'Moderate':'Low', color: v>=4?'#16a34a':v>=3?'#ca8a04':'#dc2626' };
+  }
+
+  // TUQ mean (Parmanto et al., 2016) – DTAM-MY Domain 2 threshold: mean ≥3.5/5 (same rule as the OMR scanner)
+  const tuqKeys = Array.from({length:10}, (_,i) => `tuq${i+1}`);
+  if (tuqKeys.every(k => answers[k])) {
+    const v = tuqKeys.reduce((a,k) => a + parseInt(answers[k]),0) / tuqKeys.length;
+    scores.TUQ = { value: +v.toFixed(1), label: 'Telehealth Usability (TUQ)', max: 5, interp: v>=3.5?'Acceptable':'Below threshold', color: v>=3.5?'#16a34a':'#dc2626' };
   }
 
   // UTAUT2 construct scores

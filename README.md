@@ -31,7 +31,7 @@ above (see `dtam_manifest.json`); never edit content into them. Deep links into 
 | Key | Written by | Read by | Shape |
 |---|---|---|---|
 | `dtam_my_responses` (localStorage) | questionnaire | dashboard, admin portal | array of `ResponseRecord`: `{id, timestamp, group, lang, answers, scores:{KEY:{value,…}}, meta:{lang}}` |
-| `dtam_my_interviews` (localStorage) | Part C interview | admin portal | array of `{id, group, interviewer, language, site, startedAt, endedAt, duration, recordedSecs, questions, answered, completed}`, metadata only, no transcripts |
+| `dtam_my_interviews` (localStorage) | Part C interview; admin portal (session JSON import from other devices) | admin portal | array of `{id, group, interviewer, language, site, startedAt, endedAt, duration, recordedSecs, questions, answered, completed, incidents:[{type, recordedAt}]}`, metadata only, no transcripts or incident descriptions |
 | `dtam_omr_scans` (localStorage) | admin portal (JSON import) | admin portal | array of OMR scanner exports `{participant_id, sheet, timestamp, scores, results}` |
 | `dtam_admin_users_v2` (localStorage) | admin portal | admin portal | accounts with salted PBKDF2 password hashes |
 | `dtam_reg_tokens` (localStorage) | admin portal (Settings) | admin portal (Create Account) | single-use registration tokens: SHA-256 hash, label, expiry, used/revoked state; the code itself is never stored |

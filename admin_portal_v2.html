@@ -600,6 +600,9 @@ input[type=text].api-input:focus,input[type=password].api-input:focus,input[type
           <div class="card-title">Session Log</div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-secondary" style="font-size:12px;padding:7px 14px" onclick="refreshAll()">🔄 Refresh</button>
+            <label class="btn btn-secondary" style="font-size:12px;padding:7px 14px;cursor:pointer" title="For interviews run on another device">📥 Import Session JSON
+              <input type="file" accept=".json" multiple style="display:none" onchange="importInterviewJson(event)"/>
+            </label>
             <button class="btn btn-primary" style="font-size:12px;padding:7px 14px" onclick="exportInterviewCSV()">⬇️ Export CSV</button>
             <a class="btn btn-primary" style="font-size:12px;padding:7px 14px;text-decoration:none" href="partc_interview_v2.html" target="_blank">🎙️ New Interview</a>
           </div>
@@ -1628,6 +1631,59 @@ function importOmrJson(event) {
   reader.readAsText(file);
 }
 
+// ── INTERVIEW IMPORT (sessions exported on another device) ──
+// Part C writes dtam_my_interviews itself when run on this device. For interviews run elsewhere, import the
+// exported session JSON (Part C or verbal interview). Only metadata is kept, matching the Part C index:
+// no transcripts or notes are stored here.
+function interviewRecordFrom(data, fileName) {
+  const legacyVerbal = Array.isArray(data);                       // early verbal exports: bare log array
+  if (!legacyVerbal && !data.meta && !data.sessionId) return null;
+  const meta = legacyVerbal ? {} : (data.meta || data);
+  const responses = legacyVerbal ? data : (data.responses || data.items || data.log || []);
+  const kind = responses.some(r => r && ('confirmedScore' in r || 'autoScore' in r)) ? 'verbal' : 'partc';
+  const total = meta.totalQ ?? meta.totalItems ?? (kind === 'verbal' ? null : responses.length);
+  const answered = kind === 'partc' ? responses.filter(r => r.status === 'done').length : responses.length;
+  const group = meta.group === 'policymaker' ? 'policy' : (meta.group || '');
+  return {
+    id: meta.sessionId || String(fileName||'').replace(/\.json$/i,''),
+    kind, group,
+    interviewer: meta.researcherId || '',
+    language: meta.language || meta.lang || '',
+    site: meta.site || '',
+    startedAt: meta.startedAt || null,
+    endedAt: meta.exportedAt || null,
+    duration: null,
+    recordedSecs: responses.reduce((a,r) => a + ((r && r.recordedSecs) || 0), 0),
+    questions: total, answered,
+    completed: total != null ? answered >= total : false,
+    incidents: (Array.isArray(data.incidents) ? data.incidents : []).map(i => ({ type: i.type, recordedAt: i.recordedAt })),
+    importedAt: new Date().toISOString(),
+  };
+}
+function importInterviewJson(event) {
+  const files = [...(event.target.files || [])];
+  if (!files.length) return;
+  Promise.all(files.map(f => f.text().then(t => ({ name:f.name, text:t })))).then(items => {
+    const existing = loadInterviews();
+    let added = 0, dup = 0, bad = 0, sae = 0;
+    items.forEach(({ name, text }) => {
+      let rec = null;
+      try { rec = interviewRecordFrom(JSON.parse(text), name); } catch(e) {}
+      if (!rec || !rec.id) { bad++; return; }
+      if (existing.some(x => x.id === rec.id)) { dup++; return; }
+      existing.push(rec); added++;
+      sae += rec.incidents.filter(i => i.type === 'sae').length;
+    });
+    try { localStorage.setItem(INTERVIEW_KEY, JSON.stringify(existing)); }
+    catch(e) { showModal('Storage Full', 'Browser storage is full. Export and archive existing data first.', []); return; }
+    refreshAll();
+    let msg = `Imported ${added} session(s).` + (dup ? ` ${dup} already imported.` : '') + (bad ? ` ${bad} file(s) not recognised.` : '');
+    if (sae) msg += `\n\n⚠ ${sae} serious adverse event(s) recorded in these sessions. Report to UREC within 24 hours (Protocol §6).`;
+    showModal(sae ? 'Import — SAE Recorded' : 'Import Complete', msg, []);
+    event.target.value = '';
+  });
+}
+
 // ── OMR TABLE ────────────────────────────────────────
 function updateOmrTable(scans) {
   const tbody = document.getElementById('omr-scan-table');
@@ -1666,7 +1722,7 @@ function exportOmrCSV() {
   if (!scans.length) { showModal('No Data','No OMR results to export. Import JSON files first.',[{label:'OK',cls:'btn-secondary',action:'closeModal()'}]); return; }
   // Flatten: one row per item per scan
   const rows = [];
-  const hdr = ['participant_id','sheet','timestamp','page','section','code','label','response','ambiguous','confidence'];
+  const hdr = ['participant_id','sheet','timestamp','page','section','code','label','response','ambiguous','confidence','overridden','auto_response'];
   rows.push(hdr.join(','));
   scans.forEach(s => {
     (s.results||[]).forEach(r => {
@@ -1675,7 +1731,8 @@ function exportOmrCSV() {
         r.page, r.section_id, r.code, r.label,
         r.selectedValue,            // 0 is a valid response (e.g. ZBI "Never") — do not coerce to ''
         r.ambiguous?'1':'0',
-        typeof r.maxFill === 'number' ? (r.maxFill*100).toFixed(0)+'%' : ''
+        typeof r.maxFill === 'number' ? (r.maxFill*100).toFixed(0)+'%' : '',
+        r.overridden?'1':'0', r.overridden ? r.autoValue : ''
       ].map(csvCell).join(','));
     });
   });
@@ -1727,8 +1784,9 @@ function updateGroupProgress(surveys, interviews) {
 // ── ACTIVITY FEED ─────────────────────────────────────
 function updateActivityFeed(surveys, interviews, omrScans) {
   const all = [
-    ...surveys.map(r => ({ type:'survey', group:r.group, time:r.submittedAt||r.timestamp||Date.now(), label:'Survey completed' })),
-    ...interviews.map(r => ({ type:'interview', group:r.group, time:r.endedAt||r.startedAt||Date.now(), label:'Interview session' })),
+    // Convert to epoch ms: ISO strings made the numeric sort return NaN (random order)
+    ...surveys.map(r => ({ type:'survey', group:r.group, time:new Date(r.submittedAt||r.timestamp||Date.now()).getTime(), label:'Survey completed' })),
+    ...interviews.map(r => ({ type:'interview', group:r.group, time:new Date(r.endedAt||r.startedAt||r.importedAt||Date.now()).getTime(), label:'Interview session' })),
     ...(omrScans||[]).map(r => ({ type:'system', group:r.sheet||'', time:r.timestamp ? new Date(r.timestamp).getTime() : Date.now(), label:`OMR scan imported — ${r.participant_id||'unknown'}` })),
   ].sort((a,b) => b.time - a.time).slice(0, 10);
 
@@ -1770,7 +1828,8 @@ function updateInterviewTable(interviews) {
       <td>${esc(r.interviewer||'—')}</td>
       <td>${r.duration ? Math.ceil(r.duration/60) + ' min' : '—'}</td>
       <td>${r.endedAt ? new Date(r.endedAt).toLocaleString() : (r.startedAt ? new Date(r.startedAt).toLocaleString() : '—')}</td>
-      <td><span class="status-badge ${r.completed ? 'done' : 'pending'}">${r.completed ? '✓ Complete' : '⏳ In Progress'}</span></td>
+      <td><span class="status-badge ${r.completed ? 'done' : 'pending'}">${r.completed ? '✓ Complete' : '⏳ In Progress'}</span>${
+        (r.incidents||[]).length ? ` <span class="status-badge pending" style="background:#fee2e2;color:#991b1b">⚠ ${(r.incidents||[]).length} incident${(r.incidents||[]).length>1?'s':''}${(r.incidents||[]).some(i=>i.type==='sae')?' · SAE':''}</span>` : ''}</td>
     </tr>`).join('');
 }
 
@@ -1802,15 +1861,19 @@ function updateProgressDetail(surveys, interviews) {
 function exportSurveyCSV() {
   const data = loadSurveys();
   if (!data.length) { showModal('No Data','No survey responses to export.',[]); return; }
-  const keys = ['id','group','lang','submittedAt'];
-  const rows = [keys.join(','), ...data.map(r => keys.map(k => csvCell(r[k])).join(','))];
+  // Field names follow the questionnaire record (records carry `timestamp`, not `submittedAt`)
+  const cols = { id: r => r.id, group: r => r.group, survey_lang: r => r.lang,
+                 browser_lang: r => r.meta && r.meta.lang, timestamp: r => r.timestamp || r.submittedAt };
+  const keys = Object.keys(cols);
+  const rows = [keys.join(','), ...data.map(r => keys.map(k => csvCell(cols[k](r))).join(','))];
   downloadText(rows.join('\n'), `dtam_my_surveys_${dateStr()}.csv`, 'text/csv');
 }
 function exportInterviewCSV() {
   const data = loadInterviews();
   if (!data.length) { showModal('No Data','No interview sessions to export.',[]); return; }
-  const keys = ['id','group','interviewer','startedAt','endedAt','duration','completed'];
-  const rows = [keys.join(','), ...data.map(r => keys.map(k => csvCell(r[k])).join(','))];
+  const keys = ['id','group','interviewer','language','site','startedAt','endedAt','duration','completed','incidents','sae'];
+  const val = (r, k) => k === 'incidents' ? (r.incidents||[]).length : k === 'sae' ? (r.incidents||[]).filter(i=>i.type==='sae').length : r[k];
+  const rows = [keys.join(','), ...data.map(r => keys.map(k => csvCell(val(r,k))).join(','))];
   downloadText(rows.join('\n'), `dtam_my_interviews_${dateStr()}.csv`, 'text/csv');
 }
 function exportInterviewJSON() {
