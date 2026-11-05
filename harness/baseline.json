@@ -1,0 +1,5 @@
+{
+ "_comment": "Accepted findings (ratchet). Entries are KNOWN OPEN DEFECTS, not exemptions: CI and hooks fail only on findings beyond these counts, so nothing new gets in while these are fixed. After fixing, run `python3 harness/dtam_harness.py baseline --write` to tighten the ratchet.",
+ "version": 1,
+ "findings": {}
+}

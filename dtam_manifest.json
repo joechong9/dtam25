@@ -1,0 +1,15 @@
+{
+  "_comment": "Canonical file per app. A higher _vN in a filename does NOT mean canonical. Aliases are tiny redirect stubs kept so old links, bookmarks and printed QR codes keep working; never put content in an alias. Checked by harness/dtam_harness.py (manifest check).",
+  "version": "1.0",
+  "entry": "index.html",
+  "apps": [
+    {"id": "portal_home", "title": "DTAM-MY Portal (landing page)", "canonical": "index.html", "aliases": ["index_v2.html"]},
+    {"id": "questionnaire_app", "title": "Telerehabilitation Research Questionnaire Suite", "canonical": "telerehab_questionnaire_app_v2.html", "aliases": [], "participant_facing": true, "languages": ["en", "bm", "zh", "ta"]},
+    {"id": "omr_scanner", "title": "OMR Scanner v2.0", "canonical": "omr_scanner.html", "aliases": ["omr_scanner_v2.html"]},
+    {"id": "research_dashboard", "title": "Research Dashboard", "canonical": "telerehab_dashboard_v2.html", "aliases": ["telerehab_dashboard.html"]},
+    {"id": "admin_portal", "title": "Administrator Portal v2", "canonical": "admin_portal_v2.html", "aliases": [], "llm": true},
+    {"id": "partc_interview", "title": "Part C Qualitative Interview", "canonical": "partc_interview_v2.html", "aliases": [], "participant_facing": true},
+    {"id": "verbal_interview", "title": "Verbal Interview Data Collection Interface", "canonical": "verbal_interview_ui_v2.html", "aliases": [], "participant_facing": true},
+    {"id": "research_suite", "title": "DTAM-MY Research Suite", "canonical": "DTAM_MY_Research_Suite.html", "aliases": []}
+  ]
+}

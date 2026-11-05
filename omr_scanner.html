@@ -772,7 +772,9 @@ function App() {
   // [v2] M4 — Pre-select sheet from URL query param: omr_scanner_v2.html?sheet=ALLIED_HEALTH
   const _urlSheet = (() => {
     try {
-      const p = new URLSearchParams(window.location.search).get('sheet');
+      // Accept ?sheet=ELDERLY and #ELDERLY (the dashboard links use the hash form)
+      const p = new URLSearchParams(window.location.search).get('sheet')
+        || decodeURIComponent(window.location.hash.replace(/^#/, ''));
       return (p && SHEET_CONFIGS[p]) ? p : 'CAREGIVER';
     } catch(e) { return 'CAREGIVER'; }
   })();
