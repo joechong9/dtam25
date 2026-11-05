@@ -542,14 +542,18 @@ function renderConsent() {
       <strong>Research Study:</strong> DTAM-MY Telerehabilitation Assessment — UTAR PhD Research (24UED03838)<br/><br/>
       <strong>Group:</strong> ${grp.label} &nbsp;·&nbsp; <strong>Estimated Duration:</strong> ${grp.duration}<br/>
       <strong>Analysis Method:</strong> ${grp.method}<br/><br/>
-      <strong>PDPA 2010 Notice:</strong> This session will be audio-recorded solely for research transcription.
-      Recordings are stored on Malaysian-territory servers (AES-256 encrypted), retained for 5 years
-      post-publication, then securely deleted. Participation is voluntary; withdrawal is permitted at any time.
+      <strong>PDPA 2010 Notice:</strong> Speech is transcribed live by the browser's speech-recognition service
+      for research transcription; this app does not save an audio file. In Chrome and Edge the browser sends the
+      audio to its vendor's online speech service (Google or Microsoft), which may be outside Malaysia. If the
+      participant does not agree to this, do not use 🎙 — type the transcript instead.
+      Transcripts and notes are kept on this device until the researcher exports them, then stored on
+      Malaysian-territory servers (AES-256 encrypted), retained for 5 years post-publication, then securely
+      deleted. Participation is voluntary; withdrawal is permitted at any time.
     </div>
     <label class="consent-check">
       <input type="checkbox" id="cb_consent" ${S.consentChecked?"checked":""}/>
       Participant has been read the information sheet, has had the opportunity to ask questions,
-      and verbally consents to audio recording. Researcher: <strong style="margin-left:4px">${esc(S.researcherId)}</strong>
+      and verbally consents to live transcription of the interview. Researcher: <strong style="margin-left:4px">${esc(S.researcherId)}</strong>
     </label>
     <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
       Session ID: <strong>${genSessionId()}</strong><br/>
