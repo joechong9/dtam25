@@ -195,9 +195,9 @@ tr:hover td{background:#fafafa;}
     <!-- Phase progress KPIs -->
     <div class="kpi-grid" style="margin-bottom:20px">
       <div class="kpi-card success">
-        <div class="kpi-val">18/22</div>
+        <div class="kpi-val">19/22</div>
         <div class="kpi-label">GCP Compliance</div>
-        <div class="kpi-sub">82% · 4 △ pending (incl. GCP-06)</div>
+        <div class="kpi-sub">86% · 3 procedural △ pending</div>
         <div class="kpi-trend up">↑ Target ≥20/22</div>
       </div>
       <div class="kpi-card">
@@ -248,7 +248,7 @@ tr:hover td{background:#fafafa;}
             <tr><td>7</td><td>Allied Health OMR Answer Sheet</td><td>PDF + DOCX</td><td><span class="score-pill good">Done</span></td><td>gen_allied_v3.py</td></tr>
             <tr><td>8</td><td>Reference List</td><td>DOCX</td><td><span class="score-pill good">Done</span></td><td>Standard + Harvard formats</td></tr>
             <tr><td>9</td><td>Questionnaire Suite Dev. Presentation</td><td>PPTX (17 slides)</td><td><span class="score-pill good">Done</span></td><td>Questionnaire_Development.pptx</td></tr>
-            <tr><td>10</td><td>Master Research Protocol</td><td>DOCX</td><td><span class="score-pill good">Done</span></td><td>v2.0 · 11 sections · GCP 18/22 (GCP-06 reopened)</td></tr>
+            <tr><td>10</td><td>Master Research Protocol</td><td>DOCX</td><td><span class="score-pill good">Done</span></td><td>v2.0 · 11 sections · GCP 19/22</td></tr>
             <tr><td>11</td><td>Ethics Dossier</td><td>DOCX + HTML</td><td><span class="score-pill mod">Pending UREC</span></td><td>Ready for submission</td></tr>
             <tr><td>12</td><td>DTAM-MY Questionnaire App</td><td>HTML / APK</td><td><span class="score-pill good">Done</span></td><td>React PWA + Capacitor Android</td></tr>
             <tr><td>13</td><td>Part C Interview App</td><td>HTML</td><td><span class="score-pill good">Done</span></td><td>partc_interview.html</td></tr>
@@ -753,7 +753,7 @@ function showTab(name, btn) {
 
 function renderPhaseBars() {
   const phases = [
-    { label:'Ph 1 · Ethics & Design',  pct:90,  color:'#16a34a', note:'Protocol v2.0 · GCP 82% · Dossier ready' },
+    { label:'Ph 1 · Ethics & Design',  pct:90,  color:'#16a34a', note:'Protocol v2.0 · GCP 86% · Dossier ready' },
     { label:'Ph 2 · Questionnaires',   pct:100, color:'#16a34a', note:'12 docs · 5 OMR sheet types · 4 languages' },
     { label:'Ph 3 · App Development',  pct:90,  color:'#0E8B8B', note:'PWA + APK + OMR Scanner done · Backend hosting TBD' },
     { label:'Ph 4 · Pilot Study',      pct:0,   color:'#E07B39', note:'n=70 · pending ethics clearance' },

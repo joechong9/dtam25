@@ -1,7 +1,7 @@
 # DTAM-MY System Architecture Specification
 
 **Digital Telerehabilitation Assessment Model — Malaysia (DTAM-MY)**
-**Document ID:** DTAM_MY_System_Architecture_Spec_v1.2 · **Status:** Draft for supervisory review · **Date:** 5 November 2026
+**Document ID:** DTAM_MY_System_Architecture_Spec_v1.3 · **Status:** Draft for supervisory review · **Date:** 5 November 2026
 
 | Field | Value |
 |---|---|
@@ -10,7 +10,7 @@
 | Faculty | Lee Kong Chian Faculty of Engineering and Science (LKC FES), Universiti Tunku Abdul Rahman (UTAR) |
 | Repository | `joechong9/dtam25` |
 | Study ID in code | `DTAM-MY-2025` (`telerehab_questionnaire_app_v2.html:1147`) |
-| Sample constants | Total n = 370 · Pilot n = 70 (42 urban + 28 rural; 45 effective completers) · GCP 18/22 (GCP-06 reopened in v1.1; previously 19/22) |
+| Sample constants | Total n = 370 · Pilot n = 70 (42 urban + 28 rural; 45 effective completers) · GCP 19/22 (GCP-06 re-anchored to the Health White Paper for Malaysia in v1.3) |
 
 ---
 
@@ -74,6 +74,7 @@ The workspace mixes *implemented code* with *designed-but-unbuilt* architecture 
 | 1.0 | 2026-11-05 | First synthesis from the repository code base and the DTAM-MY architecture reference. |
 | 1.1 | 2026-11-05 | Roadmap step 0 applied in code: F-01, F-04, F-13, F-14, F-18, F-21 and F-24 resolved (see §16 status column). GCP-06 reopened → 18/22. SRI deferred. New finding F-26. Line references in §5–§18 remain as of `ccf443b`; small offsets apply in edited files. |
 | 1.2 | 2026-11-05 | All findings that can be fixed in client code are resolved: F-02b, F-03, F-04b, F-06 (TUQ, TAM-BI), F-07 (ZBI rule), F-08 (PBKDF2), F-09, F-11, F-12, F-14 (Part C), F-16, F-17, F-19 (SRI via jsDelivr), F-20 (sheet count), F-22, F-23, F-25, F-26, F-27. Remaining open items need research decisions or a backend (see §16 open-items summary). |
+| 1.3 | 2026-11-05 | GCP-06 rectified: re-anchored to the *Health White Paper for Malaysia* (Ministry of Health Malaysia, 2023; approved by Parliament June 2023) and restored to compliant, so the score is back to 19/22 (86%). HWP added to the landing-page policy anchors, the compliance card, the questionnaire ethics badges and the protocol governing standards. |
 
 ---
 
@@ -101,14 +102,14 @@ The components work together through a **browser-local data bus** (`localStorage
 
 **Top findings for supervisory attention** (full list in §[16](#s16)):
 
-1. **Blocked citation in the compliance record (F-01) — ✅ resolved in v1.1.** The "National Digital Health Blueprint 2023–2030" appeared as GCP-06 (counted towards 19/22), as live questionnaire item `pol2`, in helper text and ethics badges, and on the landing page. It has been removed everywhere. `pol2` is reworded neutrally ("Current national digital health policy provides clear guidance…"), and GCP-06 is reopened as *National digital health policy alignment (source pending verification)*, so the score is now **18/22 (82%)**. A verified MOH policy source is still needed before GCP-06 can close. `[NEEDS VERIFICATION]`
+1. **Blocked citation in the compliance record (F-01) — ✅ resolved in v1.1.** The "National Digital Health Blueprint 2023–2030" appeared as GCP-06 (counted towards 19/22), as live questionnaire item `pol2`, in helper text and ethics badges, and on the landing page. It has been removed everywhere. `pol2` is reworded neutrally ("Current national digital health policy provides clear guidance…"), In v1.3 GCP-06 was re-anchored to the **Health White Paper for Malaysia (MOH, 2023)**, a real command paper approved by Parliament in June 2023 that commits to telehealth, electronic lifetime health records and health information exchange. The score is back to **19/22 (86%)**. Page-level citations still need adding from the PDF `[NEEDS VERIFICATION: page refs]`.
 2. **Three incompatible item-coding schemes (F-02).** The digital questionnaire, the paper/OMR route and the verbal route use different item counts and codes for the same instrument (e.g., TAM has 7 items digitally and 10 on paper; UTAUT2 has 10 digital items covering all 7 constructs, while the paper version has 18 items covering 6 constructs and omits Performance Expectancy and Price Value). Responses from different modes cannot be pooled for EFA/PLS-SEM without a harmonisation layer (§[7.6](#s7-6)).
 3. **Broken data contracts (F-03, F-04).** The admin portal reads interview records from a storage key that no app writes, and the Part C export schema does not match what the portal expects. The admin portal reads `r.lang` while the questionnaire stores `meta.lang`.
 4. **Client-side-only security (F-08–F-12).** Authentication, password hashing (unsalted SHA-256) and the 8-hour session are enforced only in the browser. Participant data sits unencrypted in `localStorage`. Before real participant data is collected, the planned controls (pgcrypto AES-256, audit_log, RBAC) must exist on a server.
 5. **Conflicting ML specifications (F-15).** LSTM + Random Forest with LOOCV (architecture reference) versus Random Forest + XGBoost with 5-fold CV and AUC ≥ 0.75 (protocol §10). §[13](#s13) recommends one reconciled design.
 
 
-> **Status at v1.2:** Finding 1 is resolved in code (a verified source is still needed). Findings 3 and 5 are fixed or reconciled where code allows. Finding 4 is hardened (PBKDF2, persistent lockout, tokens, escaping, STT opt-in) but still needs a backend. Finding 2 needs an instrument decision. See the open-items summary at the end of §[16](#s16).
+> **Status at v1.3:** Finding 1 is fully resolved (GCP-06 re-anchored to the Health White Paper for Malaysia, 2023). Findings 3 and 5 are fixed or reconciled where code allows. Finding 4 is hardened (PBKDF2, persistent lockout, tokens, escaping, STT opt-in) but still needs a backend. Finding 2 needs an instrument decision. See the open-items summary at the end of §[16](#s16).
 
 ---
 
@@ -1026,8 +1027,8 @@ Chromium-based browsers implement `SpeechRecognition` by sending audio to a vend
 
 | Reference | Location | Status |
 |---|---|---|
-| "National Digital Health Blueprint 2023–2030" / "NDHB" | C8 GCP-06 (`:258`), C8 Policy item B2 (`:353`), C8 protocol text (`:277`, `:287`), C1 (`:652`, `:993`, `:1355`, `:1407`, `:1488`, `:1540`, `:1621`, `:1673`, `:1754`, `:1806`, `:2125`, `:2186`), C2 (`:496`, `:578`, `:660`, `:742`, `:929`, `:955`, `:1422`, `:1563`, `:1704`, `:2113`, `:2125`, `:2254`, `:2266`, `:2395`, `:2407`) | ✅ **Removed in v1.1** from C1, C2 (`pol2` in EN/BM/ZH/TA, `mast10`/`pol2` helper text, ethics badge lists), C5 and C8. GCP-06 reopened as "National digital health policy alignment (source pending verification)"; all score displays now read 18/22 (82%). The v2.0 amendment-log line in C8 still says 19/22 because it is a historical record; a "Pending amendment (Nov 2026)" line follows it. Close GCP-06 once a verified MOH source is identified `[NEEDS VERIFICATION]` |
-| "Health White Paper (2023)" | S9 executive summary | `[NEEDS VERIFICATION]`. Confirm exact title and year of the Malaysian Health White Paper |
+| "National Digital Health Blueprint 2023–2030" / "NDHB" | C8 GCP-06 (`:258`), C8 Policy item B2 (`:353`), C8 protocol text (`:277`, `:287`), C1 (`:652`, `:993`, `:1355`, `:1407`, `:1488`, `:1540`, `:1621`, `:1673`, `:1754`, `:1806`, `:2125`, `:2186`), C2 (`:496`, `:578`, `:660`, `:742`, `:929`, `:955`, `:1422`, `:1563`, `:1704`, `:2113`, `:2125`, `:2254`, `:2266`, `:2395`, `:2407`) | ✅ **Removed in v1.1** from C1, C2 (`pol2` in EN/BM/ZH/TA, `mast10`/`pol2` helper text, ethics badge lists), C5 and C8. **v1.3:** GCP-06 re-anchored to the Health White Paper for Malaysia (MOH, 2023) and restored to compliant (19/22). The C8 amendment log records the change as a pending amendment |
+| "Health White Paper (2023)" | S9 executive summary; v1.3 GCP-06 anchor | ✅ **Verified.** *Health White Paper for Malaysia: Strengthening people's health, future-proofing the nation's health system*, Ministry of Health Malaysia, 2023. Parliament approved it in June 2023, and it covers telehealth, EMR/ELHR and health information exchange. Sources: moh.gov.my PDF (via search index) plus NST, The Star and Malay Mail reports. Still to do: subtitle wording, command-paper number and page references from the PDF `[NEEDS VERIFICATION]` |
 | "12th Malaysia Plan" | C1 `polMp` | Real plan; confirm the specific digital-health commitments cited `[NEEDS VERIFICATION]` |
 | Instrument citations: Davis 1989; Venkatesh et al. 2012; Parmanto et al. 2016; Brooke 1996; WHO 1996; Zarit et al. 1980; Kidholm et al. 2012; WHO 2001; Braun & Clarke 2006 | C2, C3, C8 | Standard and widely cited; confirm full references in the thesis bibliography |
 | Crisis lines (Befrienders 03-7627 2929; MIASA 03-2780 6803) | Protocol §6 | Operational contact details. Re-verify before pilot, because numbers change `[NEEDS VERIFICATION]` |
@@ -1173,7 +1174,7 @@ Status: rows marked **✅ Fixed (v1.1)** were resolved by roadmap step 0, and **
 
 | ID | Sev. | Finding | Evidence | Recommendation | Cross-ref |
 |---|---|---|---|---|---|
-| F-01 | Critical | Blocked "National Digital Health Blueprint" reference counted as GCP-06 compliant; also live Policy-Maker item `pol2` | C8 `:258`, `:353`; C1 `:652`, `:1355`; C2 `:955` | **✅ Fixed (v1.1).** Removed; `pol2` reworded; GCP-06 reopened → 18/22. Still to do: identify a verified source and record the protocol amendment | §[12.6](#s12-6) |
+| F-01 | Critical | Blocked "National Digital Health Blueprint" reference counted as GCP-06 compliant; also live Policy-Maker item `pol2` | C8 `:258`, `:353`; C1 `:652`, `:1355`; C2 `:955` | **✅ Fixed (v1.1, v1.3).** Blocked citation removed; `pol2` reworded; GCP-06 re-anchored to the Health White Paper for Malaysia (MOH, 2023) → 19/22. Still to do: add page references; record in the protocol amendment log | §[12.6](#s12-6) |
 | F-02 | Critical | Three incompatible item-coding schemes and item sets across digital, paper and verbal channels | C2 `Q`; C3 `*_ITEMS`; C7 `INSTRUMENTS` | Canonical Item Registry; freeze before UREC | §[7.6](#s7-6), DP-03 |
 | F-02b | High | GP sheet codes `BI_1`, `SI_1`, `FC_1` collide with UTAUT2 construct codes in the C3 scorer | C3 `:224–232`, `:366–368` | **✅ Fixed (v1.2).** GP sheet codes renamed `GP_BI_1`, `GP_BI_2`, `GP_SI_1`, `GP_FC_1`, `GP_FC_2` | §[7.6](#s7-6) |
 | F-03 | High | `dtam_my_interviews` has no producer; no import for C6/C7 session files; E3 ≠ E8 schema | C4 `:1293`, `:1309`; C6 `:987` | **✅ Fixed (v1.2).** Sessions → "Import Session JSON" accepts Part C and verbal exports (including the legacy verbal array), dedupes by session ID, and maps E3/E4 to E8 | §[7.2](#s7-2) |
@@ -1210,7 +1211,6 @@ Status: rows marked **✅ Fixed (v1.1)** were resolved by roadmap step 0, and **
 | Needs | Findings |
 |---|---|
 | **Research decision** (instrument content) | F-02 canonical item set per instrument; F-06 ICF/policy/public scoring rules and missing items; F-06b SDG items (telerehab access, travel distance); F-07 one battery per group; F-17 General Public interview guide |
-| **Verified source** | F-01 a citable MOH digital-health policy for GCP-06 |
 | **Backend + Malaysian hosting** (roadmap step 2) | F-05 central data store; F-08 server-side auth/RBAC; F-10 encryption at rest |
 | **Build pipeline / hosting headers** | F-19 pre-compiled JSX (drops `'unsafe-eval'`), self-hosted OpenCV with SRI, CSP and `frame-ancestors` as HTTP headers |
 | **PI judgement / documentation** | F-15 adopt the §13.2 ML design in the protocol; F-20 phase percentages |

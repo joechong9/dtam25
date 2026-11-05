@@ -85,7 +85,7 @@ tr:hover td{background:#f8fafc}
         <div class="hdr-sub">Digital Telerehabilitation Assessment Model &middot; Malaysia &middot; UTAR PhD &middot; YZ 24UED03838</div>
       </div>
       <div class="hdr-meta">
-        GCP Compliance: <em>18/22 (82%)</em><br>
+        GCP Compliance: <em>19/22 (86%)</em><br>
         n&nbsp;=&nbsp;370 &middot; 5 stakeholder groups &middot; 4 languages
       </div>
     </div>
@@ -123,17 +123,17 @@ tr:hover td{background:#f8fafc}
   </div>
 
   <div style="margin-top:16px">
-    <h2>GCP Compliance &mdash; 18/22 items (82%)</h2>
+    <h2>GCP Compliance &mdash; 19/22 items (86%)</h2>
     <div class="card card-pad">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
         <div style="flex:1;background:#e2e8f0;border-radius:4px;height:16px;overflow:hidden">
-          <div style="width:82%;height:100%;background:#0E8B8B;border-radius:4px"></div>
+          <div style="width:86%;height:100%;background:#0E8B8B;border-radius:4px"></div>
         </div>
-        <span style="font-weight:700;color:#0E8B8B">82%</span>
+        <span style="font-weight:700;color:#0E8B8B">86%</span>
       </div>
       <div style="display:flex;gap:16px;font-size:11px;color:#64748b">
-        <span>&#9989; 18 Compliant</span>
-        <span>&#9203; 4 Pending (3 procedural + GCP-06 source verification)</span>
+        <span>&#9989; 19 Compliant</span>
+        <span>&#9203; 3 Procedural (pending submission)</span>
       </div>
       <button class="btn-pill" style="margin-top:10px;font-size:12px" onclick="toggleGCP(this)">Show full 22-item GCP Matrix &#9660;</button>
       <div id="gcp-matrix" style="display:none;margin-top:12px;overflow:auto">
@@ -167,7 +167,7 @@ tr:hover td{background:#f8fafc}
     <div style="font-size:11px;color:#bfdbfe;margin-top:4px">Development of Digital Healthcare Telerehabilitation Technology Assessments Model and System for Enhancement of Elderly Quality-of-Life</div>
     <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:11px;color:#93c5fd">
       <span>YZ &middot; 24UED03838 &middot; UTAR</span>
-      <span>11 sections</span><span>GCP 18/22 (82%)</span><span>n=370</span>
+      <span>11 sections</span><span>GCP 19/22 (86%)</span><span>n=370</span>
     </div>
   </div>
   <button class="accd-hdr card" onclick="toggleProtoGCP(this)" style="margin-bottom:10px">
@@ -214,7 +214,7 @@ tr:hover td{background:#f8fafc}
 <script>
 // ---- DATA ----
 var PHASES=[
-  {name:'Ph 1 · Ethics & Design',pct:90,status:'active',note:'Protocol v2.0 · GCP 82% · Dossier ready'},
+  {name:'Ph 1 · Ethics & Design',pct:90,status:'active',note:'Protocol v2.0 · GCP 86% · Dossier ready'},
   {name:'Ph 2 · Questionnaires',pct:100,status:'done',note:'16 docs · 5 OMR sheet types · 4 languages'},
   {name:'Ph 3 · App Development',pct:80,status:'active',note:'PWA + APK done · Backend hosting TBD'},
   {name:'Ph 4 · Pilot Study',pct:0,status:'pending',note:'n=70 · pending ethics clearance (UREC)'},
@@ -255,7 +255,7 @@ var GCP_ITEMS=[
   {id:'GCP-03',desc:'Belmont Principles',ok:true},
   {id:'GCP-04',desc:'CIOMS Guidelines 2016',ok:true},
   {id:'GCP-05',desc:'PDPA 2010 Compliance',ok:true},
-  {id:'GCP-06',desc:'National digital health policy alignment (source pending verification)',ok:false},
+  {id:'GCP-06',desc:'National health policy alignment: Health White Paper for Malaysia (MOH, 2023)',ok:true},
   {id:'GCP-07',desc:'UTAR UREC Ethics Policy',ok:true},
   {id:'GCP-08',desc:'Informed Consent Process',ok:true},
   {id:'GCP-09',desc:'Participant Information Sheet',ok:true},
@@ -274,17 +274,17 @@ var GCP_ITEMS=[
   {id:'GCP-22',desc:'OSF Pre-registration',ok:false},
 ];
 var PROTO=[
-  {num:'1',title:'Background and Rationale',body:'Malaysia faces a significant stroke rehabilitation gap: 40,000+ new strokes annually, with 60% requiring long-term rehabilitation. Telerehabilitation offers scalable access particularly for rural and elderly populations.\n\nThis study develops DTAM-MY (Digital Telerehabilitation Assessment Model - Malaysia) to evaluate technology acceptance, usability, and quality-of-life impact across five stakeholder groups.\n\nTheoretical anchors: MAST (Kidholm et al., 2012), TAM (Davis, 1989), UTAUT2 (Venkatesh et al., 2012), TUQ (Parmanto et al., 2016), ICF (WHO, 2001), SUS (Brooke, 1996), WHOQOL-BREF (WHO, 1996), ZBI (Zarit et al., 1980).\n\nPolicy anchors: PDPA 2010 (Act 709), 12th Malaysia Plan; national digital health policy source pending verification (GCP-06).'},
+  {num:'1',title:'Background and Rationale',body:'Malaysia faces a significant stroke rehabilitation gap: 40,000+ new strokes annually, with 60% requiring long-term rehabilitation. Telerehabilitation offers scalable access particularly for rural and elderly populations.\n\nThis study develops DTAM-MY (Digital Telerehabilitation Assessment Model - Malaysia) to evaluate technology acceptance, usability, and quality-of-life impact across five stakeholder groups.\n\nTheoretical anchors: MAST (Kidholm et al., 2012), TAM (Davis, 1989), UTAUT2 (Venkatesh et al., 2012), TUQ (Parmanto et al., 2016), ICF (WHO, 2001), SUS (Brooke, 1996), WHOQOL-BREF (WHO, 1996), ZBI (Zarit et al., 1980).\n\nPolicy anchors: Health White Paper for Malaysia (MOH, 2023), PDPA 2010 (Act 709), 12th Malaysia Plan.'},
   {num:'2',title:'Research Objectives (SMART)',body:'O1 - Develop and validate DTAM-MY instrument suite (n=370, S-CVI >=0.80) by Month 18.\nO2 - Measure technology acceptance (TAM, UTAUT2) across Allied Health (n=100), Caregiver (n=100), Policy-Maker (n=20), General Public (n=50) by Month 24.\nO3 - Assess elderly post-stroke QoL change (WHOQOL-BREF, >=10% domain change, p less than 0.05) over 12 weeks (n=100) by Month 30.\nO4 - Evaluate system usability (SUS >=70; TUQ mean >=3.5/5) with Allied Health and Elderly by Month 24.\nO5 - Specify FHIR R4 interoperability (5 interfaces) and deliver Phase 3 ML pipeline by Month 36.'},
   {num:'3',title:'Study Design',body:'Mixed-methods convergent parallel design:\n\nQUANTITATIVE ARM - Cross-sectional survey (Allied Health, Caregiver, Policy-Maker, General Public) + Longitudinal pre/post (Elderly, 12 weeks). Analysis: EFA, PLS-SEM, WHOQOL-BREF domain change, SUS scoring.\n\nQUALITATIVE ARM - Semi-structured interviews (purposive sample, 8-12 per group) + Part C verbal interview app for cognitive impairment accommodation.\n\nPILOT STUDY - n=70 (42 urban + 28 rural), 8-week timeline. Tests instrument reliability, validity (CVI), and logistics.\n\nPLATFORM - LimeSurvey CE + REDCap (clinical) + KoBoToolbox (rural/offline). PDPA-compliant hosting: Exabytes MY or Azure Malaysia West.'},
   {num:'4',title:'Participant Selection',body:'INCLUSION (Elderly):\n- Age >=60; diagnosed ischaemic or haemorrhagic stroke (ICD-10 I60-I69)\n- >=3 months post-stroke; receiving/referred for outpatient rehabilitation\n- Able to provide informed consent (self or LAR); Malaysian resident\n\nEXCLUSION (Elderly):\n- Severe aphasia precluding questionnaire completion without accommodation\n- Active uncontrolled psychiatric disorder\n- No internet access and no caregiver to assist\n\nALLIED HEALTH: Registered physiotherapist or OT; >=1 year experience; working in Malaysian facility.\n\nPOLICY-MAKER: Government official/regulator with health/digital policy portfolio; purposive via MOH, MOSTI, MCMC.\n\nWITHDRAWAL: Participants may withdraw at any time. Data retained unless deletion requested (PDPA s.30).'},
-  {num:'5',title:'GCP Compliance - 18/22 (82%)',body:'COMPLIANT (18 items): GCP-01 to GCP-05 and GCP-07 to GCP-19 covering protocol structure, ethics alignment, consent, data protection, SAE definitions, distress protocol, stopping rules, statistical methods, and amendment tracking.\n\nPENDING (4 items):\n- GCP-06: National digital health policy alignment - policy source pending verification\n- GCP-20: UREC Ethics Reference Number - pending submission\n- GCP-21: MREC Malaysia Registration - follows UREC\n- GCP-22: OSF Pre-registration - before data collection'},
+  {num:'5',title:'GCP Compliance - 19/22 (86%)',body:'COMPLIANT (19 items): GCP-01 through GCP-19 covering protocol structure, ethics alignment, consent, data protection, SAE definitions, distress protocol, stopping rules, statistical methods, and amendment tracking.\n\nPENDING (3 items):\n- GCP-20: UREC Ethics Reference Number - pending submission\n- GCP-21: MREC Malaysia Registration - follows UREC\n- GCP-22: OSF Pre-registration - before data collection'},
   {num:'6',title:'Safety, Adverse Events and Stopping Rules',body:'SAE DEFINITION: Death, life-threatening condition, hospitalisation, significant disability, or congenital anomaly. Reporting: within 24 hours to UREC.\n\nAE DEFINITION: Any untoward event not meeting SAE criteria. Reporting: within 7 days.\n\nDISTRESS PROTOCOL (7 steps):\n1. Interviewer pauses; assesses distress level\n2. Offers to stop or pause the session\n3. Provides written crisis contact (Befrienders 03-7627 2929; MIASA 03-2780 6803)\n4. Notifies PI within 1 hour\n5. PI documents event; assesses AE/SAE classification\n6. Refers to clinical team if required\n7. 48-hour follow-up contact\n\nSTOPPING RULES: Study halts if >=3 SAEs causally related to participation; DSMB recommendation; UREC/MREC directive.'},
   {num:'7',title:'Data Management and Statistical Analysis',body:'STORAGE: PostgreSQL (Exabytes MY or Azure Malaysia West, Malaysian territory). AES-256 at rest; TLS 1.3 in transit. Retained 7 years post-publication.\n\nSTATISTICAL PLAN:\n- Descriptive: Mean, SD, frequency, IQR\n- Reliability: Cronbach alpha >=0.70; McDonald omega\n- Validity: S-CVI >=0.80; I-CVI >=0.78; EFA (varimax, n>=100)\n- UTAUT2: PLS-SEM; AVE >=0.50; HTMT less than 0.85; R-squared >=0.20\n- QoL change: Paired t-test or Wilcoxon; domain change >=10%; p less than 0.05\n- Missing data: MCAR test (Little); MI if MAR; listwise if MCAR less than 5%\n\nPIPELINE: LimeSurvey -> REDCap -> PostgreSQL -> R/Python -> SPSS validation -> ML (Phase 7)'},
   {num:'8',title:'Instruments and Theoretical Framework',body:'INSTRUMENT SUITE (8 frameworks):\n- MAST (7 domains): All 5 groups; S-CVI >=0.80; >=6/7 domain coverage\n- TAM (Davis, 1989): AH, CG, PM, GP; alpha >=0.70; 2-factor EFA\n- UTAUT2 (Venkatesh et al., 2012): AH, CG; PLS-SEM; AVE >=0.50\n- TUQ (Parmanto et al., 2016): Elderly, AH; subscale mean >=3.5/5\n- ICF (WHO, 2001): Elderly, CG; >=2 urban + >=2 rural sites\n- SUS (Brooke, 1996): Elderly, AH; >=70 Acceptable; >=85 Excellent\n- WHOQOL-BREF (WHO, 1996): Elderly; 4 domains; 12-week change\n- ZBI (Zarit et al., 1980): Caregiver; burden cross-tabs\n\nLANGUAGES: English (EN), Bahasa Malaysia (BM), Simplified Chinese (ZH), Tamil (TA)\nTRANSLATION: Forward-back translation; bilingual expert panel; pilot cognitive testing'},
   {num:'9',title:'Engineering Deliverables and Interoperability',body:'PHASE 3 DELIVERABLES (completed):\n- DTAM-MY PWA (React + Node.js + PostgreSQL)\n- Android APK (Capacitor)\n- Admin Portal\n- Part C Verbal Interview App\n\nFHIR R4 INTERFACES (5):\n1. Patient Identity / MySejahtera - Patient resource; NRIC mapping\n2. Outcome Export / KKM MyHEALTH - Observation resource; LOINC codes\n3. HIS Referral - ServiceRequest; ICD-10 stroke codes; HL7 v2.5 bridge\n4. ML I/O - Custom FHIR extension; QuestionnaireResponse; JSON payload\n5. Audit Trail - AuditEvent resource; ATNA profile; immutable log\n\nDOMAIN 6 - System Interoperability (added per Advisory A3):\nExpert panel CVI >=0.80 (n=5 HIT experts) validates all 5 interfaces.'},
   {num:'10',title:'Model Validation Plan',body:'STAGE 1 - Content Validity (pilot n=70):\n- Expert panel (n=10): I-CVI >=0.78 per item; S-CVI >=0.80\n- Cognitive interviews (n=8): Think-aloud; Flesch-Kincaid <=8th grade\n\nSTAGE 2 - Construct Validity (full n=370):\n- EFA (AH, CG; n=100 each): Factor loadings >=0.40; 5:1 item-to-respondent\n- PLS-SEM (UTAUT2): Convergent (AVE >=0.50); Discriminant (HTMT less than 0.85)\n\nSTAGE 3 - Model Fit and Predictive Validity:\n- WHOQOL-BREF domain change >=10% at 12 weeks (p less than 0.05)\n- SUS: >=70 Acceptable; >=85 Excellent\n- SDG indicators: TAI, DEGR, APES, CAE computed from questionnaire data\n- ML: Random Forest + XGBoost; k-fold CV (k=5); AUC >=0.75'},
-  {num:'11',title:'Protocol Authorisation and Signature Page',body:'AMENDMENT LOG:\nv1.0 (Jan 2026) - Initial proposal\nv2.0 (Jun 2026) - Post-advisory corrections: n=70 pilot; FHIR Domain 6; SDG indicators; GCP 19/22\nPending amendment (Nov 2026) - GCP-06 reopened: unverified policy citation removed pending verification; GCP 18/22\n\nSIGNATORIES:\n- Principal Investigator: YZ (24UED03838), UTAR Faculty of Engineering\n- Main Supervisor: [Name], UTAR\n- Co-Supervisor: [Name], UTAR / External\n- UREC Chair: [Name], UTAR Research Ethics Committee\n\nEthics Reference: [Pending UREC submission]\n\nGOVERNING STANDARDS:\nICH E6(R2) - Declaration of Helsinki (WMA 2013) - Belmont Report (1979)\nCIOMS 2016 - PDPA 2010 (Act 709) - UTAR UREC Guidelines'},
+  {num:'11',title:'Protocol Authorisation and Signature Page',body:'AMENDMENT LOG:\nv1.0 (Jan 2026) - Initial proposal\nv2.0 (Jun 2026) - Post-advisory corrections: n=70 pilot; FHIR Domain 6; SDG indicators; GCP 19/22\nPending amendment (Nov 2026) - GCP-06 re-anchored to the Health White Paper for Malaysia (MOH, 2023), replacing an unverified policy citation; GCP 19/22\n\nSIGNATORIES:\n- Principal Investigator: YZ (24UED03838), UTAR Faculty of Engineering\n- Main Supervisor: [Name], UTAR\n- Co-Supervisor: [Name], UTAR / External\n- UREC Chair: [Name], UTAR Research Ethics Committee\n\nEthics Reference: [Pending UREC submission]\n\nGOVERNING STANDARDS:\nICH E6(R2) - Declaration of Helsinki (WMA 2013) - Belmont Report (1979)\nCIOMS 2016 - PDPA 2010 (Act 709) - Health White Paper for Malaysia (MOH, 2023) - UTAR UREC Guidelines'},
 ];
 var LANGS=[{id:'en',label:'English'},{id:'bm',label:'Bahasa Malaysia'},{id:'zh',label:'简体中文'},{id:'ta',label:'தமிழ்'}];
 var GROUPS=[
