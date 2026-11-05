@@ -10,7 +10,14 @@ const zbiCard = () => [...document.querySelectorAll('div')].filter(d => d.textCo
 test('OMR scanner: synthetic ZBI sheet, perspective warp, manual fix, safe CSV, no OpenCV leak', async () => {
   const env = await setup('file');
   try {
-    const { page, errors } = await open(env, 'omr_scanner.html#CAREGIVER');
+    const { page, errors } = await open(env, null);
+    // Stretch the scanner's 400 ms readiness poll so the upload below always lands while the UI still says
+    // "Loading…": correction must depend on OpenCV being ready, not on the polled badge state.
+    await page.addInitScript(() => {
+      const si = window.setInterval;
+      window.setInterval = (f, ms, ...a) => si(f, ms === 400 ? 5000 : ms, ...a);
+    });
+    await page.goto(env.base + 'omr_scanner.html#CAREGIVER');
     await page.waitForFunction(() => window.cvReady === true, null, { timeout: 90000 });
     assert.equal(await page.$eval('select', s => s.value), 'CAREGIVER');
     const png = await page.evaluate(() => {
