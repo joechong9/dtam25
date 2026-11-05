@@ -189,6 +189,18 @@ APPROVAL_CLAIM_RX = re.compile(
     re.IGNORECASE)
 RANK_BEFORE_RX = re.compile(r"(Assoc\.?\s*Prof|A/Prof|Associate\s+Prof|Prof\.?\s*Madya|PM\.?)[^<\n]{0,14}$", re.IGNORECASE)
 RANK_AFTER_RX = re.compile(r"^[^\n]{0,40}?(Associate\s+Prof|Assoc\.?\s*Prof|Prof(?:esor|\.)?\s*Madya|副教授|இணைப்\s*பேராசிரியர்|இணை)", re.IGNORECASE)
+PENDING_CLAIM_RX = re.compile(
+    r"UREC\s+Approval\s+Pending|approval\s+(?:is\s+)?pending|(?:UREC\s+)?ethics\s+approval[^.<\n]{0,80}?is\s+pending"
+    r"|pending\s+(?:UREC\s+)?ethics\s+clearance|awaiting\s+submission|not\s+(?:yet\s+)?submitted"
+    r"|no\s+data\s+(?:are|will\s+be)\s+collected\s+(?:until|before)"
+    r"|UTAR/UREC/2025|Pending\s+UREC\s+submission|Pending\s+ethics\s+submission"
+    r"|Ethics\s+Reference\s+Number\s*-\s*pending|pending\s+ethics\s+ref(?:erence)?\s+number"
+    r"|Kelulusan\s+UTAR\s+UREC\s+Tertunda|Kelulusan\s+masih\s+belum|menunggu\s+kelulusan(?:\s+etika)?"
+    r"|belum\s+dikemukakan|kelulusan\s+belum\s+diterima|menunggu\s+nombor\s+rujukan\s+etika"
+    r"|批准待定|尚待批准|正在等待[^。]{0,40}批准|等待\s*UREC\s*伦理审批|尚未提交|审批中|等待伦理参考号"
+    r"|அங்கீகாரம்\s+(?:இன்னும்\s+)?நிலுவையில்|நெறிமுறை\s+ஒப்புதல்\s+வரை|இன்னும்\s+சமர்ப்பிக்கப்படவில்லை"
+    r"|நெறிமுறை\s+குறிப்பு\s+எண்[^.\n]{0,40}நிலுவை",
+    re.IGNORECASE)
 SUP_RX = re.compile(
     r"(Main Supervisor|Co-Supervisor|Supervisor|Penyelia(?:\s+Utama|\s+Bersama)?)\s*[:：]\s*"
     r"((?:Assoc\.?\s*Prof\.?|A/Prof\.?|Prof\.?|Ir\.?|Dr\.?|Ts\.?)\s*)*"
@@ -228,7 +240,8 @@ def check_constants(ctx: Ctx, path: Path, text: str):
                                f"Pilot n drift. Canonical pilot n={c['sample']['pilot_n']} "
                                f"(42 urban + 28 rural; 45 effective completers). Per-group targets "
                                f"of n=50 are legitimate - confirm context."))
-    if c.get("ethics", {}).get("status") == "pending":
+    eth = c.get("ethics", {})
+    if eth.get("status") == "pending":
         for m in APPROVAL_CLAIM_RX.finditer(text):
             if suppressed(ctx, text, m.start(), m.end(), "ETHICS_STATUS"):
                 continue
@@ -236,6 +249,14 @@ def check_constants(ctx: Ctx, path: Path, text: str):
                                "Claims UREC approval, but ethics status is 'pending' "
                                "(dtam_constants.json ethics.status). State that approval is pending; "
                                "participant-facing text must not overstate ethics status."))
+    elif eth.get("status") == "approved":
+        for m in PENDING_CLAIM_RX.finditer(text):
+            if suppressed(ctx, text, m.start(), m.end(), "ETHICS_STATUS"):
+                continue
+            out.append(finding("ETHICS_STATUS", "error", r, line_of(text, m.start()), m.group(0),
+                               "Says ethics approval is pending or not yet submitted, or uses a placeholder "
+                               "reference, but UREC has approved the study (dtam_constants.json ethics.status; "
+                               "canonical source: PostGrad Work CLAUDE.md §1). Use approved wording."))
     for name in (c["supervisors"]["main"], c["supervisors"]["co"]):
         for m in re.finditer(re.escape(name), text):
             before = text[max(0, m.start() - 22):m.start()]

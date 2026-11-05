@@ -15,6 +15,17 @@ This file is deliberately thin. Rules live in the `dtam-*` skills; numbers live 
    `telerehab_dashboard.html`) are redirect stubs: never edit content into them.
 3. Take every canonical number, name and constant from `harness/dtam_constants.json`,
    never from memory or from another app.
+4. `harness/dtam_constants.json` mirrors the canonical facts table (§1) of PostGrad
+   Work's `CLAUDE.md`, which lives in a private repository and wins on any
+   disagreement. The apps here are an **older public snapshot**: when a fact is in
+   doubt, check §1, never the majority of files in this repo. (In November 2026 the
+   UREC wording here was "corrected" from approved to pending, and a later session
+   built on that, because most files here were stale; §1 records the study as
+   approved.)
+5. This repo is **public**. Never copy files or facts from PostGrad Work wholesale:
+   port only the specific strings needed, and only with the PI's agreement. Never
+   contact details, server details or data. Open defects that need private facts are
+   recorded in `harness/baseline.json` with status `open-needs-private-facts`.
 
 ## The harness (runs automatically)
 
