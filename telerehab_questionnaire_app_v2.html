@@ -946,6 +946,19 @@ const Q = {
     ]
   },
 
+  // ── Rehabilitation services & use (study-specific; pending validation) ──
+  // Items named in the protocol (§4 participant profile; SDG indicators TAI and CAE). Draft wording: validate (CVI) before analysis.
+  svc: {
+    id:'svc', title:'Rehabilitation Services & Use', source:'Study-specific items (protocol §4; SDG indicators) — pending validation',
+    instructions:'The following questions ask about your rehabilitation after stroke.',
+    questions: [
+      { id:'sv1', text:'How long ago was your stroke?', type:'select', options:['3–6 months','7–12 months','13–24 months','More than 24 months'], required:true, helper:'Time since stroke (eligibility: at least 3 months). Pending validation.' },
+      { id:'sv2', text:'Where do you currently receive rehabilitation?', type:'select', options:['At home','Outpatient clinic','Hospital','Not currently receiving rehabilitation'], required:true, helper:'The main place where you receive therapy now. Pending validation.' },
+      { id:'sv3', text:'How far do you usually travel (one way) to your rehabilitation centre?', type:'select', options:['Less than 5 km','5–10 km','11–20 km','21–50 km','More than 50 km','Not applicable'], required:true, helper:'Used to estimate travel distance and CO₂ avoided (SDG 13.2 indicator). Pending validation.' },
+      { id:'sv4', text:'Have you ever received rehabilitation through a video call (telerehabilitation)?', type:'select', options:['Yes','No','Not sure'], required:true, helper:'Used for the Telerehab Accessibility Index (SDG 3.8 indicator). Pending validation.' },
+    ]
+  },
+
   // ── Policy-Maker / Delphi ─────────────────────────────────────
   policy: {
     id:'policy', title:'Policy & Implementation Assessment', source:'Delphi/CVI (Lynn, 1986; MAST adapted)',
@@ -982,10 +995,13 @@ const Q = {
 };
 
 // ─── SURVEY FLOWS ─────────────────────────────────────────────────────────────
+// Study-specific items awaiting UREC amendment approval and CVI validation (section 'svc').
+// Keep false for participants until both are approved; set true to show the section in the Elderly flow.
+const ENABLE_PENDING_ITEMS = false;
 const FLOWS = {
   allied:    ['demographics', 'tam', 'utaut2', 'tuq', 'sus', 'mast'],
   caregiver: ['demographics', 'zbi', 'tam', 'utaut2', 'mast'],
-  elderly:   ['demographics', 'whoqol', 'tuq', 'sus', 'icf'],
+  elderly:   ['demographics', ...(ENABLE_PENDING_ITEMS ? ['svc'] : []), 'whoqol', 'tuq', 'sus', 'icf'],
   policy:    ['demographics', 'mast', 'policy'],
   public:    ['demographics', 'tam', 'public'],
 };
@@ -1189,6 +1205,7 @@ function submitResponse(group, answers, scores, surveyLang) {
     timestamp: new Date().toISOString(),
     group,
     lang:      surveyLang,   // questionnaire language chosen by the participant (meta.lang is only the browser locale)
+    mode:      'digital',    // capture mode (digital | paper | verbal): pooled analyses use shared items only, with mode as a covariate (docs/DTAM_MY_Item_Crosswalk_v1.0.md)
     answers,
     scores,
     meta: {
@@ -1323,6 +1340,10 @@ const OPT_TRANS = {
     icf2_opts: ['Langsung Tidak Boleh','Hanya Dengan Bantuan Besar','Hanya Dengan Bantuan Kecil','Dengan Sedikit Kesukaran','Tanpa Kesukaran'],
     icf5_opts: SCALE_TRANS.bm.SD_SA,
     icf6_opts: SCALE_TRANS.bm.SD_SA,
+    sv1_opts: ['3–6 bulan','7–12 bulan','13–24 bulan','Lebih daripada 24 bulan'],
+    sv2_opts: ['Di rumah','Klinik pesakit luar','Hospital','Tidak menerima rehabilitasi pada masa ini'],
+    sv3_opts: ['Kurang daripada 5 km','5–10 km','11–20 km','21–50 km','Lebih daripada 50 km','Tidak berkenaan'],
+    sv4_opts: ['Ya','Tidak','Tidak pasti'],
   },
   zh: {
     d1_opts: ['18-24','25-34','35-44','45-54','55-64','65-74','75岁以上'],
@@ -1334,6 +1355,10 @@ const OPT_TRANS = {
     icf2_opts: ['完全做不到','需要很多帮助才能做到','需要少许帮助才能做到','有些困难','没有困难'],
     icf5_opts: SCALE_TRANS.zh.SD_SA,
     icf6_opts: SCALE_TRANS.zh.SD_SA,
+    sv1_opts: ['3–6 个月','7–12 个月','13–24 个月','超过 24 个月'],
+    sv2_opts: ['在家','门诊诊所','医院','目前没有接受康复治疗'],
+    sv3_opts: ['少于 5 公里','5–10 公里','11–20 公里','21–50 公里','超过 50 公里','不适用'],
+    sv4_opts: ['是','否','不确定'],
   },
   ta: {
     d1_opts: ['18-24','25-34','35-44','45-54','55-64','65-74','75+'],
@@ -1345,6 +1370,10 @@ const OPT_TRANS = {
     icf2_opts: ['முற்றிலும் முடியாது','அதிக உதவியுடன் மட்டுமே','சிறிய உதவியுடன் மட்டுமே','சிறிது சிரமத்துடன்','சிரமம் இல்லாமல்'],
     icf5_opts: SCALE_TRANS.ta.SD_SA,
     icf6_opts: SCALE_TRANS.ta.SD_SA,
+    sv1_opts: ['3–6 மாதங்கள்','7–12 மாதங்கள்','13–24 மாதங்கள்','24 மாதங்களுக்கு மேல்'],
+    sv2_opts: ['வீட்டில்','வெளிநோயாளர் சிகிச்சையகம்','மருத்துவமனை','தற்போது மறுவாழ்வு பெறவில்லை'],
+    sv3_opts: ['5 கி.மீ.க்கும் குறைவு','5–10 கி.மீ.','11–20 கி.மீ.','21–50 கி.மீ.','50 கி.மீ.க்கு மேல்','பொருந்தாது'],
+    sv4_opts: ['ஆம்','இல்லை','உறுதியாகத் தெரியவில்லை'],
   }
 };
 
@@ -1477,6 +1506,10 @@ const Q_TRANS = {
     icf4: 'Saya boleh mengambil bahagian dalam aktiviti sosial (acara keluarga, komuniti, dsb.).',
     icf5: 'Persekitaran fizikal saya (rumah, kawasan kejiranan) menyokong pemulihan saya.',
     icf6: 'Saya menerima sokongan yang mencukupi daripada keluarga/penjaga untuk pemulihan saya.',
+    sv1: 'Berapa lama dahulu anda mengalami strok?',
+    sv2: 'Di manakah anda menerima rehabilitasi pada masa ini?',
+    sv3: 'Berapa jauh anda biasanya perlu pergi (sehala) ke pusat rehabilitasi anda?',
+    sv4: 'Pernahkah anda menerima rehabilitasi melalui panggilan video (telerehabilitasi)?',
     // Policy
     pol1: 'Rangka kerja kawal selia Malaysia semasa (PDPA 2010, Akta Peranti Perubatan 2012) secukupnya menyokong penggunaan telerehabilitasi.',
     pol2: 'Kertas Putih Kesihatan (2023) memberikan panduan yang jelas untuk pelaksanaan telerehabilitasi.',
@@ -1618,6 +1651,10 @@ const Q_TRANS = {
     icf4: '我能够参与社交活动（家庭活动、社区等）。',
     icf5: '我的物理环境（家、邻居）支持我的康复。',
     icf6: '我从家人/护理人员那里获得了足够的康复支持。',
+    sv1: '您中风发生在多久以前？',
+    sv2: '您目前在哪里接受康复治疗？',
+    sv3: '您通常前往康复中心的单程距离是多少？',
+    sv4: '您是否曾通过视频通话接受康复治疗（远程康复）？',
     // Policy
     pol1: '马来西亚现行监管框架（PDPA 2010、医疗设备法令2012）充分支持远程康复部署。',
     pol2: '《卫生白皮书》（2023）为远程康复实施提供了明确指导。',
@@ -1759,6 +1796,10 @@ const Q_TRANS = {
     icf4: 'சமூக நடவடிக்கைகளில் (குடும்ப நிகழ்வுகள், சமூகம் போன்றவை) பங்கேற்க என்னால் முடிகிறது.',
     icf5: 'என் இயற்பியல் சூழல் (வீடு, சுற்றுப்புறம்) என் மறுவாழ்வை ஆதரிக்கிறது.',
     icf6: 'என் மறுவாழ்வுக்கு குடும்பத்தினர்/பராமரிப்பாளரிடம் இருந்து போதுமான ஆதரவு கிடைக்கிறது.',
+    sv1: 'உங்களுக்குப் பக்கவாதம் ஏற்பட்டு எவ்வளவு காலம் ஆகிறது?',
+    sv2: 'தற்போது நீங்கள் எங்கு மறுவாழ்வு சிகிச்சை பெறுகிறீர்கள்?',
+    sv3: 'உங்கள் மறுவாழ்வு மையத்திற்கு வழக்கமாக (ஒரு வழி) எவ்வளவு தூரம் பயணிக்கிறீர்கள்?',
+    sv4: 'காணொளி அழைப்பு மூலம் (தொலை மறுவாழ்வு) எப்போதாவது மறுவாழ்வு பெற்றுள்ளீர்களா?',
     // Policy
     pol1: 'மலேசியாவின் தற்போதைய ஒழுங்குமுறை கட்டமைப்பு (PDPA 2010, மருத்துவ சாதன சட்டம் 2012) டெலிரீஹேபிலிடேஷன் நிறுவலை போதுமான அளவில் ஆதரிக்கிறது.',
     pol2: 'சுகாதார வெள்ளை அறிக்கை (2023) டெலிரீஹேபிலிடேஷன் செயல்படுத்தலுக்கு தெளிவான வழிகாட்டுதலை வழங்குகிறது.',
@@ -1906,6 +1947,11 @@ const SECTION_TRANS = {
       source: 'ICF (WHO, 2001)',
       instructions: 'Soalan-soalan berikut menilai tahap fungsi dan aktiviti harian anda. Nilai tahap kesukaran yang anda alami.'
     },
+    svc: {
+      title: 'Perkhidmatan & Penggunaan Rehabilitasi',
+      source: 'Item khusus kajian (protokol §4; penunjuk SDG) — menunggu pengesahan',
+      instructions: 'Soalan-soalan berikut bertanya tentang rehabilitasi anda selepas strok.'
+    },
     policy: {
       title: 'Penilaian Dasar & Pelaksanaan',
       source: 'Delphi/CVI (Lynn, 1986; MAST diubahsuai)',
@@ -1962,6 +2008,11 @@ const SECTION_TRANS = {
       title: '功能状态与活动',
       source: 'ICF (WHO, 2001)',
       instructions: '以下问题评估您的日常功能和活动水平。请评估您经历的困难程度。'
+    },
+    svc: {
+      title: '康复服务与使用情况',
+      source: '研究专用题目（研究方案 §4；SDG 指标）— 待验证',
+      instructions: '以下问题了解您中风后的康复情况。'
     },
     policy: {
       title: '政策与实施评估',
@@ -2020,6 +2071,11 @@ const SECTION_TRANS = {
       source: 'ICF (WHO, 2001)',
       instructions: 'பின்வரும் கேள்விகள் உங்கள் அன்றாட செயல்பாடு மற்றும் நடவடிக்கை நிலைகளை மதிப்பிடுகின்றன. நீங்கள் அனுபவிக்கும் சிரமத்தை மதிப்பிடவும்.'
     },
+    svc: {
+      title: 'மறுவாழ்வு சேவைகள் மற்றும் பயன்பாடு',
+      source: 'ஆய்வுக்கான குறிப்பிட்ட கேள்விகள் (நெறிமுறை §4; SDG குறிகாட்டிகள்) — சரிபார்ப்புக்காகக் காத்திருக்கிறது',
+      instructions: 'பின்வரும் கேள்விகள் பக்கவாதத்திற்குப் பிந்தைய உங்கள் மறுவாழ்வு பற்றிக் கேட்கின்றன.'
+    },
     policy: {
       title: 'கொள்கை & செயல்படுத்தல் மதிப்பீடு',
       source: 'Delphi/CVI (Lynn, 1986; MAST தழுவல்)',
@@ -2048,13 +2104,13 @@ function getSectionSource(sectionId, lang) {
 
 
 const SECTION_SHORT = {
-  en: { demographics:'Profile', tam:'TAM', utaut2:'UTAUT2', tuq:'TUQ', sus:'SUS',
+  en: { demographics:'Profile', svc:'Rehab', tam:'TAM', utaut2:'UTAUT2', tuq:'TUQ', sus:'SUS',
         zbi:'ZBI', whoqol:'WHOQOL', mast:'MAST', icf:'ICF', policy:'Policy', public:'Digital' },
-  bm: { demographics:'Profil', tam:'TAM', utaut2:'UTAUT2', tuq:'TUQ', sus:'SUS',
+  bm: { demographics:'Profil', svc:'Rehab', tam:'TAM', utaut2:'UTAUT2', tuq:'TUQ', sus:'SUS',
         zbi:'ZBI', whoqol:'WHOQOL', mast:'MAST', icf:'ICF', policy:'Dasar', public:'Digital' },
-  zh: { demographics:'资料', tam:'TAM', utaut2:'UTAUT2', tuq:'TUQ', sus:'SUS',
+  zh: { demographics:'资料', svc:'康复', tam:'TAM', utaut2:'UTAUT2', tuq:'TUQ', sus:'SUS',
         zbi:'ZBI', whoqol:'WHOQOL', mast:'MAST', icf:'ICF', policy:'政策', public:'数字' },
-  ta: { demographics:'சுயவிவரம்', tam:'TAM', utaut2:'UTAUT2', tuq:'TUQ', sus:'SUS',
+  ta: { demographics:'சுயவிவரம்', svc:'மறுவாழ்வு', tam:'TAM', utaut2:'UTAUT2', tuq:'TUQ', sus:'SUS',
         zbi:'ZBI', whoqol:'WHOQOL', mast:'MAST', icf:'ICF', policy:'கொள்கை', public:'டிஜிட்டல்' },
 };
 
@@ -2180,6 +2236,10 @@ const HELPER_TRANS = {
     icf4:'Penyertaan: Bolehkah anda menyertai perhimpunan sosial, aktiviti komuniti, atau acara keluarga?',
     icf5:'Faktor Persekitaran: Adakah rumah dan persekitaran anda membantu atau menghalang pemulihan anda?',
     icf6:'Faktor Peribadi & Sokongan: Adakah anda mendapat bantuan yang mencukupi daripada orang di sekeliling anda?',
+    sv1: 'Masa sejak strok (kriteria kelayakan: sekurang-kurangnya 3 bulan).',
+    sv2: 'Tempat utama anda menerima terapi sekarang.',
+    sv3: 'Digunakan untuk menganggar jarak perjalanan dan pengurangan CO₂ (penunjuk SDG 13.2).',
+    sv4: 'Digunakan untuk Indeks Kebolehcapaian Telerehabilitasi (penunjuk SDG 3.8).',
     // Policy
     pol1:'Adakah undang-undang sedia ada menyediakan asas undang-undang yang mencukupi untuk perkhidmatan telerehabilitasi di Malaysia?',
     pol2:'Adakah hala tuju strategik Kertas Putih menangani telerehabilitasi khusus untuk pemulihan warga emas?',
@@ -2321,6 +2381,10 @@ const HELPER_TRANS = {
     icf4:'参与：您能否参加社交聚会、社区活动或家庭活动？',
     icf5:'环境因素：您的家庭和周围环境是否有助于或阻碍您的康复？',
     icf6:'个人因素与支持：您是否从周围的人那里获得了足够的帮助？',
+    sv1: '中风后的时间（纳入标准：至少 3 个月）。',
+    sv2: '您目前主要接受治疗的地点。',
+    sv3: '用于估算出行距离和减少的二氧化碳排放（SDG 13.2 指标）。',
+    sv4: '用于远程康复可及性指数（SDG 3.8 指标）。',
     // Policy
     pol1:'现有立法是否为马来西亚的远程康复服务提供了充分的法律基础？',
     pol2:'白皮书的战略方向是否专门针对老年康复的远程康复？',
@@ -2462,6 +2526,10 @@ const HELPER_TRANS = {
     icf4:'பங்கேற்பு: சமூக கூட்டங்கள், சமுதாய நடவடிக்கைகள் அல்லது குடும்ப நிகழ்வுகளில் சேர முடியுமா?',
     icf5:'சுற்றுச்சூழல் காரணிகள்: வீடும் சுற்றுப்புறமும் உங்கள் மீட்சியை உதவுகின்றனவா அல்லது தடுக்கின்றனவா?',
     icf6:'தனிப்பட்ட காரணிகள் & ஆதரவு: சுற்றியுள்ளவர்களிடம் இருந்து போதுமான உதவி கிடைக்கிறதா?',
+    sv1: 'பக்கவாதத்திற்குப் பிந்தைய காலம் (தகுதி: குறைந்தது 3 மாதங்கள்).',
+    sv2: 'நீங்கள் தற்போது முக்கியமாக சிகிச்சை பெறும் இடம்.',
+    sv3: 'பயண தூரம் மற்றும் தவிர்க்கப்பட்ட CO₂ ஐ மதிப்பிடப் பயன்படுகிறது (SDG 13.2 குறிகாட்டி).',
+    sv4: 'தொலை மறுவாழ்வு அணுகல் குறியீட்டுக்குப் பயன்படுகிறது (SDG 3.8 குறிகாட்டி).',
     // Policy
     pol1:'டெலிரீஹேபிலிடேஷன் சேவைகளுக்கு மலேசியாவில் போதுமான சட்ட அடிப்படை உள்ளதா?',
     pol2:'வெள்ளை அறிக்கையின் மூலோபாய திசை வயோதிக மறுவாழ்வுக்கான டெலிரீஹேபிலிடேஷனை குறிப்பாக கையாளுகிறதா?',

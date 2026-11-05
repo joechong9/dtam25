@@ -1,0 +1,880 @@
+{
+ "_comment": "Online (telerehab_questionnaire_app_v2.html) vs paper OMR (omr_scanner.html) item crosswalk. 'same' = identical published item or near-verbatim wording: may be pooled at item level with mode as a covariate. 'construct' = same construct, different wording: compare at construct-score level only. 'none' = no counterpart. Mappings are the analyst's judgement and need PI/psychometric review before analysis (v1.0, pending validation).",
+ "version": "1.0",
+ "status": "pending PI review",
+ "items": [
+  {
+   "instrument": "SUS",
+   "digital": "sus1",
+   "digital_text": "I think that I would like to use this system frequently.",
+   "paper": "SUS_1",
+   "paper_text": "I think that I would like to use this system frequently",
+   "level": "same",
+   "note": "Standard instrument (Brooke, 1996); same item position"
+  },
+  {
+   "instrument": "SUS",
+   "digital": "sus2",
+   "digital_text": "I found the system unnecessarily complex.",
+   "paper": "SUS_2",
+   "paper_text": "I found the system unnecessarily complex",
+   "level": "same",
+   "note": "Standard instrument (Brooke, 1996); same item position"
+  },
+  {
+   "instrument": "SUS",
+   "digital": "sus3",
+   "digital_text": "I thought the system was easy to use.",
+   "paper": "SUS_3",
+   "paper_text": "I thought the system was easy to use",
+   "level": "same",
+   "note": "Standard instrument (Brooke, 1996); same item position"
+  },
+  {
+   "instrument": "SUS",
+   "digital": "sus4",
+   "digital_text": "I think that I would need the support of a technical person to be able to use this system.",
+   "paper": "SUS_4",
+   "paper_text": "I would need the support of a technical person to use this system",
+   "level": "same",
+   "note": "Standard instrument (Brooke, 1996); same item position"
+  },
+  {
+   "instrument": "SUS",
+   "digital": "sus5",
+   "digital_text": "I found the various functions in this system were well integrated.",
+   "paper": "SUS_5",
+   "paper_text": "The various functions in this system were well integrated",
+   "level": "same",
+   "note": "Standard instrument (Brooke, 1996); same item position"
+  },
+  {
+   "instrument": "SUS",
+   "digital": "sus6",
+   "digital_text": "I thought there was too much inconsistency in this system.",
+   "paper": "SUS_6",
+   "paper_text": "There was too much inconsistency in this system",
+   "level": "same",
+   "note": "Standard instrument (Brooke, 1996); same item position"
+  },
+  {
+   "instrument": "SUS",
+   "digital": "sus7",
+   "digital_text": "I would imagine that most people would learn to use this system very quickly.",
+   "paper": "SUS_7",
+   "paper_text": "Most people would learn to use this system very quickly",
+   "level": "same",
+   "note": "Standard instrument (Brooke, 1996); same item position"
+  },
+  {
+   "instrument": "SUS",
+   "digital": "sus8",
+   "digital_text": "I found the system very cumbersome to use.",
+   "paper": "SUS_8",
+   "paper_text": "I found the system very cumbersome to use",
+   "level": "same",
+   "note": "Standard instrument (Brooke, 1996); same item position"
+  },
+  {
+   "instrument": "SUS",
+   "digital": "sus9",
+   "digital_text": "I felt very confident using the system.",
+   "paper": "SUS_9",
+   "paper_text": "I felt very confident using the system",
+   "level": "same",
+   "note": "Standard instrument (Brooke, 1996); same item position"
+  },
+  {
+   "instrument": "SUS",
+   "digital": "sus10",
+   "digital_text": "I needed to learn a lot of things before I could get going with this system.",
+   "paper": "SUS_10",
+   "paper_text": "I needed to learn a lot of things before I could get going with this system",
+   "level": "same",
+   "note": "Standard instrument (Brooke, 1996); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi1",
+   "digital_text": "Do you feel that your relative asks for more help than he/she needs?",
+   "paper": "ZBI_1",
+   "paper_text": "Your relative asks for more help than they need?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi2",
+   "digital_text": "Do you feel that because of the time you spend with your relative you don\\'t have enough time for yourself?",
+   "paper": "ZBI_2",
+   "paper_text": "Because of caregiving you do not have enough time for yourself?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi3",
+   "digital_text": "Do you feel stressed between caring for your relative and trying to meet other responsibilities?",
+   "paper": "ZBI_3",
+   "paper_text": "You feel stressed between caring and other responsibilities?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi4",
+   "digital_text": "Do you feel embarrassed over your relative\\'s behaviour?",
+   "paper": "ZBI_4",
+   "paper_text": "You feel embarrassed over your relative\\'s behaviour?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi5",
+   "digital_text": "Do you feel angry when you are around your relative?",
+   "paper": "ZBI_5",
+   "paper_text": "You feel angry when you are around your relative?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi6",
+   "digital_text": "Do you feel that your relative currently affects your relationship with other family members?",
+   "paper": "ZBI_6",
+   "paper_text": "Caregiving negatively affects your relationship with family/friends?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi7",
+   "digital_text": "Are you afraid of what the future holds for your relative?",
+   "paper": "ZBI_7",
+   "paper_text": "You are afraid about what the future holds for your relative?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi8",
+   "digital_text": "Do you feel your relative is dependent on you?",
+   "paper": "ZBI_8",
+   "paper_text": "Your relative is dependent on you?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi9",
+   "digital_text": "Do you feel strained when you are around your relative?",
+   "paper": "ZBI_9",
+   "paper_text": "You feel strained when you are around your relative?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi10",
+   "digital_text": "Do you feel your health has suffered because of your involvement with your relative?",
+   "paper": "ZBI_10",
+   "paper_text": "Your health has suffered because of your involvement with your relative?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi11",
+   "digital_text": "Do you feel that you don\\'t have as much privacy as you would like because of your relative?",
+   "paper": "ZBI_11",
+   "paper_text": "You don\\'t have as much privacy as you would like because of your relative?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi12",
+   "digital_text": "Do you feel that your social life has suffered because of your involvement with your relative?",
+   "paper": "ZBI_12",
+   "paper_text": "Your social life has suffered because you are caring for your relative?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi13",
+   "digital_text": "Do you feel uncomfortable about having friends over because of your relative?",
+   "paper": "ZBI_13",
+   "paper_text": "You feel uncomfortable about having friends over due to caregiving?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi14",
+   "digital_text": "Do you feel that your relative seems to expect you to take care of him/her?",
+   "paper": "ZBI_14",
+   "paper_text": "Your relative seems to expect you to take care of them?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi15",
+   "digital_text": "Do you feel that you don\\'t have enough money to take care of your relative, given all of your other expenses?",
+   "paper": "ZBI_15",
+   "paper_text": "You don\\'t have enough money to care for your relative in addition to your expenses?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi16",
+   "digital_text": "Do you feel that you will be unable to take care of your relative much longer?",
+   "paper": "ZBI_16",
+   "paper_text": "You will be unable to take care of your relative much longer?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi17",
+   "digital_text": "Do you feel you have lost control of your life since your relative\\'s illness?",
+   "paper": "ZBI_17",
+   "paper_text": "You have lost control of your life since your relative\\'s illness?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi18",
+   "digital_text": "Do you wish you could just leave the care of your relative to someone else?",
+   "paper": "ZBI_18",
+   "paper_text": "You wish you could leave the care of your relative to someone else?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi19",
+   "digital_text": "Do you feel uncertain about what to do about your relative?",
+   "paper": "ZBI_19",
+   "paper_text": "You feel uncertain about what to do about your relative?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi20",
+   "digital_text": "Do you feel you should be doing more for your relative?",
+   "paper": "ZBI_20",
+   "paper_text": "You feel you should be doing more for your relative?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi21",
+   "digital_text": "Do you feel you could do a better job in caring for your relative?",
+   "paper": "ZBI_21",
+   "paper_text": "You feel you could do a better job in caring for your relative?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "ZBI",
+   "digital": "zbi22",
+   "digital_text": "Overall, how often do you feel burdened in caring for your relative?",
+   "paper": "ZBI_22",
+   "paper_text": "Overall, how often do you feel burdened in caring for your relative?",
+   "level": "same",
+   "note": "Standard instrument (Zarit et al., 1980); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq1",
+   "digital_text": "How would you rate your quality of life?",
+   "paper": "WHOQ_1",
+   "paper_text": "How would you rate your quality of life?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq2",
+   "digital_text": "How satisfied are you with your health?",
+   "paper": "WHOQ_2",
+   "paper_text": "How satisfied are you with your health?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq3",
+   "digital_text": "To what extent do you feel that pain prevents you from doing what you need to do?",
+   "paper": "WHOQ_3",
+   "paper_text": "To what extent does physical pain prevent you from doing what you need to do?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq4",
+   "digital_text": "How much do you need any medical treatment to function in your daily life?",
+   "paper": "WHOQ_4",
+   "paper_text": "How much do you need medical treatment to function in your daily life?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq5",
+   "digital_text": "How much do you enjoy life?",
+   "paper": "WHOQ_5",
+   "paper_text": "How much do you enjoy life?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq6",
+   "digital_text": "To what extent do you feel your life to be meaningful?",
+   "paper": "WHOQ_6",
+   "paper_text": "To what extent do you feel your life to be meaningful?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq7",
+   "digital_text": "How well are you able to concentrate?",
+   "paper": "WHOQ_7",
+   "paper_text": "How well are you able to concentrate?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq8",
+   "digital_text": "How safe do you feel in your daily life?",
+   "paper": "WHOQ_8",
+   "paper_text": "How safe do you feel in your daily life?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq9",
+   "digital_text": "How healthy is your physical environment?",
+   "paper": "WHOQ_9",
+   "paper_text": "How healthy is your physical environment?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq10",
+   "digital_text": "Do you have enough energy for everyday life?",
+   "paper": "WHOQ_10",
+   "paper_text": "Do you have enough energy for everyday life?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq11",
+   "digital_text": "Are you able to accept your bodily appearance?",
+   "paper": "WHOQ_11",
+   "paper_text": "Are you able to accept your bodily appearance?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq12",
+   "digital_text": "Have you enough money to meet your needs?",
+   "paper": "WHOQ_12",
+   "paper_text": "Have you enough money to meet your needs?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq13",
+   "digital_text": "How available to you is the information that you need in your day-to-day life?",
+   "paper": "WHOQ_13",
+   "paper_text": "How available to you is the information that you need in your day-to-day life?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq14",
+   "digital_text": "To what extent do you have the opportunity for leisure activities?",
+   "paper": "WHOQ_14",
+   "paper_text": "To what extent do you have the opportunity for leisure activities?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq15",
+   "digital_text": "How well are you able to get around?",
+   "paper": "WHOQ_15",
+   "paper_text": "How well are you able to get around?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq16",
+   "digital_text": "How satisfied are you with your sleep?",
+   "paper": "WHOQ_16",
+   "paper_text": "How satisfied are you with your sleep?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq17",
+   "digital_text": "How satisfied are you with your ability to perform your daily living activities?",
+   "paper": "WHOQ_17",
+   "paper_text": "How satisfied are you with your ability to perform your daily living activities?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq18",
+   "digital_text": "How satisfied are you with your capacity for work?",
+   "paper": "WHOQ_18",
+   "paper_text": "How satisfied are you with your capacity for work?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq19",
+   "digital_text": "How satisfied are you with yourself?",
+   "paper": "WHOQ_19",
+   "paper_text": "How satisfied are you with yourself?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq20",
+   "digital_text": "How satisfied are you with your personal relationships?",
+   "paper": "WHOQ_20",
+   "paper_text": "How satisfied are you with your personal relationships?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq21",
+   "digital_text": "How satisfied are you with your sex life?",
+   "paper": "WHOQ_21",
+   "paper_text": "How satisfied are you with your sex life?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq22",
+   "digital_text": "How satisfied are you with the support you get from your friends?",
+   "paper": "WHOQ_22",
+   "paper_text": "How satisfied are you with the support you get from your friends?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq23",
+   "digital_text": "How satisfied are you with the conditions of your living place?",
+   "paper": "WHOQ_23",
+   "paper_text": "How satisfied are you with the conditions of your living place?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq24",
+   "digital_text": "How satisfied are you with your access to health services?",
+   "paper": "WHOQ_24",
+   "paper_text": "How satisfied are you with your access to health services?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq25",
+   "digital_text": "How satisfied are you with your transport?",
+   "paper": "WHOQ_25",
+   "paper_text": "How satisfied are you with your transport?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "WHOQOL-BREF",
+   "digital": "wq26",
+   "digital_text": "How often do you have negative feelings such as blue mood, despair, anxiety, or depression?",
+   "paper": "WHOQ_26",
+   "paper_text": "How often do you have negative feelings (blue mood, despair, anxiety, depression)?",
+   "level": "same",
+   "note": "Standard instrument (WHO, 1996); same item position"
+  },
+  {
+   "instrument": "TAM",
+   "digital": "tam4",
+   "digital_text": "Learning to use telerehabilitation technology would be easy for me.",
+   "paper": "PEOU_1",
+   "paper_text": "Learning to use telerehabilitation technology would be easy for me",
+   "level": "same",
+   "note": "Near-verbatim"
+  },
+  {
+   "instrument": "TAM",
+   "digital": "tam5",
+   "digital_text": "I would find telerehabilitation technology easy to use.",
+   "paper": "PEOU_2",
+   "paper_text": "I find telerehabilitation technology easy to use",
+   "level": "same",
+   "note": "Near-verbatim (tense)"
+  },
+  {
+   "instrument": "TAM",
+   "digital": "tam1",
+   "digital_text": "Using telerehabilitation technology would improve my performance/quality of care.",
+   "paper": "PU_1",
+   "paper_text": "Using telerehabilitation would improve quality of rehabilitation services",
+   "level": "construct",
+   "note": "Perceived usefulness; wording differs"
+  },
+  {
+   "instrument": "TAM",
+   "digital": "tam2",
+   "digital_text": "Using telerehabilitation technology would make it easier to deliver/receive rehabilitation.",
+   "paper": "PU_2",
+   "paper_text": "Using telerehabilitation would make it easier to access rehabilitation",
+   "level": "construct",
+   "note": "Perceived usefulness; wording differs"
+  },
+  {
+   "instrument": "TAM",
+   "digital": "tam3",
+   "digital_text": "Using telerehabilitation technology would be beneficial overall.",
+   "paper": "PU_5",
+   "paper_text": "Overall, I find telerehabilitation to be advantageous",
+   "level": "construct",
+   "note": "Overall usefulness; wording differs"
+  },
+  {
+   "instrument": "TAM",
+   "digital": "tam6",
+   "digital_text": "My interaction with telerehabilitation technology would be clear and understandable.",
+   "paper": "EE_2",
+   "paper_text": "My interaction with telerehabilitation is clear and understandable",
+   "level": "same",
+   "note": "Same wording, but the paper sheet files it under UTAUT2 Effort Expectancy"
+  },
+  {
+   "instrument": "TAM",
+   "digital": "tam7",
+   "digital_text": "I intend to use telerehabilitation technology in the future (if available).",
+   "paper": "BI_1",
+   "paper_text": "I intend to use telerehabilitation in the future",
+   "level": "same",
+   "note": "Behavioural intention; paper sheet files it under UTAUT2 BI"
+  },
+  {
+   "instrument": "UTAUT2",
+   "digital": "u3",
+   "digital_text": "Learning to operate telerehabilitation technology is easy for me.",
+   "paper": "EE_1",
+   "paper_text": "Learning how to use telerehabilitation technology is easy for me",
+   "level": "same",
+   "note": "Near-verbatim"
+  },
+  {
+   "instrument": "UTAUT2",
+   "digital": "u4",
+   "digital_text": "I can easily become skillful at using telerehabilitation technology.",
+   "paper": "EE_3",
+   "paper_text": "It is easy for me to become skillful at using telerehabilitation technology",
+   "level": "same",
+   "note": "Near-verbatim"
+  },
+  {
+   "instrument": "UTAUT2",
+   "digital": "u5",
+   "digital_text": "People who are important to me think I should use telerehabilitation.",
+   "paper": "SI_1",
+   "paper_text": "People who are important to me think I should use telerehabilitation",
+   "level": "same",
+   "note": "Verbatim"
+  },
+  {
+   "instrument": "UTAUT2",
+   "digital": "u6",
+   "digital_text": "I have the knowledge and ability to use telerehabilitation technology.",
+   "paper": "FC_2",
+   "paper_text": "I have the knowledge necessary to use telerehabilitation",
+   "level": "construct",
+   "note": "Digital adds \"and ability\""
+  },
+  {
+   "instrument": "UTAUT2",
+   "digital": "u7",
+   "digital_text": "Using telerehabilitation technology is fun and enjoyable.",
+   "paper": "HM_1",
+   "paper_text": "Using telerehabilitation is fun",
+   "level": "construct",
+   "note": "Digital item is double-barrelled (fun and enjoyable); paper splits HM_1/HM_2"
+  },
+  {
+   "instrument": "UTAUT2",
+   "digital": "u9",
+   "digital_text": "Using telerehabilitation technology has become a habit in my daily routine.",
+   "paper": "HB_1",
+   "paper_text": "The use of telerehabilitation has become a habit for me",
+   "level": "same",
+   "note": "Near-verbatim"
+  },
+  {
+   "instrument": "UTAUT2",
+   "digital": "u1",
+   "digital_text": "Using telerehabilitation technology helps me accomplish my tasks more quickly.",
+   "paper": "",
+   "paper_text": "",
+   "level": "none",
+   "note": "Performance Expectancy: no paper counterpart"
+  },
+  {
+   "instrument": "UTAUT2",
+   "digital": "u2",
+   "digital_text": "Using telerehabilitation technology increases my productivity.",
+   "paper": "",
+   "paper_text": "",
+   "level": "none",
+   "note": "Performance Expectancy: no paper counterpart"
+  },
+  {
+   "instrument": "UTAUT2",
+   "digital": "u8",
+   "digital_text": "The value of telerehabilitation technology justifies any cost or effort.",
+   "paper": "",
+   "paper_text": "",
+   "level": "none",
+   "note": "Price Value: no paper counterpart"
+  },
+  {
+   "instrument": "UTAUT2",
+   "digital": "u10",
+   "digital_text": "I am confident in my ability to use telerehabilitation technology effectively.",
+   "paper": "",
+   "paper_text": "",
+   "level": "none",
+   "note": "Self-efficacy item scored as FC in the app; no paper counterpart"
+  },
+  {
+   "instrument": "TUQ",
+   "digital": "tuq1",
+   "digital_text": "The telerehabilitation system is easy to use.",
+   "paper": "TUQ_1",
+   "paper_text": "The telerehabilitation system was easy to use",
+   "level": "same",
+   "note": "Near-verbatim (tense)"
+  },
+  {
+   "instrument": "TUQ",
+   "digital": "tuq10",
+   "digital_text": "I would recommend telerehabilitation services to others.",
+   "paper": "TUQ_10",
+   "paper_text": "I would recommend telerehabilitation to others",
+   "level": "same",
+   "note": "Near-verbatim"
+  },
+  {
+   "instrument": "TUQ",
+   "digital": "tuq2",
+   "digital_text": "The telerehabilitation system is reliable and stable.",
+   "paper": "TUQ_5",
+   "paper_text": "The telerehabilitation system performed reliably",
+   "level": "construct",
+   "note": "Reliability; wording differs"
+  },
+  {
+   "instrument": "MAST",
+   "digital": "mast3",
+   "digital_text": "The patient experience during telerehabilitation is satisfactory.",
+   "paper": "MAST_D4_2",
+   "paper_text": "The patient experience is satisfactory",
+   "level": "same",
+   "note": "Near-verbatim"
+  },
+  {
+   "instrument": "MAST",
+   "digital": "mast5",
+   "digital_text": "Telerehabilitation is well integrated into existing healthcare workflows.",
+   "paper": "MAST_D6_1",
+   "paper_text": "Telerehabilitation can be integrated into existing workflows",
+   "level": "same",
+   "note": "Near-verbatim"
+  },
+  {
+   "instrument": "MAST",
+   "digital": "mast7",
+   "digital_text": "The economic cost-effectiveness of telerehabilitation is favourable.",
+   "paper": "MAST_D5_2",
+   "paper_text": "The cost-effectiveness is acceptable",
+   "level": "construct",
+   "note": "Cost-effectiveness; wording differs"
+  },
+  {
+   "instrument": "MAST",
+   "digital": "mast1",
+   "digital_text": "The clinical effectiveness of telerehabilitation for post-stroke patients is adequate.",
+   "paper": "MAST_D3_1",
+   "paper_text": "Telerehabilitation is clinically effective",
+   "level": "construct",
+   "note": "Clinical effectiveness"
+  },
+  {
+   "instrument": "MAST",
+   "digital": "mast2",
+   "digital_text": "Telerehabilitation provides patient safety standards equivalent to in-person care.",
+   "paper": "MAST_D2_1",
+   "paper_text": "Telerehabilitation appears to be safe for patients",
+   "level": "construct",
+   "note": "Safety"
+  },
+  {
+   "instrument": "MAST",
+   "digital": "mast4",
+   "digital_text": "Telerehabilitation respects patient dignity and privacy.",
+   "paper": "MAST_D4_4",
+   "paper_text": "Patient privacy is respected during telerehabilitation",
+   "level": "construct",
+   "note": "Privacy"
+  },
+  {
+   "instrument": "MAST",
+   "digital": "mast6",
+   "digital_text": "Healthcare professionals are adequately trained for telerehabilitation delivery.",
+   "paper": "MAST_D6_2",
+   "paper_text": "Staff training requirements are manageable",
+   "level": "construct",
+   "note": "Staff training"
+  },
+  {
+   "instrument": "MAST",
+   "digital": "mast9",
+   "digital_text": "The telerehabilitation system meets data security and privacy requirements.",
+   "paper": "MAST_D2_2",
+   "paper_text": "Patient data security is adequately protected",
+   "level": "construct",
+   "note": "Data security"
+  },
+  {
+   "instrument": "MAST",
+   "digital": "mast10",
+   "digital_text": "Telerehabilitation aligns with Malaysian healthcare policy and regulatory requirements.",
+   "paper": "MAST_D7_2",
+   "paper_text": "Legal and regulatory requirements are met (PDPA 2010)",
+   "level": "construct",
+   "note": "Legal/regulatory"
+  },
+  {
+   "instrument": "MAST",
+   "digital": "mast12",
+   "digital_text": "Ethical standards for informed consent are maintained in telerehabilitation.",
+   "paper": "MAST_D7_1",
+   "paper_text": "Telerehabilitation raises no major ethical concerns",
+   "level": "construct",
+   "note": "Ethics"
+  },
+  {
+   "instrument": "MAST",
+   "digital": "mast8",
+   "digital_text": "Implementation of telerehabilitation is technically feasible in our context.",
+   "paper": "",
+   "paper_text": "",
+   "level": "none",
+   "note": "Technical feasibility: no direct paper item"
+  },
+  {
+   "instrument": "MAST",
+   "digital": "mast11",
+   "digital_text": "Telerehabilitation supports equitable access to rehabilitation services across Malaysia.",
+   "paper": "",
+   "paper_text": "",
+   "level": "none",
+   "note": "Equitable access: no direct paper item"
+  },
+  {
+   "instrument": "TUQ",
+   "digital": "tuq3",
+   "digital_text": "The quality of video/audio during sessions is satisfactory.",
+   "paper": "",
+   "paper_text": "",
+   "level": "construct-only",
+   "note": "Same TUQ construct family; no item-level counterpart (score-level comparison only)"
+  },
+  {
+   "instrument": "TUQ",
+   "digital": "tuq4",
+   "digital_text": "The system provides all necessary features for rehabilitation sessions.",
+   "paper": "",
+   "paper_text": "",
+   "level": "construct-only",
+   "note": "Same TUQ construct family; no item-level counterpart (score-level comparison only)"
+  },
+  {
+   "instrument": "TUQ",
+   "digital": "tuq5",
+   "digital_text": "I am able to communicate effectively with the healthcare provider via this system.",
+   "paper": "",
+   "paper_text": "",
+   "level": "construct-only",
+   "note": "Same TUQ construct family; no item-level counterpart (score-level comparison only)"
+  },
+  {
+   "instrument": "TUQ",
+   "digital": "tuq6",
+   "digital_text": "The healthcare provider responded to my needs effectively during remote sessions.",
+   "paper": "",
+   "paper_text": "",
+   "level": "construct-only",
+   "note": "Same TUQ construct family; no item-level counterpart (score-level comparison only)"
+  },
+  {
+   "instrument": "TUQ",
+   "digital": "tuq7",
+   "digital_text": "I feel my personal health information is kept private and secure.",
+   "paper": "",
+   "paper_text": "",
+   "level": "construct-only",
+   "note": "Same TUQ construct family; no item-level counterpart (score-level comparison only)"
+  },
+  {
+   "instrument": "TUQ",
+   "digital": "tuq8",
+   "digital_text": "I trust that my data will not be shared without my consent.",
+   "paper": "",
+   "paper_text": "",
+   "level": "construct-only",
+   "note": "Same TUQ construct family; no item-level counterpart (score-level comparison only)"
+  },
+  {
+   "instrument": "TUQ",
+   "digital": "tuq9",
+   "digital_text": "Participating in telerehabilitation sessions is convenient for me.",
+   "paper": "",
+   "paper_text": "",
+   "level": "construct-only",
+   "note": "Same TUQ construct family; no item-level counterpart (score-level comparison only)"
+  }
+ ]
+}

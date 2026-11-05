@@ -20,7 +20,7 @@
   ".github/",
   "CLAUDE.md",
   ".claude/"
- ],
+ , "deploy/node_modules/", "deploy/dist/"],
  "rules": [
   {
    "id": "NDHB_EN",

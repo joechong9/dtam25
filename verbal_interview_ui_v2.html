@@ -500,7 +500,7 @@ function App() {
           </button>
           <button className="btn btn-outline" style={{flex:1}}
             onClick={() => {
-              const d = JSON.stringify({ sessionId, ...config, stt: "browser-web-speech; scores selected by interviewer",
+              const d = JSON.stringify({ sessionId, ...config, mode: "verbal", stt: "browser-web-speech; scores selected by interviewer",
                 exportedAt: new Date().toISOString(), items: log }, null, 2);
               const url = URL.createObjectURL(new Blob([d],{type:"application/json"}));
               const a = document.createElement("a");
