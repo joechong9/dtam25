@@ -8,6 +8,7 @@ import io
 import json
 import re
 import sys
+import os
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
@@ -216,6 +217,49 @@ class ConstantsFixtures(unittest.TestCase):
         for t in self.APPROVAL_CLAIMS + self.NEUTRAL:
             with self.subTest(t=t):
                 self.assertEqual(self.hits(t), [])
+
+    def _no_env_reference(self):
+        patcher = mock.patch.dict(os.environ, {}, clear=False)
+        patcher.start()
+        os.environ.pop("DTAM_UREC_REFERENCE", None)
+        self.addCleanup(patcher.stop)
+
+    # Shape-valid dummy values; the real approval reference is not stored in this public repo.
+    DUMMY_REF = "U/SERC/12(B)-345/2030"
+
+    def test_ethics_reference_shape(self):
+        self._no_env_reference()
+        self._with_status("approved")
+        for t in ["SERC Ref: UTAR/SERC/2026/0142",
+                  '<input id="gsSercRef" placeholder="e.g. UTAR/SERC/2026/...">',
+                  "Ethics ref. UREC/2024/001 applies.",
+                  "Rujukan etika: UTAR/SERC/56-979/2026",
+                  "NMRR ID: NMRR-26-0099-XYZ"]:
+            with self.subTest(t=t):
+                self.assertEqual(self.hits(t), ["ETHICS_REF"])
+        for t in ["3 items must be resolved before UREC/MREC submission",
+                  "UTAR/UREC policy", "SERC Ref: " + self.DUMMY_REF,
+                  "(approved, " + self.DUMMY_REF + ").",
+                  "UTAR SERC Reference Number", "e.g. UTAR/SERC/...",
+                  'placeholder="e.g. NMRR-26-XXXXX"']:
+            with self.subTest(t=t):
+                self.assertEqual(self.hits(t), [])
+        # A placeholder already caught by ETHICS_STATUS is not reported twice.
+        self.assertEqual(self.hits("Reference: UTAR/UREC/2025 (pending)."), ["ETHICS_STATUS"])
+
+    def test_ethics_reference_exact_value_from_env(self):
+        self._no_env_reference()
+        self.assertEqual(self.hits("Ref " + "U/SERC/99(B)-345/2030"), [])  # no value supplied: shape only
+        os.environ["DTAM_UREC_REFERENCE"] = self.DUMMY_REF
+        self.assertEqual(self.hits("Ref " + "U/SERC/99(B)-345/2030"), ["ETHICS_REF"])
+        self.assertEqual(self.hits("Ref " + self.DUMMY_REF), [])
+
+    def test_nmrr_id_once_assigned(self):
+        old = CTX.constants["ethics"].get("nmrr_id")
+        CTX.constants["ethics"]["nmrr_id"] = "NMRR-30-1234-56789"
+        self.addCleanup(lambda: CTX.constants["ethics"].__setitem__("nmrr_id", old))
+        self.assertEqual(self.hits("NMRR ID: NMRR-30-1234-56789"), [])
+        self.assertEqual(self.hits("NMRR ID: NMRR-30-9999-56789"), ["ETHICS_REF"])
 
     def test_supervisor_title(self):
         self.assertEqual(self.hits("📧 Dr Kwan Ban Hoe — kwanbh@utar.edu.my"), ["SUPERVISOR_TITLE"])
