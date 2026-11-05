@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>DTAM-MY v2 | Research Dashboard</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js" integrity="sha384-dug+JxfBvklEQdJ4AYuBBAIScUz0bVN73xpy273gcAwHjb3qI0fXmuYNaNfdyYJG" crossorigin="anonymous"></script>
 <style>
 :root {
   --navy:#1B3A6B; --teal:#0E8B8B; --lteal:#D6F0F0; --lnavy:#D8E4F0;
@@ -1072,9 +1072,9 @@ function exportCSV() {
   if (!allData.length) { alert('No data to export yet.'); return; }
   const allKeys = [...new Set(allData.flatMap(r => Object.keys(r.answers||{})))].sort();
   const scoreKeys = [...new Set(allData.flatMap(r => Object.keys(r.scores||{})))];
-  const header = ['id','timestamp','group', ...allKeys, ...scoreKeys.map(k=>`score_${k}`)];
+  const header = ['id','timestamp','group','survey_lang','browser_lang', ...allKeys, ...scoreKeys.map(k=>`score_${k}`)];
   const rows = allData.map(r => [
-    r.id, r.timestamp, r.group,
+    r.id, r.timestamp, r.group, r.meta?.surveyLang ?? '', r.meta?.lang ?? r.lang ?? '',
     ...allKeys.map(k => r.answers?.[k] ?? ''),
     ...scoreKeys.map(k => r.scores?.[k]?.value ?? ''),
   ]);

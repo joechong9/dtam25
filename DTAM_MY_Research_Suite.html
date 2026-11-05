@@ -215,7 +215,7 @@ tr:hover td{background:#f8fafc}
 // ---- DATA ----
 var PHASES=[
   {name:'Ph 1 · Ethics & Design',pct:90,status:'active',note:'Protocol v2.0 · GCP 82% · Dossier ready'},
-  {name:'Ph 2 · Questionnaires',pct:100,status:'done',note:'16 docs · 3 OMR sheets · 4 languages'},
+  {name:'Ph 2 · Questionnaires',pct:100,status:'done',note:'16 docs · 5 OMR sheet types · 4 languages'},
   {name:'Ph 3 · App Development',pct:80,status:'active',note:'PWA + APK done · Backend hosting TBD'},
   {name:'Ph 4 · Pilot Study',pct:0,status:'pending',note:'n=70 · pending ethics clearance (UREC)'},
   {name:'Ph 5 · Data Collection',pct:0,status:'pending',note:'n=370 · 5 stakeholder groups'},
@@ -225,10 +225,10 @@ var PHASES=[
 ];
 var SAMPLES=[
   {g:'Allied Health',n:100,c:'#0E8B8B'},
-  {g:'Caregiver',n:100,c:'#1B3A6B'},
-  {g:'Elderly',n:100,c:'#E07B39'},
-  {g:'Policy-Makers',n:20,c:'#6B5B3A'},
-  {g:'Gen. Public',n:50,c:'#3A6B5B'},
+  {g:'Caregiver',n:100,c:'#E07B39'},
+  {g:'Elderly',n:100,c:'#1B3A6B'},
+  {g:'Policy-Makers',n:20,c:'#6366f1'},
+  {g:'Gen. Public',n:50,c:'#10b981'},
 ];
 var ADVISORY=[
   {id:'A1',label:'SDG Alignment',desc:'4 quantified indicators (TAI/DEGR/APES/CAE)',done:true},
@@ -289,9 +289,9 @@ var PROTO=[
 var LANGS=[{id:'en',label:'English'},{id:'bm',label:'Bahasa Malaysia'},{id:'zh',label:'简体中文'},{id:'ta',label:'தமிழ்'}];
 var GROUPS=[
   {id:'allied',label:'Allied Health',color:'#0E8B8B'},
-  {id:'caregiver',label:'Caregiver',color:'#1B3A6B'},
-  {id:'policy',label:'Policy-Maker',color:'#6B5B3A'},
-  {id:'elderly',label:'Elderly',color:'#E07B39'},
+  {id:'caregiver',label:'Caregiver',color:'#E07B39'},
+  {id:'policy',label:'Policy-Maker',color:'#6366f1'},
+  {id:'elderly',label:'Elderly',color:'#1B3A6B'},
 ];
 var QDATA={
   allied:[
@@ -311,9 +311,9 @@ var QDATA={
      ]},
     {title:{en:'Part C: UTAUT2 Constructs',bm:'Bahagian C: Konstruk UTAUT2',zh:'C部分：UTAUT2构念',ta:'பகுதி இ: UTAUT2 கட்டுமானங்கள்'},
      items:[
-      {id:'C1',scale:'Likert 1-7',sc:'#1B3A6B',text:{en:'Performance expectancy: Telerehabilitation enables better patient outcomes',bm:'Jangkaan prestasi: Telerehabilitation membolehkan hasil pesakit lebih baik',zh:'绩效期望：远程康复能带来更好的患者结果',ta:'செயல்திறன் எதிர்பார்ப்பு: ඤெலிரிஹேப் சிறந்த முடிவுகளை அளிக்கும்'}},
-      {id:'C2',scale:'Likert 1-7',sc:'#1B3A6B',text:{en:'Effort expectancy: I can use telerehabilitation tools without difficulty',bm:'Jangkaan usaha: Boleh menggunakan alat tanpa kesukaran',zh:'努力期望：使用工具毫不费力',ta:'முயற்சி எதிர்பார்ப்பு: சிரமமின்றி கருவிகள் பயன்படுத்தலாம்'}},
-      {id:'C3',scale:'Likert 1-7',sc:'#1B3A6B',text:{en:'Social influence: Colleagues support telerehabilitation adoption',bm:'Pengaruh sosial: Rakan sekerja menyokong penggunaan',zh:'社会影响：同事支持采用远程康复',ta:'சமூக செல்வாக்கு: சக ஊழியர்கள் ஆதரிக்கின்றனர்'}},
+      {id:'C1',scale:'Likert 1-5',sc:'#1B3A6B',text:{en:'Performance expectancy: Telerehabilitation enables better patient outcomes',bm:'Jangkaan prestasi: Telerehabilitation membolehkan hasil pesakit lebih baik',zh:'绩效期望：远程康复能带来更好的患者结果',ta:'செயல்திறன் எதிர்பார்ப்பு: ඤெலிரிஹேப் சிறந்த முடிவுகளை அளிக்கும்'}},
+      {id:'C2',scale:'Likert 1-5',sc:'#1B3A6B',text:{en:'Effort expectancy: I can use telerehabilitation tools without difficulty',bm:'Jangkaan usaha: Boleh menggunakan alat tanpa kesukaran',zh:'努力期望：使用工具毫不费力',ta:'முயற்சி எதிர்பார்ப்பு: சிரமமின்றி கருவிகள் பயன்படுத்தலாம்'}},
+      {id:'C3',scale:'Likert 1-5',sc:'#1B3A6B',text:{en:'Social influence: Colleagues support telerehabilitation adoption',bm:'Pengaruh sosial: Rakan sekerja menyokong penggunaan',zh:'社会影响：同事支持采用远程康复',ta:'சமூக செல்வாக்கு: சக ஊழியர்கள் ஆதரிக்கின்றனர்'}},
      ]},
     {title:{en:'Part D: System Usability (SUS)',bm:'Bahagian D: Kebolehgunaan Sistem (SUS)',zh:'D部分：系统可用性（SUS）',ta:'பகுதி ஈ: அமைப்பு பயன்பாட்டு தரம் (SUS)'},
      items:[
@@ -371,9 +371,9 @@ var QDATA={
      ]},
     {title:{en:'Part C: Telerehabilitation Usability (TUQ + SUS)',bm:'Bahagian C: Kebolehgunaan Telerehabilitation (TUQ + SUS)',zh:'C部分：远程康复可用性（TUQ + SUS）',ta:'பகுதி இ: ඤெலிரிஹேப் பயன்பாட்டு தரம் (TUQ + SUS)'},
      items:[
-      {id:'C1',scale:'TUQ 1-7',sc:'#E07B39',text:{en:'The telerehabilitation system is easy to use',bm:'Sistem telerehabilitation mudah digunakan',zh:'远程康复系统易于使用',ta:'ඤெலிரிஹேப் அமைப்பு பயன்படுத்த எளிதானது'}},
-      {id:'C2',scale:'TUQ 1-7',sc:'#E07B39',text:{en:'The system helps me communicate with my therapist',bm:'Sistem ini membantu berkomunikasi dengan ahli terapi',zh:'该系统帮助我与治疗师沟通',ta:'இந்த அமைப்பு சிகிச்சையாளருடன் தொடர்பு கொள்ள உதவுகிறது'}},
-      {id:'C3',scale:'TUQ 1-7',sc:'#E07B39',text:{en:'I feel confident using the system on my own',bm:'Saya yakin menggunakan sistem telerehabilitation sendiri',zh:'我能自信地独立使用系统',ta:'அமைப்பை சொந்தமாக பயன்படுத்த நம்பிக்கை உணர்கிறேன்'}},
+      {id:'C1',scale:'TUQ 1-5',sc:'#E07B39',text:{en:'The telerehabilitation system is easy to use',bm:'Sistem telerehabilitation mudah digunakan',zh:'远程康复系统易于使用',ta:'ඤெலிரிஹேப் அமைப்பு பயன்படுத்த எளிதானது'}},
+      {id:'C2',scale:'TUQ 1-5',sc:'#E07B39',text:{en:'The system helps me communicate with my therapist',bm:'Sistem ini membantu berkomunikasi dengan ahli terapi',zh:'该系统帮助我与治疗师沟通',ta:'இந்த அமைப்பு சிகிச்சையாளருடன் தொடர்பு கொள்ள உதவுகிறது'}},
+      {id:'C3',scale:'TUQ 1-5',sc:'#E07B39',text:{en:'I feel confident using the system on my own',bm:'Saya yakin menggunakan sistem telerehabilitation sendiri',zh:'我能自信地独立使用系统',ta:'அமைப்பை சொந்தமாக பயன்படுத்த நம்பிக்கை உணர்கிறேன்'}},
      ]},
   ],
 };
@@ -420,7 +420,8 @@ var FRAMEWORKS=[
    desc:'Measures caregiver burden. Cross-tabulated against TAM/UTAUT2 acceptance scores.'},
 ];
 var ALL_GROUPS=['Allied Health','Caregiver','Elderly','Policy-Maker','General Public'];
-var GRP_COLORS={'Allied Health':'#0E8B8B','Caregiver':'#1B3A6B','Elderly':'#E07B39','Policy-Maker':'#6B5B3A','General Public':'#3A6B5B'};
+// Same group colours as the Research Dashboard (GROUP_COLORS)
+var GRP_COLORS={'Allied Health':'#0E8B8B','Caregiver':'#E07B39','Elderly':'#1B3A6B','Policy-Maker':'#6366f1','General Public':'#10b981'};
 var SDG=[
   {id:'TAI',name:'Telerehab Accessibility Index',sdg:'SDG 3.8',formula:'TAI = (n_telerehab_accessed / n_eligible_patients) x 100',src:'WHOQOL-BREF B1 + TUQ subscale'},
   {id:'DEGR',name:'Digital Equity Gap Ratio',sdg:'SDG 10.2',formula:'DEGR = (Urban_TAI - Rural_TAI) / Urban_TAI',src:'ICF environmental factors + TAM PEOU'},

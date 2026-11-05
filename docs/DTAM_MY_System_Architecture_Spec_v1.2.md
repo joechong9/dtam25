@@ -1,7 +1,7 @@
 # DTAM-MY System Architecture Specification
 
 **Digital Telerehabilitation Assessment Model — Malaysia (DTAM-MY)**
-**Document ID:** DTAM_MY_System_Architecture_Spec_v1.1 · **Status:** Draft for supervisory review · **Date:** 5 November 2026
+**Document ID:** DTAM_MY_System_Architecture_Spec_v1.2 · **Status:** Draft for supervisory review · **Date:** 5 November 2026
 
 | Field | Value |
 |---|---|
@@ -64,7 +64,7 @@ The workspace mixes *implemented code* with *designed-but-unbuilt* architecture 
 ### 0.3 Conventions
 
 - Code references use `file:line` (lines as of commit `ccf443b`).
-- Component IDs **C1–C8** (§[5](#s5)), design-pattern IDs **DP-01–DP-16** (§[6](#s6)), data-entity IDs **E1–E8** (§[7](#s7)) and audit-finding IDs **F-01–F-26** (§[16](#s16)) are used for cross-referencing throughout.
+- Component IDs **C1–C8** (§[5](#s5)), design-pattern IDs **DP-01–DP-16** (§[6](#s6)), data-entity IDs **E1–E8** (§[7](#s7)) and audit-finding IDs **F-01–F-27** (§[16](#s16)) are used for cross-referencing throughout.
 - "Group" refers to the five stakeholder groups: Allied Health (`allied`), Caregiver (`caregiver`), Elderly post-stroke patient (`elderly`), Policy-Maker (`policy`), General Public (`public`).
 
 ### 0.4 Revision history
@@ -73,6 +73,7 @@ The workspace mixes *implemented code* with *designed-but-unbuilt* architecture 
 |---|---|---|
 | 1.0 | 2026-11-05 | First synthesis from the repository code base and the DTAM-MY architecture reference. |
 | 1.1 | 2026-11-05 | Roadmap step 0 applied in code: F-01, F-04, F-13, F-14, F-18, F-21 and F-24 resolved (see §16 status column). GCP-06 reopened → 18/22. SRI deferred. New finding F-26. Line references in §5–§18 remain as of `ccf443b`; small offsets apply in edited files. |
+| 1.2 | 2026-11-05 | All findings that can be fixed in client code are resolved: F-02b, F-03, F-04b, F-06 (TUQ, TAM-BI), F-07 (ZBI rule), F-08 (PBKDF2), F-09, F-11, F-12, F-14 (Part C), F-16, F-17, F-19 (SRI via jsDelivr), F-20 (sheet count), F-22, F-23, F-25, F-26, F-27. Remaining open items need research decisions or a backend (see §16 open-items summary). |
 
 ---
 
@@ -105,6 +106,9 @@ The components work together through a **browser-local data bus** (`localStorage
 3. **Broken data contracts (F-03, F-04).** The admin portal reads interview records from a storage key that no app writes, and the Part C export schema does not match what the portal expects. The admin portal reads `r.lang` while the questionnaire stores `meta.lang`.
 4. **Client-side-only security (F-08–F-12).** Authentication, password hashing (unsalted SHA-256) and the 8-hour session are enforced only in the browser. Participant data sits unencrypted in `localStorage`. Before real participant data is collected, the planned controls (pgcrypto AES-256, audit_log, RBAC) must exist on a server.
 5. **Conflicting ML specifications (F-15).** LSTM + Random Forest with LOOCV (architecture reference) versus Random Forest + XGBoost with 5-fold CV and AUC ≥ 0.75 (protocol §10). §[13](#s13) recommends one reconciled design.
+
+
+> **Status at v1.2:** Finding 1 is resolved in code (a verified source is still needed). Findings 3 and 5 are fixed or reconciled where code allows. Finding 4 is hardened (PBKDF2, persistent lockout, tokens, escaping, STT opt-in) but still needs a backend. Finding 2 needs an instrument decision. See the open-items summary at the end of §[16](#s16).
 
 ---
 
@@ -1165,39 +1169,53 @@ flowchart LR
 
 Severity: **Critical** blocks valid data collection or ethics approval · **High** risks data loss, privacy breach or analysis validity · **Medium** degrades quality or maintainability · **Low** cosmetic or hygiene.
 
-Status after v1.1: rows marked **✅ Fixed (v1.1)** were resolved by roadmap step 0; all other rows remain open.
+Status: rows marked **✅ Fixed (v1.1)** were resolved by roadmap step 0, and **✅ Fixed (v1.2)** by the follow-up pass. **◐ Partly fixed** means the code-level part is done and the rest needs a decision or infrastructure. Unmarked rows remain open.
 
 | ID | Sev. | Finding | Evidence | Recommendation | Cross-ref |
 |---|---|---|---|---|---|
 | F-01 | Critical | Blocked "National Digital Health Blueprint" reference counted as GCP-06 compliant; also live Policy-Maker item `pol2` | C8 `:258`, `:353`; C1 `:652`, `:1355`; C2 `:955` | **✅ Fixed (v1.1).** Removed; `pol2` reworded; GCP-06 reopened → 18/22. Still to do: identify a verified source and record the protocol amendment | §[12.6](#s12-6) |
 | F-02 | Critical | Three incompatible item-coding schemes and item sets across digital, paper and verbal channels | C2 `Q`; C3 `*_ITEMS`; C7 `INSTRUMENTS` | Canonical Item Registry; freeze before UREC | §[7.6](#s7-6), DP-03 |
-| F-02b | High | GP sheet codes `BI_1`, `SI_1`, `FC_1` collide with UTAUT2 construct codes in the C3 scorer | C3 `:224–232`, `:366–368` | Namespace codes by instrument | §[7.6](#s7-6) |
-| F-03 | High | `dtam_my_interviews` has no producer; no import for C6/C7 session files; E3 ≠ E8 schema | C4 `:1293`, `:1309`; C6 `:987` | Add an interview import with an E3→E8 adapter | §[7.2](#s7-2) |
+| F-02b | High | GP sheet codes `BI_1`, `SI_1`, `FC_1` collide with UTAUT2 construct codes in the C3 scorer | C3 `:224–232`, `:366–368` | **✅ Fixed (v1.2).** GP sheet codes renamed `GP_BI_1`, `GP_BI_2`, `GP_SI_1`, `GP_FC_1`, `GP_FC_2` | §[7.6](#s7-6) |
+| F-03 | High | `dtam_my_interviews` has no producer; no import for C6/C7 session files; E3 ≠ E8 schema | C4 `:1293`, `:1309`; C6 `:987` | **✅ Fixed (v1.2).** Sessions → "Import Session JSON" accepts Part C and verbal exports (including the legacy verbal array), dedupes by session ID, and maps E3/E4 to E8 | §[7.2](#s7-2) |
 | F-04 | Medium | Portal reads `r.lang`; record stores `meta.lang` → language column always "—" | C4 `:1477`; C2 `:1162` | **✅ Fixed (v1.1).** Reads `meta.lang`, with fallback to legacy `lang` | §[7.2](#s7-2) |
-| F-04b | High | Survey language chosen by the participant is not stored (only browser locale) | C2 `:1159–1162` | Store `surveyLang`; needed for invariance testing | DP-06 |
+| F-04b | High | Survey language chosen by the participant is not stored (only browser locale) | C2 `:1159–1162` | **✅ Fixed (v1.2).** `meta.surveyLang` stored; shown in the admin table and in both survey CSV exports | DP-06 |
 | F-05 | Critical | Data visible only within one browser origin; protocol lineage names LimeSurvey/REDCap, not the custom apps | C2 `:1143`; C8 `:283` | Backend before pilot, or a REDCap-primary decision; amend the protocol | §[4.2](#s4), §[15](#s15) |
-| F-06 | Medium | TUQ, ICF, TAM-BI, policy and public sections unscored in C2; time-since-stroke and rehab setting not collected | C2 `scoreSurvey` | Extend the scoring library; add items | §[7.5](#s7-5), §[13.3](#s13) |
+| F-06 | Medium | TUQ, ICF, TAM-BI, policy and public sections unscored in C2; time-since-stroke and rehab setting not collected | C2 `scoreSurvey` | **◐ Partly fixed (v1.2).** TUQ (mean, ≥3.5) and TAM-BI now scored. Open: ICF, policy and public sections have no defined scoring rule, and time-since-stroke/rehab-setting items need adding (instrument decisions) | §[7.5](#s7-5), §[13.3](#s13) |
 | F-06b | Medium | SDG indicators TAI and CAE need items that are not collected | C8 `:425–428` | Add access and travel-distance items | §[8.3](#s8) |
-| F-07 | High | Group batteries differ by mode (Policy TAM paper-only; MAST 12 vs 28 items; ZBI partial sums allowed on paper; SUS timing differs) | C2 `:985`; C3 `:190–287` | Single battery definition per group | §[8.2](#s8-2) |
-| F-08 | High | Client-side-only authentication; unsalted SHA-256; login does not protect stored data | C4 `:962`, `:1032` | Server auth + Argon2id; treat as UI gate only until then | §[12.3](#s12-3) |
-| F-09 | Medium | Registration tokens are read but never created → additional researchers can only be added via Settings | C4 `:981–985`, `:1151–1155` | Token issuance UI (hashed) or remove the feature | §[5.4](#s5) |
-| F-10 | High | Participant responses stored unencrypted in `localStorage` | DP-07 | Encrypted IndexedDB outbox + server of record | §[12.5](#s12-5) |
-| F-11 | Low | Lockout counter in `sessionStorage` resets per tab | C4 `:1011` | Server-side rate limiting | §[12.3](#s12-3) |
-| F-12 | High | Browser STT sends interview audio to a vendor cloud; not disclosed | C6 `:860–889` | On-device or MY-hosted ASR, or explicit disclosure | §[12.4](#s12-4) |
+| F-07 | High | Group batteries differ by mode (Policy TAM paper-only; MAST 12 vs 28 items; ZBI partial sums allowed on paper; SUS timing differs) | C2 `:985`; C3 `:190–287` | **◐ Partly fixed (v1.2).** C3 reports a ZBI total only when all 22 items are read. Open: one battery per group (research decision) | §[8.2](#s8-2) |
+| F-08 | High | Client-side-only authentication; unsalted SHA-256; login does not protect stored data | C4 `:962`, `:1032` | **◐ Partly fixed (v1.2).** PBKDF2-SHA256 (600k iterations, per-account salt); legacy hashes upgrade at login. Open: authentication is still client-side until a backend exists | §[12.3](#s12-3) |
+| F-09 | Medium | Registration tokens are read but never created → additional researchers can only be added via Settings | C4 `:981–985`, `:1151–1155` | **✅ Fixed (v1.2).** Settings → Registration Tokens: single-use, 7-day, stored as hashes, revocable | §[5.4](#s5) |
+| F-10 | High | Participant responses stored unencrypted in `localStorage` | DP-07 | Open: needs the backend (client-side encryption cannot protect a key that ships with the page) | §[12.5](#s12-5) |
+| F-11 | Low | Lockout counter in `sessionStorage` resets per tab | C4 `:1011` | **✅ Fixed (v1.2).** Lockout counter in `localStorage`; 15-minute lock survives new tabs and reloads | §[12.3](#s12-3) |
+| F-12 | High | Browser STT sends interview audio to a vendor cloud; not disclosed | C6 `:860–889` | **✅ Fixed (v1.2).** STT off by default, with a disclosure notice; timer-only manual mode when off; removed the false "On-device — no cloud" label | §[12.4](#s12-4) |
 | F-13 | Low | C5 links `omr_scanner.html#SHEET`; C3 parses only `?sheet=` | C5 OMR tab; C3 `:775` | **✅ Fixed (v1.1).** C5 links use `?sheet=` | §[5.5](#s5) |
-| F-14 | High | Imported JSON fields interpolated into `innerHTML` (stored XSS) | C4 `:1373`, `:1489–1497` | **✅ Fixed (v1.1).** `escHtml()` applied to OMR, activity, participant, interview and user tables | DP-10 |
+| F-14 | High | Imported JSON fields interpolated into `innerHTML` (stored XSS) | C4 `:1373`, `:1489–1497` | **✅ Fixed (v1.1).** `escHtml()` applied to OMR, activity, participant, interview and user tables; v1.2 adds escaping of Part C transcripts and notes | DP-10 |
 | F-15 | Medium | Conflicting ML specifications | S9 §12; C8 `:286` | Adopt the §13.2 reconciled design; pre-register | §[13](#s13) |
-| F-16 | Medium | Research Suite previews show UTAUT2/TUQ on 1–7 scales; instruments use 1–5 | C8 `:314–316`, `:374–376` | Align previews with the canonical registry | §[7.6](#s7-6) |
-| F-17 | Medium | Group key `policymaker` (C6) ≠ `policy` (C2/C4/C5); C6 has no General Public guide | C6 `QB`, `TRANSLATIONS` | Standardise the group enum | §[0.3](#s0) |
+| F-16 | Medium | Research Suite previews show UTAUT2/TUQ on 1–7 scales; instruments use 1–5 | C8 `:314–316`, `:374–376` | **✅ Fixed (v1.2).** Previews show 1–5 scales | §[7.6](#s7-6) |
+| F-17 | Medium | Group key `policymaker` (C6) ≠ `policy` (C2/C4/C5); C6 has no General Public guide | C6 `QB`, `TRANSLATIONS` | **◐ Partly fixed (v1.2).** C6 uses `policy`; the admin import also maps legacy `policymaker`. Open: no General Public interview guide (content decision) | §[0.3](#s0) |
 | F-18 | Medium | C7 `sessionId` recomputed every render; export lacks participant, researcher, group and language | C7 `:273`, `:452` | **✅ Fixed (v1.1).** `useMemo` ID; export is now `{meta, responses}` like E3 | §[7.2](#s7-2) |
-| F-19 | Medium | CDN scripts without SRI; `'unsafe-eval'`; `frame-ancestors` ineffective in meta CSP | C2/C3/C5/C7 heads | Pre-compile; self-host; send CSP headers. *SRI deferred in v1.1: the hashes could not be computed against the live cdnjs files from the build sandbox, and a wrong hash would block the scripts* | DP-02 |
-| F-20 | Low | Phase percentages and deliverable counts disagree between C5 and C8; "PWA + APK + Node + PostgreSQL done" not reflected in the repo | C5 `:754–763`; C8 `:216–225`, `:285` | Single status source; correct claims before committee review | §[9.2](#s9) |
+| F-19 | Medium | CDN scripts without SRI; `'unsafe-eval'`; `frame-ancestors` ineffective in meta CSP | C2/C3/C5/C7 heads | **◐ Partly fixed (v1.2).** Scripts load from jsDelivr with SHA-384 SRI (hashes from the npm packages; tampered bytes are blocked in tests). Open: OpenCV.js has no SRI (not on npm); `'unsafe-eval'` remains until JSX is pre-compiled; `frame-ancestors` needs HTTP headers at hosting | DP-02 |
+| F-20 | Low | Phase percentages and deliverable counts disagree between C5 and C8; "PWA + APK + Node + PostgreSQL done" not reflected in the repo | C5 `:754–763`; C8 `:216–225`, `:285` | **◐ Partly fixed (v1.2).** C8 now says 5 OMR sheet types (verified in C3). Open: phase percentages (Ph 3: 80% vs 90%) and document counts are the PI's judgement | §[9.2](#s9) |
 | F-21 | Low | C1 CSP permits `connect-src api.anthropic.com` without using it | C1 line 5 | **✅ Fixed (v1.1).** `connect-src 'self'` | §[5.1](#s5) |
-| F-22 | Medium | OMR manual overrides not recorded in export (no provenance) | C3 `exportJSON` | Add `source`/`overridden` per result | DP-12 |
-| F-23 | Low | Group colour mapping differs between C5 and C8 | C5 `:690`; C8 `:423` | Shared `groups.json` | DP-13 |
+| F-22 | Medium | OMR manual overrides not recorded in export (no provenance) | C3 `exportJSON` | **✅ Fixed (v1.2).** Overrides record `overridden` and `autoValue`; both CSV exports carry `overridden,auto_response` | DP-12 |
+| F-23 | Low | Group colour mapping differs between C5 and C8 | C5 `:690`; C8 `:423` | **✅ Fixed (v1.2).** C8 uses C5's group colours | DP-13 |
 | F-24 | Low | Byte-identical duplicates (`index`/`index_v2`, `omr_scanner`/`omr_scanner_v2`); C4 links `_v2`, C5 links non-`_v2` | MD5 match | **✅ Fixed (v1.1).** `_v2` copies deleted; C4 links repointed to `index.html` / `omr_scanner.html` | DP-15 |
-| F-25 | High | No tool captures AE/SAE or distress-protocol events, although Protocol §6 requires 24-hour SAE reporting | Protocol §6 `:282`; no code | Add an incident form to C6 and C4; `SAE_LOGGED` event table | §[9.1](#s9) |
-| F-26 | Low | C5's embedded OMR scanner `<iframe src="omr_scanner.html">` is blocked by C5's own CSP (`default-src 'none'` with no `frame-src`) | C5 line 5, `:676` | Add `frame-src 'self'` to C5's CSP, or replace the iframe with a link | §[5.5](#s5) |
+| F-25 | High | No tool captures AE/SAE or distress-protocol events, although Protocol §6 requires 24-hour SAE reporting | Protocol §6 `:282`; no code | **✅ Fixed (v1.2).** C6 "⚠ Distress / AE" record (type, outcome, 7 protocol steps, PI-notified time); SAE alert; exported; the admin import flags SAEs with the 24-hour reminder | §[9.1](#s9) |
+| F-26 | Low | C5's embedded OMR scanner `<iframe src="omr_scanner.html">` is blocked by C5's own CSP (`default-src 'none'` with no `frame-src`) | C5 line 5, `:676` | **✅ Fixed (v1.2).** `frame-src 'self'` added | §[5.5](#s5) |
+| F-27 | Low | Admin Settings asked for a Gemini API key for an "AI Insights" feature that does not exist; the key was never used | C4 Settings | **✅ Fixed (v1.2).** Setting removed | §[10](#s10) |
+
+
+**Open items after v1.2.** None of these can be fixed in client code alone:
+
+| Needs | Findings |
+|---|---|
+| **Research decision** (instrument content) | F-02 canonical item set per instrument; F-06 ICF/policy/public scoring rules and missing items; F-06b SDG items (telerehab access, travel distance); F-07 one battery per group; F-17 General Public interview guide |
+| **Verified source** | F-01 a citable MOH digital-health policy for GCP-06 |
+| **Backend + Malaysian hosting** (roadmap step 2) | F-05 central data store; F-08 server-side auth/RBAC; F-10 encryption at rest |
+| **Build pipeline / hosting headers** | F-19 pre-compiled JSX (drops `'unsafe-eval'`), self-hosted OpenCV with SRI, CSP and `frame-ancestors` as HTTP headers |
+| **PI judgement / documentation** | F-15 adopt the §13.2 ML design in the protocol; F-20 phase percentages |
+
+Also fixed in v1.2, outside the numbered findings: the admin activity feed sorted ISO date strings numerically (NaN), so the order was random; the admin survey CSV read non-existent `lang`/`submittedAt` fields; and "No Data" modals had no close button.
 
 ---
 

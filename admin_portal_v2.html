@@ -600,6 +600,9 @@ input[type=text].api-input:focus{border-color:var(--teal)}
           <div class="card-title">Session Log</div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-secondary" style="font-size:12px;padding:7px 14px" onclick="refreshAll()">🔄 Refresh</button>
+            <label class="btn btn-secondary" style="font-size:12px;padding:7px 14px;cursor:pointer">📥 Import Session JSON
+              <input type="file" accept=".json" multiple style="display:none" onchange="importInterviewJson(event)"/>
+            </label>
             <button class="btn btn-primary" style="font-size:12px;padding:7px 14px" onclick="exportInterviewCSV()">⬇️ Export CSV</button>
             <a class="btn btn-primary" style="font-size:12px;padding:7px 14px;text-decoration:none" href="partc_interview_v2.html" target="_blank">🎙️ New Interview</a>
           </div>
@@ -671,11 +674,6 @@ input[type=text].api-input:focus{border-color:var(--teal)}
           <input type="text" class="api-input" id="claude-key-input" placeholder="sk-ant-api..." oninput="saveKey('claude',this.value)"/>
           <div style="margin-top:6px;font-size:11px;color:var(--muted)">Model: claude-haiku-4-5-20251001</div>
         </div>
-        <div class="setting-row" style="flex-direction:column;align-items:flex-start">
-          <div><div class="setting-label">Gemini API Key (AI Insights in Survey App)</div><div class="setting-desc">Used by the Survey App's AI Insights feature. Get key at aistudio.google.com/apikey</div></div>
-          <input type="text" class="api-input" id="gemini-key-input" placeholder="AIza..." oninput="saveKey('gemini',this.value)"/>
-          <div style="margin-top:6px;font-size:11px;color:var(--muted)">Model: gemini-2.0-flash</div>
-        </div>
       </div>
       <div class="card">
         <div class="card-title" style="margin-bottom:12px">ℹ️ Study Information</div>
@@ -707,6 +705,23 @@ input[type=text].api-input:focus{border-color:var(--teal)}
             <tbody id="users-table">
               <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">Loading…</td></tr>
             </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Registration tokens -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">🎟️ Registration Tokens</div>
+            <div class="card-desc">Single-use codes that let a new researcher create their own account. Valid for 7 days; stored only as hashes.</div>
+          </div>
+          <button class="btn btn-primary" style="font-size:12px;padding:7px 14px" onclick="issueRegToken()">+ Issue Token</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Token</th><th>Issued</th><th>Expires</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="tokens-table"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No tokens issued.</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -958,7 +973,27 @@ input[type=text].api-input:focus{border-color:var(--teal)}
 
 const USERS_KEY = 'dtam_admin_users_v2';
 
-// Hash a password with SHA-256 via Web Crypto API (async)
+// Password storage: PBKDF2-HMAC-SHA256, 600,000 iterations, 16-byte random salt per account.
+// Legacy accounts (unsalted SHA-256) still verify and are upgraded automatically at next login.
+const PBKDF2_ITER = 600000;
+function bytesToHex(buf) { return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join(''); }
+function hexToBytes(hex) { return new Uint8Array(hex.match(/../g).map(h => parseInt(h, 16))); }
+async function pbkdf2Hex(password, saltHex, iterations) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name:'PBKDF2', hash:'SHA-256', salt: hexToBytes(saltHex), iterations }, key, 256);
+  return bytesToHex(bits);
+}
+async function makePasswordRecord(password) {
+  const pwSalt = bytesToHex(crypto.getRandomValues(new Uint8Array(16)));
+  return { pwAlgo:'pbkdf2-sha256', pwIter: PBKDF2_ITER, pwSalt, passwordHash: await pbkdf2Hex(password, pwSalt, PBKDF2_ITER) };
+}
+async function verifyPassword(account, password) {
+  if (account.pwAlgo === 'pbkdf2-sha256')
+    return (await pbkdf2Hex(password, account.pwSalt, account.pwIter)) === account.passwordHash;
+  return (await hashPassword(password)) === account.passwordHash;   // legacy v2 record
+}
+
+// Legacy: unsalted SHA-256 (kept only to verify and upgrade old accounts, and to hash registration tokens)
 async function hashPassword(password) {
   const enc = new TextEncoder();
   const buf = await crypto.subtle.digest('SHA-256', enc.encode(password));
@@ -981,6 +1016,46 @@ function saveCreatedAccounts(arr) {
 const REG_TOKENS_KEY = 'dtam_reg_tokens';
 function getRegTokens() {
   try { return JSON.parse(localStorage.getItem(REG_TOKENS_KEY) || '[]'); } catch(e) { return []; }
+}
+function saveRegTokens(arr) { localStorage.setItem(REG_TOKENS_KEY, JSON.stringify(arr)); }
+const TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+async function issueRegToken() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';           // no 0/O/1/I
+  const rnd = crypto.getRandomValues(new Uint8Array(10));
+  const body = Array.from(rnd, b => alphabet[b % alphabet.length]).join('');
+  const token = `DTAM-${body.slice(0,5)}-${body.slice(5)}`;
+  const sess = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}');
+  const tokens = getRegTokens().filter(t => t && typeof t === 'object');
+  tokens.push({ hash: await hashPassword(token), hint: token.slice(-4), createdAt: Date.now(),
+                expiresAt: Date.now() + TOKEN_TTL_MS, createdBy: sess.username || '' });
+  saveRegTokens(tokens);
+  renderTokensTable();
+  showModal('Registration Token Issued',
+    `${token}\n\nShare this with one researcher. It works once and expires in 7 days. It is stored only as a hash, so it cannot be shown again.`,
+    [{ label:'Copy & Close', cls:'btn-primary', action:`navigator.clipboard&&navigator.clipboard.writeText(${escHtml(JSON.stringify(token))});closeModal()` }]);
+}
+function revokeRegToken(hash) {
+  const tokens = getRegTokens();
+  const t = tokens.find(x => x && x.hash === hash);
+  if (t) { t.revokedAt = Date.now(); saveRegTokens(tokens); }
+  renderTokensTable();
+}
+function renderTokensTable() {
+  const tbody = document.getElementById('tokens-table');
+  if (!tbody) return;
+  const tokens = getRegTokens().filter(t => t && typeof t === 'object').slice().reverse();
+  if (!tokens.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No tokens issued.</td></tr>'; return; }
+  tbody.innerHTML = tokens.map(t => {
+    const status = t.usedAt ? `Used by ${escHtml(t.usedBy||'')}` : t.revokedAt ? 'Revoked' : t.expiresAt <= Date.now() ? 'Expired' : 'Active';
+    const active = status === 'Active';
+    return `<tr>
+      <td style="font-family:monospace">…${escHtml(t.hint||'')}</td>
+      <td style="font-size:11px">${new Date(t.createdAt).toLocaleString()}</td>
+      <td style="font-size:11px">${new Date(t.expiresAt).toLocaleString()}</td>
+      <td><span class="status-badge ${active?'done':'pending'}">${status}</span></td>
+      <td>${active ? `<button class="btn btn-danger" style="font-size:11px;padding:4px 10px" onclick="revokeRegToken('${escHtml(t.hash)}')">Revoke</button>` : '—'}</td>
+    </tr>`;
+  }).join('');
 }
 
 // Show first-run setup if no accounts exist
@@ -1008,7 +1083,19 @@ function showSetupWizard() {
 
 const SESSION_KEY = 'dtam_admin_session';
 let MAX_ATTEMPTS  = 5;
-let loginAttempts = parseInt(sessionStorage.getItem('dtam_login_attempts') || '0');
+// Lockout persists across tabs/reloads (localStorage) and expires after 15 minutes
+const LOCK_KEY = 'dtam_login_lock';
+const LOCK_MS  = 15 * 60 * 1000;
+function getLock() {
+  try { return JSON.parse(localStorage.getItem(LOCK_KEY)) || { count:0, lockedUntil:0 }; }
+  catch(e) { return { count:0, lockedUntil:0 }; }
+}
+function setLock(l) { localStorage.setItem(LOCK_KEY, JSON.stringify(l)); }
+function lockMessage(l) {
+  const mins = Math.max(1, Math.ceil((l.lockedUntil - Date.now()) / 60000));
+  return `Too many failed attempts. Sign-in is locked for ${mins} more minute${mins!==1?'s':''}.`;
+}
+let loginAttempts = getLock().count;
 
 function checkSession() {
   const sess = sessionStorage.getItem(SESSION_KEY);
@@ -1030,11 +1117,10 @@ function checkSession() {
 }
 
 async function doLogin() {
-  if (loginAttempts >= MAX_ATTEMPTS) {
-    showLoginError('Too many failed attempts. Please refresh the page and try again.');
-    document.getElementById('login-btn').disabled = true;
-    return;
-  }
+  let lock = getLock();
+  if (lock.lockedUntil > Date.now()) { showLoginError(lockMessage(lock)); return; }
+  if (lock.lockedUntil && lock.lockedUntil <= Date.now()) { lock = { count:0, lockedUntil:0 }; setLock(lock); }
+  loginAttempts = lock.count;
 
   const userEl = document.getElementById('login-user');
   const passEl = document.getElementById('login-pass');
@@ -1043,13 +1129,19 @@ async function doLogin() {
 
   if (!user || !pass) { showLoginError('Please enter both username and password.'); return; }
 
-  // [v2] Compare SHA-256 hash — never compare plaintext
-  const hash = await hashPassword(pass);
-  const account = loadAllAccounts().find(a => a.username.toLowerCase() === user && a.passwordHash === hash);
+  // Verify against the stored salted hash (never compare plaintext)
+  const candidate = loadAllAccounts().find(a => a.username.toLowerCase() === user);
+  const account = candidate && await verifyPassword(candidate, pass) ? candidate : null;
 
   if (account) {
     loginAttempts = 0;
-    sessionStorage.removeItem('dtam_login_attempts');
+    setLock({ count:0, lockedUntil:0 });
+    if (account.pwAlgo !== 'pbkdf2-sha256') {
+      // Upgrade legacy unsalted SHA-256 record in place
+      const created = loadCreatedAccounts();
+      const i = created.findIndex(a => a.username === account.username);
+      if (i >= 0) { Object.assign(created[i], await makePasswordRecord(pass)); saveCreatedAccounts(created); }
+    }
     sessionStorage.setItem(SESSION_KEY, JSON.stringify({
       username: account.username,
       display:  account.display,
@@ -1058,15 +1150,14 @@ async function doLogin() {
     showPortal(account.display);
   } else {
     loginAttempts++;
-    sessionStorage.setItem('dtam_login_attempts', loginAttempts);
+    setLock({ count: loginAttempts, lockedUntil: loginAttempts >= MAX_ATTEMPTS ? Date.now() + LOCK_MS : 0 });
     userEl.classList.add('error');
     passEl.classList.add('error');
     passEl.value = '';
     const remaining = MAX_ATTEMPTS - loginAttempts;
     showLoginError(remaining > 0
       ? `Invalid credentials. ${remaining} attempt${remaining!==1?'s':''} remaining.`
-      : 'Account locked. Please refresh the page.');
-    if (remaining <= 0) document.getElementById('login-btn').disabled = true;
+      : lockMessage(getLock()));
     setTimeout(() => { userEl.classList.remove('error'); passEl.classList.remove('error'); }, 600);
     passEl.focus();
   }
@@ -1150,20 +1241,22 @@ async function doRegister() {
   if (pass !== pass2)    return showErr('Passwords do not match.');
   // [v2] First-run (no accounts yet) skips token check; subsequent registrations validate token
   const isFirstRun = document.getElementById('reg-btn').getAttribute('data-firstrun') === '1';
+  let tokenEntry = null;
   if (!isFirstRun) {
-    const tokens = getRegTokens();
-    if (!tokens.includes(code)) return showErr('Invalid registration token. Contact the PI for your token.');
+    // Tokens are stored as SHA-256 hashes, single-use, with an expiry (issued in Settings → Registration Tokens)
+    const codeHash = await hashPassword(code.toUpperCase());
+    tokenEntry = getRegTokens().find(t => t && t.hash === codeHash && !t.usedAt && !t.revokedAt && t.expiresAt > Date.now());
+    if (!code || !tokenEntry) return showErr('Invalid or expired registration token. Contact the PI for a new token.');
   }
 
   const all = loadAllAccounts();
   if (all.some(a => a.username.toLowerCase() === email))
     return showErr('An account with this email already exists.');
 
-  // [v2] Hash password before storage
-  const passwordHash = await hashPassword(pass);
+  // Salted PBKDF2 hash before storage
   const newAccount = {
     username: email,
-    passwordHash,
+    ...(await makePasswordRecord(pass)),
     display:  name,
     builtin:  false,
     createdAt: new Date().toISOString(),
@@ -1172,6 +1265,11 @@ async function doRegister() {
   const created = loadCreatedAccounts();
   created.push(newAccount);
   saveCreatedAccounts(created);
+  if (tokenEntry) {
+    const tokens = getRegTokens();
+    const t = tokens.find(x => x && x.hash === tokenEntry.hash);
+    if (t) { t.usedAt = Date.now(); t.usedBy = email; saveRegTokens(tokens); }
+  }
 
   // If this was the first-run setup, restore the registration code field and button
   if (document.getElementById('reg-btn').getAttribute('data-firstrun') === '1') {
@@ -1226,8 +1324,7 @@ async function submitAddUser() {
     return showErr('An account with this email already exists.');
 
   const created = loadCreatedAccounts();
-  const pwHash = await hashPassword(pass);
-  created.push({ username:email, passwordHash:pwHash, display:name, builtin:false, createdAt:new Date().toISOString() });
+  created.push({ username:email, ...(await makePasswordRecord(pass)), display:name, builtin:false, createdAt:new Date().toISOString() });
   saveCreatedAccounts(created);
   closeAddUser();
   renderUsersTable();
@@ -1248,7 +1345,7 @@ function renderUsersTable() {
       <td style="font-size:11px;color:var(--muted)">${a.createdAt ? new Date(a.createdAt).toLocaleDateString() : 'System'}</td>
       <td>${a.builtin ? '<span style="color:var(--muted);font-size:12px">—</span>'
         : `<button class="btn btn-danger" style="font-size:11px;padding:4px 10px"
-             onclick="deleteUser('${a.username}')">Delete</button>`}</td>
+             onclick="deleteUser(${escHtml(JSON.stringify(a.username))})">Delete</button>`}</td>
     </tr>`).join('');
 }
 
@@ -1257,7 +1354,7 @@ function deleteUser(username) {
     `Remove account for "${username}"? This cannot be undone.`,
     [
       { label:'Cancel',  cls:'btn-secondary', action:'closeModal()' },
-      { label:'Delete',  cls:'btn-danger',    action:`confirmDeleteUser('${username}')` },
+      { label:'Delete',  cls:'btn-danger',    action:`confirmDeleteUser(${escHtml(JSON.stringify(username))})` },
     ]);
 }
 
@@ -1269,6 +1366,7 @@ function confirmDeleteUser(username) {
 }
 
 function showPortal(displayName) {
+  renderTokensTable();
   document.getElementById('login-page').style.display = 'none';
   document.getElementById('sidebar').style.display    = 'flex';
   document.getElementById('topbar-user').textContent  = displayName;
@@ -1298,10 +1396,8 @@ const GROUP_ICONS  = { allied:'🏥', caregiver:'👨‍👩‍👧', elderly:'�
 
 // ── API KEYS (session memory) ─────────────────────────
 let _claudeKey = '';
-let _geminiKey = '';
 function saveKey(type, val) {
   if (type === 'claude') _claudeKey = val.trim();
-  if (type === 'gemini') _geminiKey = val.trim();
 }
 
 // ── DATA LOADERS ─────────────────────────────────────
@@ -1356,6 +1452,58 @@ function importOmrJson(event) {
   reader.readAsText(file);
 }
 
+// ── INTERVIEW IMPORT (Part C + verbal interview exports) ─
+// Maps the apps' {meta, responses, incidents} export to the interview summary record shown here.
+function normaliseGroup(g) { return g === 'policymaker' ? 'policy' : g; }
+function interviewRecordFrom(data, fileName) {
+  const legacyVerbal = Array.isArray(data);                       // early verbal exports: bare log array
+  const meta = legacyVerbal ? {} : (data.meta || {});
+  const responses = legacyVerbal ? data : (data.responses || []);
+  if (!legacyVerbal && !data.meta) return null;
+  const kind = responses.some(r => 'confirmedScore' in r || 'autoScore' in r) ? 'verbal' : 'partc';
+  const total = meta.totalQ ?? meta.totalItems ?? null;
+  const done  = kind === 'partc' ? responses.filter(r => r.status === 'done').length : (meta.completed ?? responses.length);
+  return {
+    id: meta.sessionId || (fileName||'').replace(/\.json$/i,''),
+    kind,
+    group: normaliseGroup(meta.group) || '',
+    interviewer: meta.researcherId || '',
+    participantId: meta.participantId || '',
+    language: meta.language || '',
+    site: meta.site || '',
+    duration: kind === 'partc' ? responses.reduce((a,r) => a + (r.recordedSecs||0), 0) : null,
+    startedAt: meta.startedAt || null,
+    endedAt: meta.exportedAt || null,
+    completed: total != null ? done >= total : false,
+    incidents: Array.isArray(data.incidents) ? data.incidents : [],
+    importedAt: new Date().toISOString(),
+    source: data,
+  };
+}
+function importInterviewJson(event) {
+  const files = [...(event.target.files || [])];
+  if (!files.length) return;
+  Promise.all(files.map(f => f.text().then(t => ({ name:f.name, text:t })))).then(items => {
+    const existing = loadInterviews();
+    let added = 0, dup = 0, bad = 0, sae = 0;
+    items.forEach(({ name, text }) => {
+      let rec = null;
+      try { rec = interviewRecordFrom(JSON.parse(text), name); } catch(e) {}
+      if (!rec || !rec.id) { bad++; return; }
+      if (existing.some(x => x.id === rec.id)) { dup++; return; }
+      existing.push(rec); added++;
+      sae += rec.incidents.filter(i => i.type === 'sae').length;
+    });
+    try { localStorage.setItem(INTERVIEW_KEY, JSON.stringify(existing)); }
+    catch(e) { showModal('Storage Full', 'Browser storage is full. Export and archive existing interview data, then clear it before importing more.', []); return; }
+    refreshAll();
+    let msg = `Imported ${added} session(s).` + (dup ? ` ${dup} already imported.` : '') + (bad ? ` ${bad} file(s) not recognised.` : '');
+    if (sae) msg += `\n\n⚠ ${sae} serious adverse event(s) recorded in these sessions. Report to UREC within 24 hours (Protocol §6).`;
+    showModal(sae ? 'Import — SAE Recorded' : 'Import Complete', msg, []);
+    event.target.value = '';
+  });
+}
+
 // ── OMR TABLE ────────────────────────────────────────
 function updateOmrTable(scans) {
   const tbody = document.getElementById('omr-scan-table');
@@ -1371,7 +1519,7 @@ function updateOmrTable(scans) {
     const sc      = s.scores || {};
     const tamVal  = sc.tam?.tam_mean  ? sc.tam.tam_mean+'/5'  : '—';
     const susVal  = sc.sus?.score     ? sc.sus.score+'/100'   : '—';
-    const zbiVal  = sc.zbi?.total     !== undefined ? sc.zbi.total+'/88' : '—';
+    const zbiVal  = sc.zbi?.total     != null ? sc.zbi.total+'/88' : (sc.zbi ? 'incomplete' : '—');
     const flag    = missing > 0 || ambig > 0;
     return `<tr>
       <td style="font-family:monospace;font-size:12px;font-weight:700">${escHtml(s.participant_id||'—')}</td>
@@ -1394,7 +1542,7 @@ function exportOmrCSV() {
   if (!scans.length) { showModal('No Data','No OMR results to export. Import JSON files first.',[{label:'OK',cls:'btn-secondary',action:'closeModal()'}]); return; }
   // Flatten: one row per item per scan
   const rows = [];
-  const hdr = ['participant_id','sheet','timestamp','page','section','code','label','response','ambiguous','confidence'];
+  const hdr = ['participant_id','sheet','timestamp','page','section','code','label','response','ambiguous','confidence','overridden','auto_response'];
   rows.push(hdr.join(','));
   scans.forEach(s => {
     (s.results||[]).forEach(r => {
@@ -1403,7 +1551,8 @@ function exportOmrCSV() {
         r.page||'', r.section_id||'', r.code||'',
         `"${(r.label||'').replace(/"/g,'""')}"`,
         r.selectedValue||'', r.ambiguous?'1':'0',
-        r.maxFill !== undefined ? (r.maxFill*100).toFixed(0)+'%' : ''
+        r.maxFill !== undefined ? (r.maxFill*100).toFixed(0)+'%' : '',
+        r.overridden?'1':'0', r.overridden?(r.autoValue??''):''
       ].join(','));
     });
   });
@@ -1455,8 +1604,8 @@ function updateGroupProgress(surveys, interviews) {
 // ── ACTIVITY FEED ─────────────────────────────────────
 function updateActivityFeed(surveys, interviews, omrScans) {
   const all = [
-    ...surveys.map(r => ({ type:'survey', group:r.group, time:r.submittedAt||r.timestamp||Date.now(), label:'Survey completed' })),
-    ...interviews.map(r => ({ type:'interview', group:r.group, time:r.endedAt||r.startedAt||Date.now(), label:'Interview session' })),
+    ...surveys.map(r => ({ type:'survey', group:r.group, time:new Date(r.submittedAt||r.timestamp||Date.now()).getTime(), label:'Survey completed' })),
+    ...interviews.map(r => ({ type:'interview', group:r.group, time:new Date(r.endedAt||r.startedAt||r.importedAt||Date.now()).getTime(), label:'Interview session' })),
     ...(omrScans||[]).map(r => ({ type:'system', group:r.sheet||'', time:r.timestamp ? new Date(r.timestamp).getTime() : Date.now(), label:`OMR scan imported — ${r.participant_id||'unknown'}` })),
   ].sort((a,b) => b.time - a.time).slice(0, 10);
 
@@ -1478,7 +1627,7 @@ function updateParticipantTable(surveys) {
     <tr>
       <td style="font-family:monospace;font-size:11px">${escHtml(String(r.id||'—').slice(0,12))}</td>
       <td>${GROUP_ICONS[r.group]||''} ${escHtml(GROUP_LABELS[r.group]||r.group||'—')}</td>
-      <td>${escHtml(String((r.meta && r.meta.lang) || r.lang || '—').toUpperCase())}</td>
+      <td>${escHtml(String((r.meta && (r.meta.surveyLang || r.meta.lang)) || r.lang || '—').toUpperCase())}</td>
       <td>${r.submittedAt ? new Date(r.submittedAt).toLocaleString() : (r.timestamp ? new Date(r.timestamp).toLocaleString() : '—')}</td>
       <td><span class="status-badge done">✓ Complete</span></td>
     </tr>`).join('');
@@ -1498,7 +1647,8 @@ function updateInterviewTable(interviews) {
       <td>${escHtml(r.interviewer||'—')}</td>
       <td>${r.duration ? Math.ceil(r.duration/60) + ' min' : '—'}</td>
       <td>${r.endedAt ? new Date(r.endedAt).toLocaleString() : (r.startedAt ? new Date(r.startedAt).toLocaleString() : '—')}</td>
-      <td><span class="status-badge ${r.completed ? 'done' : 'pending'}">${r.completed ? '✓ Complete' : '⏳ In Progress'}</span></td>
+      <td><span class="status-badge ${r.completed ? 'done' : 'pending'}">${r.completed ? '✓ Complete' : '⏳ Partial'}</span>${
+        (r.incidents||[]).length ? ` <span class="status-badge pending" style="background:#fee2e2;color:#991b1b">⚠ ${(r.incidents||[]).length} incident${(r.incidents||[]).length>1?'s':''}${(r.incidents||[]).some(i=>i.type==='sae')?' · SAE':''}</span>` : ''}</td>
     </tr>`).join('');
 }
 
@@ -1530,15 +1680,23 @@ function updateProgressDetail(surveys, interviews) {
 function exportSurveyCSV() {
   const data = loadSurveys();
   if (!data.length) { showModal('No Data','No survey responses to export.',[]); return; }
-  const keys = ['id','group','lang','submittedAt'];
-  const rows = [keys.join(','), ...data.map(r => keys.map(k => `"${(r[k]||'').toString().replace(/"/g,'""')}"`).join(','))];
+  // Field names follow the questionnaire record (survey language and browser locale live under meta)
+  const cols = {
+    id: r => r.id, group: r => r.group,
+    survey_lang:  r => (r.meta && r.meta.surveyLang) || '',
+    browser_lang: r => (r.meta && r.meta.lang) || r.lang || '',
+    timestamp:    r => r.timestamp || r.submittedAt || '',
+  };
+  const keys = Object.keys(cols);
+  const rows = [keys.join(','), ...data.map(r => keys.map(k => `"${(cols[k](r)||'').toString().replace(/"/g,'""')}"`).join(','))];
   downloadText(rows.join('\n'), `dtam_my_surveys_${dateStr()}.csv`);
 }
 function exportInterviewCSV() {
   const data = loadInterviews();
   if (!data.length) { showModal('No Data','No interview sessions to export.',[]); return; }
-  const keys = ['id','group','interviewer','startedAt','endedAt','duration','completed'];
-  const rows = [keys.join(','), ...data.map(r => keys.map(k => `"${(r[k]||'').toString().replace(/"/g,'""')}"`).join(','))];
+  const keys = ['id','kind','group','participantId','interviewer','language','site','endedAt','duration','completed','incidents','sae'];
+  const val = (r, k) => k === 'incidents' ? (r.incidents||[]).length : k === 'sae' ? (r.incidents||[]).filter(i=>i.type==='sae').length : r[k];
+  const rows = [keys.join(','), ...data.map(r => keys.map(k => `"${(val(r,k) ?? '').toString().replace(/"/g,'""')}"`).join(','))];
   downloadText(rows.join('\n'), `dtam_my_interviews_${dateStr()}.csv`);
 }
 function exportInterviewJSON() {
@@ -1577,8 +1735,10 @@ function doeClear(type) {
 
 // ── MODAL ──────────────────────────────────────────────
 function showModal(title, msg, btns) {
+  if (!btns || !btns.length) btns = [{ label:'OK', cls:'btn-secondary', action:'closeModal()' }];
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-msg').textContent   = msg;
+  document.getElementById('modal-msg').style.whiteSpace = 'pre-line';
   document.getElementById('modal-btns').innerHTML = btns.map(b =>
     `<button class="btn ${b.cls}" onclick="${b.action}">${b.label}</button>`).join('');
   document.getElementById('modal-overlay').style.display = 'flex';

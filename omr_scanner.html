@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdnjs.cloudflare.com docs.opencv.org; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; worker-src blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net docs.opencv.org; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; worker-src blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>DTAM-MY OMR Scanner v2.0</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" integrity="sha384-tMH8h3BGESGckSAVGZ82T9n90ztNXxvdwvdM6UoR56cYcf+0iGXBliJ29D+wZ/x8" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" integrity="sha384-bm7MnzvK++ykSwVJ2tynSE5TRdN+xL418osEVF2DE/L/gfWHj91J2Sphe582B1Bh" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.2/babel.min.js" integrity="sha384-aGlMNK3U/x0wl4lEH5jD1PGhJlX9hApuPmIiA5gtiYCOQ1J8ejIdC0btaU/TMoBD" crossorigin="anonymous"></script>
   <script async src="https://docs.opencv.org/4.8.0/opencv.js"
     onload="window.cvReady=true;console.log('OpenCV ready');"
     onerror="console.warn('OpenCV failed to load — perspective correction disabled');"></script>
@@ -222,11 +222,12 @@ const SHEET_CONFIGS = {
         { code:'ATT_2', label:'I believe telerehabilitation is beneficial for elderly patients' },
         { code:'ATT_3', label:'I support the implementation of telerehabilitation in Malaysia' },
         { code:'ATT_4', label:'I would recommend telerehabilitation to people who need rehabilitation' },
-        { code:'BI_1',  label:'I intend to use telerehabilitation if I need rehabilitation' },
-        { code:'BI_2',  label:'I predict I would use telerehabilitation if recommended by a doctor' },
-        { code:'SI_1',  label:'People important to me would support using telerehabilitation' },
-        { code:'FC_1',  label:'I have access to devices and internet for telerehabilitation' },
-        { code:'FC_2',  label:'I have sufficient knowledge to use telerehabilitation' },
+        // GP_ prefix: these are General Public attitude items, not UTAUT2 BI/SI/FC items (codes must not collide in computeScores)
+        { code:'GP_BI_1', label:'I intend to use telerehabilitation if I need rehabilitation' },
+        { code:'GP_BI_2', label:'I predict I would use telerehabilitation if recommended by a doctor' },
+        { code:'GP_SI_1', label:'People important to me would support using telerehabilitation' },
+        { code:'GP_FC_1', label:'I have access to devices and internet for telerehabilitation' },
+        { code:'GP_FC_2', label:'I have sufficient knowledge to use telerehabilitation' },
       ]},
     ]
   },
@@ -381,9 +382,12 @@ function computeScores(results) {
 
   const zbiItems = results.filter(r=>r.code.startsWith('ZBI_')&&r.selectedValue);
   const zbiTotal = zbiItems.reduce((s,r)=>s+Number(r.selectedValue),0);
+  // ZBI total is only valid with all 22 items (Zarit et al., 1980); partial sums are not comparable
+  const zbiComplete = zbiItems.length === 22;
   const zbi = zbiItems.length ? {
-    total:zbiTotal,n:zbiItems.length,
-    category:zbiTotal<=20?'Little/No burden (0–20)':zbiTotal<=40?'Mild-Moderate (21–40)':
+    total: zbiComplete ? zbiTotal : null, n:zbiItems.length, complete: zbiComplete,
+    category: !zbiComplete ? `Incomplete (${zbiItems.length}/22 items read) — total not computed` :
+      zbiTotal<=20?'Little/No burden (0–20)':zbiTotal<=40?'Mild-Moderate (21–40)':
       zbiTotal<=60?'Moderate-Severe (41–60)':'Severe burden (61–88)'
   } : null;
 
@@ -442,12 +446,13 @@ function computeScores(results) {
 }
 
 function resultsToCSV(results, pid, sheetKey, ts) {
-  const hdr = ['participant_id','sheet','timestamp','page','section','code','label','response','ambiguous','confidence'];
+  const hdr = ['participant_id','sheet','timestamp','page','section','code','label','response','ambiguous','confidence','overridden','auto_response'];
   const rows = results.map(r=>[
     pid,sheetKey,ts,r.page,r.section_id,r.code,
     `"${r.label.replace(/"/g,'""')}"`,
     r.selectedValue??'',r.ambiguous?'1':'0',
-    (r.maxFill*100).toFixed(0)+'%'
+    (r.maxFill*100).toFixed(0)+'%',
+    r.overridden?'1':'0', r.overridden?(r.autoValue??''):''
   ]);
   return [hdr,...rows].map(r=>r.join(',')).join('\n');
 }
@@ -689,7 +694,7 @@ function ScoresSummary({ scores }) {
     rows:[['Score',sus.score+'/100'],['Grade',sus.grade],['n items',sus.n]] });
 
   if (zbi) cards.push({ title:'ZBI',color:C.orange,
-    rows:[['Total',zbi.total+'/88'],['Category',zbi.category],['n items',zbi.n]] });
+    rows:[['Total',zbi.total!=null?zbi.total+'/88':'—'],['Category',zbi.category],['n items',zbi.n]] });
 
   if (tuq) cards.push({ title:'TUQ',color:tuq.mean>=3.5?C.green:C.amber,
     rows:[['Mean',tuq.mean+'/5'],['Grade',tuq.grade],['n items',tuq.n]] });
@@ -858,7 +863,9 @@ function App() {
   const handleOverride = (code, val) => {
     setResults(prev=>{
       const next=prev.map(r=>r.code===code
-        ?{...r,selectedValue:val,no_response:val===null,ambiguous:false}:r);
+        // Keep provenance: first override records the machine-read value
+        ?{...r,selectedValue:val,no_response:val===null,ambiguous:false,
+          overridden:true, autoValue: r.overridden ? r.autoValue : r.selectedValue}:r);
       setScores(computeScores(next));
       return next;
     });
