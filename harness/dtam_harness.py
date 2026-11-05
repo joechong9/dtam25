@@ -16,7 +16,8 @@ Checks
 Commands
   check [FILES...] [--no-baseline] [--json] [--strict]
   baseline --write                  record current findings as the accepted baseline
-  sync [--write]                    regenerate DTAM_RULES blocks inside apps
+  sync [FILES...] [--write]         regenerate DTAM_RULES blocks (repo apps, or any FILES given,
+                                    e.g. the Report Assembler in PostGrad Work)
   status                            short summary (used by the SessionStart hook)
   hook post-edit | hook stop        Claude Code hook entry points (JSON on stdin)
 
@@ -584,21 +585,38 @@ def check_sync(ctx: Ctx):
     return out
 
 
-def do_sync(ctx: Ctx, write: bool) -> int:
+def do_sync(ctx: Ctx, write: bool, files=None) -> int:
+    """Sync generated blocks. FILES may be anywhere (e.g. apps in PostGrad Work);
+    without FILES, the repo's own apps and proxy are discovered automatically."""
     want = generated_block(ctx)
-    changed = 0
-    for p in sync_targets():
+    changed = missing = 0
+    if files:
+        targets = []
+        for f in files:
+            p = Path(f).resolve()
+            if not p.is_file():
+                print(f"not found: {f}")
+                missing += 1
+            elif SYNC_BEGIN not in read_text(p) or SYNC_END not in read_text(p):
+                print(f"no DTAM_RULES markers: {f} (add '{SYNC_BEGIN} */' and '{SYNC_END}' "
+                      f"inside a <script> block first)")
+                missing += 1
+            else:
+                targets.append(p)
+    else:
+        targets = sync_targets()
+    for p in targets:
         t = read_text(p)
         s = t.index(SYNC_BEGIN)
         e = t.index(SYNC_END, s) + len(SYNC_END)
         if t[s:e] != want:
             changed += 1
-            print(f"{'updated' if write else 'out of sync'}: {p.name}")
+            print(f"{'updated' if write else 'out of sync'}: {rel(p)}")
             if write:
                 p.write_text(t[:s] + want + t[e:], encoding="utf-8")
-    if not changed:
+    if not changed and not missing:
         print("all generated blocks in sync")
-    return 1 if (changed and not write) else 0
+    return 1 if (missing or (changed and not write)) else 0
 
 
 # ───────────────────────────── orchestration ──────────────────────────────
@@ -832,8 +850,9 @@ def main(argv=None) -> int:
     b.add_argument("--write", action="store_true")
     b.set_defaults(fn=cmd_baseline)
     s = sub.add_parser("sync")
+    s.add_argument("files", nargs="*", help="files to sync (may be outside the repo); default: discover in repo")
     s.add_argument("--write", action="store_true")
-    s.set_defaults(fn=lambda a: do_sync(Ctx(), a.write))
+    s.set_defaults(fn=lambda a: do_sync(Ctx(), a.write, a.files or None))
     st = sub.add_parser("status")
     st.set_defaults(fn=cmd_status)
     h = sub.add_parser("hook")
