@@ -482,7 +482,13 @@ function computeScores(results) {
 
 function resultsToCSV(results, pid, sheetKey, ts) {
   const hdr = ['participant_id','sheet','timestamp','page','section','code','label','response','ambiguous','confidence'];
-  const cell = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
+  // CSV cell: quoted; text starting with = + - @ (spreadsheet formula triggers) gets a leading ' so Excel
+  // shows it as text. Plain numbers such as -1 or 0.5 are left unchanged.
+  const cell = v => {
+    let s = String(v ?? '');
+    if (/^[=+\-@\t\r]/.test(s) && !/^[-+]?\d+(\.\d+)?([eE][-+]?\d+)?$/.test(s)) s = "'" + s;
+    return `"${s.replace(/"/g,'""')}"`;
+  };
   const rows = results.map(r=>[
     pid,sheetKey,ts,r.page,r.section_id,r.code,r.label,
     r.selectedValue,r.ambiguous?'1':'0',
@@ -492,8 +498,10 @@ function resultsToCSV(results, pid, sheetKey, ts) {
 }
 
 function downloadBlob(content, filename, mime) {
+  // CSV gets a UTF-8 byte-order mark so Excel shows non-Latin text correctly
+  const body = mime.startsWith('text/csv') ? '\uFEFF' + content : content;
   const a = Object.assign(document.createElement('a'),{
-    href:URL.createObjectURL(new Blob([content],{type:mime})),download:filename});
+    href:URL.createObjectURL(new Blob([body],{type:mime})),download:filename});
   a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
 }
 
