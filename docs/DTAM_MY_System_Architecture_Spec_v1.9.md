@@ -80,7 +80,7 @@ The workspace mixes *implemented code* with *designed-but-unbuilt* architecture 
 | 1.6 | 2026-11-05 | Command-paper details verified against the tabled edition supplied by the PI: Command Paper No. 29 of 2023, submitted to the House of Representatives / Senate, dated 13 June 2023. Printed page numbers match the MOH web edition, so all §12.6 page references stand. |
 | 1.7 | 2026-11-05 | Pre-pilot items completed in code. Crisis contacts verified; the outdated MIASA number was replaced. The 7 ETHICS_STATUS baseline defects were fixed with approved wording that withholds the reference, and the harness baseline is now empty. The Part C consent screen discloses speech-to-text when it is on. Pending amendments were recorded in the protocol §11 log. Draft PIS wording added (§12.4). New finding F-28 (retention period). BM/ZH strings refined after review. |
 | 1.8 | 2026-11-05 | F-28 resolved by PI decision: retention is **7 years post-publication** everywhere. The Part C and verbal-interview consent notices now match Protocol §7, and a pending-amendment entry was added to the §11 log. |
-| 1.9 | 2026-11-05 | PI decisions applied. F-02/F-07: keep both instrument versions, record capture mode, analyse shared items (Item Crosswalk v1.0). F-06/F-06b: four protocol-named Elderly items drafted, hidden until UREC amendment and CVI approval. F-15: protocol §10 adopts the §13.2 ML design. F-20: App Development 90% in both views. F-19: optional hardened deployment build plus server security headers (`deploy/`, `DEPLOY.md`). Stale wording corrected. F-28 re-decided by the PI: retention is **5 years post-publication** everywhere, superseding v1.8. Protocol §7, the §11 pending-amendment entry, and the Part C and verbal-interview consent notices now say 5 years. |
+| 1.9 | 2026-11-05 | PI decisions applied. F-02/F-07: keep both instrument versions, record capture mode, analyse shared items (Item Crosswalk v1.0). F-06/F-06b: four protocol-named Elderly items drafted, hidden until UREC amendment and CVI approval. F-15: protocol §10 adopts the §13.2 ML design. F-20: App Development 90% in both views. F-19: optional hardened deployment build plus server security headers (`deploy/`, `DEPLOY.md`). Stale wording corrected. F-28 re-decided by the PI: retention is **5 years post-publication** everywhere, superseding v1.8. Protocol §7, the §11 pending-amendment entry, and the Part C and verbal-interview consent notices now say 5 years. C7 description updated to the live-transcription build (§5.7, §10.2, T6, Appendix). Verification flags re-checked: Azure Malaysia West location confirmed (flag removed); PDPA s.129, GCP Malaysia status, the CAE emission factor and the 12MP commitment updated with what could be confirmed and still flagged (primary texts not reachable from the review environment). |
 
 
 ### 0.5 Merged state (v1.5)
@@ -96,7 +96,7 @@ Sections 5–7 describe the code as audited at commit `ccf443b`. Since then, `ma
 | Claude assistant | Optional proxy (`proxy/claude-proxy-worker.js`) keeps the API key out of the browser; replies are checked against the drift rules before display; the default model is set in the constants file |
 | Deep links | The scanner accepts `?sheet=` and `#SHEET` (F-13) |
 | Group keys | Part C keeps `policymaker` internally and maps it to `policy` in the admin index (F-17) |
-| Verbal prototype | Simulated STT is never recorded as data; stable session ID; export includes session metadata (F-18) |
+| Verbal prototype | Live browser transcription (Web Speech API) replaces the simulated STT; the interviewer always selects the score; stable session ID; export includes session metadata and `mode: "verbal"` (F-18) |
 | Ethics status | UREC approved (constants file). GCP-20 stays unticked only because the reference number is not published in this public repo |
 | Capture mode (v1.9) | Questionnaire records carry `mode: "digital"`; OMR exports `mode: "paper"`; verbal exports `mode: "verbal"`; all CSVs include `mode` |
 | Deployment (v1.9) | Optional hardened build in `deploy/` (`DEPLOY.md`). Pending-validation items are hidden unless built with `DTAM_ENABLE_PENDING_ITEMS=1` |
@@ -118,7 +118,7 @@ DTAM-MY is a mixed-methods measurement system for evaluating telerehabilitation 
 | C4 | Admin portal | `admin_portal_v2.html` | Researcher login, recruitment monitoring, data import/export, Claude assistant |
 | C5 | Research dashboard | `telerehab_dashboard_v2.html` | Charts of scores, demographics, recruitment and project phases |
 | C6 | Part C interview app | `partc_interview_v2.html` | Semi-structured qualitative interviews with live speech-to-text |
-| C7 | Verbal interview prototype | `verbal_interview_ui_v2.html` | Interviewer-assisted Likert administration via speech (simulated STT) |
+| C7 | Verbal interview prototype | `verbal_interview_ui_v2.html` | Interviewer-assisted Likert administration via speech (live browser transcription; interviewer-selected scores) |
 | C8 | Research Suite | `DTAM_MY_Research_Suite.html` | Project-management view: phases, GCP matrix, protocol, frameworks, SDG indicators |
 
 The components work together through a **browser-local data bus** (`localStorage`, DP-07) and **JSON file interchange** (DP-08), not through a backend. The questionnaire app already has a dual-write hook (`DTAM_CONFIG.API_ENDPOINT`, DP-09) ready for a future server.
@@ -287,7 +287,7 @@ flowchart LR
 
 1. **No server-side state.** All persistence is per-browser `localStorage` (C2, C4, C5) or downloaded JSON files (C3, C6, C7). Data is visible to C4 and C5 only if they run **in the same browser profile and origin** as C2. A participant completing C2 on their own phone produces a record the PI can never see, unless `API_ENDPOINT` is configured (F-05).
 2. **Three capture channels, three schemas.** The digital, paper and verbal channels converge only at the researcher's desk, through manual export and import (§[7](#s7)).
-3. **Two external network dependencies at runtime.** The Anthropic API (C4, opt-in, user-supplied key) and the browser vendor's speech service (C6, implicit; §[12.4](#s12-4)).
+3. **Two external network dependencies at runtime.** The Anthropic API (C4, opt-in, user-supplied key) and the browser vendor's speech service (C6 and C7, disclosed in their consent screens; §[12.4](#s12-4)).
 
 ### 4.3 Gap summary (target − as-built)
 
@@ -484,12 +484,12 @@ flowchart LR
 
 | Aspect | Specification |
 |---|---|
-| Purpose | Prove the concept of administering Likert items verbally to low-literacy elderly participants: interviewer reads the item, participant answers in speech, the system proposes a score, the interviewer confirms or overrides |
+| Purpose | Prove the concept of administering Likert items verbally to low-literacy elderly participants: interviewer reads the item, participant answers in speech, the answer is transcribed, and the interviewer selects the score |
 | Technology | React 18.2 + Babel; `INSTRUMENTS` (`:178`) with 6 items per language (EN, BM only): TAM ×2, UTAUT2 ×1, TUQ ×1, … |
-| STT | **Simulated.** `simulateSTT()` (`:227`) returns a random phrase, score (1–5) and confidence (0.65–0.95). The intended production call is `fetch('/api/stt', {audio})` → Whisper + NLP (`:226`, `:296`) |
-| Scoring | `autoScore` → optional `manualScore`; `isOverride` is flagged; the log entry includes `confidence` and `ts` (`confirmAndNext`, `:306`) (DP-12) |
-| Export | Session JSON (`:452`) (entity E4) |
-| Issues | `sessionId` is recomputed on every render from `Date.now()` (`:273`), so the exported file name and any displayed ID drift during a session (F-18). Not linked from any other component |
+| STT | **Live, browser Web Speech API** (`SpeechRec`, `:230`; `startRecord`, `:298`), as in C6. No audio file is saved; in Chrome and Edge the browser sends audio to its vendor's online speech service, disclosed in the consent screen. The transcript is editable, or typed when STT is unavailable or declined. The earlier `simulateSTT()` random stub is removed. A Malaysian-hosted ASR (`/api/stt`) remains a 📐 option (§[12.4](#s12-4)) |
+| Scoring | **Interviewer-selected only**: no automatic speech→score mapping until one is validated. Log entry `{code, instrument, transcript, confirmedScore, stt: 'browser'\|'manual', ts}`, upserted by item code (`confirmAndNext`, `:356`) (DP-12) |
+| Export | Session JSON (`:503`) with session metadata, `mode: "verbal"` and `interviewMode` (assisted/self) (entity E4) |
+| Issues | Session ID drift fixed (F-18). Items exist in EN and BM only (6 per language). Not linked from any other component |
 
 ### 5.8 C8 — Research Suite (`DTAM_MY_Research_Suite.html`) ✅
 
@@ -816,7 +816,7 @@ The framework catalogue in C8 (`FRAMEWORKS`, `:380`) positions MAST as the "stru
 | TAI | Telerehab Accessibility Index | 3.8 | (n accessed / n eligible) × 100 | Needs an "accessed telerehab" item, not present in C2 |
 | DEGR | Digital Equity Gap Ratio | 10.2 | (Urban TAI − Rural TAI) / Urban TAI | `d5` Residential Area ✔ |
 | APES | Ageing-in-Place Enablement Score | 11.7 | mean(WHOQOL Env) × SUS / 100 | ✔ both in Elderly digital flow |
-| CAE | CO₂ Avoidance Estimate | 13.2 | n sessions × avg travel km × 0.21 kg/km | Needs a travel-distance item, not present in C2 (F-06b); the emission factor needs a source `[NEEDS VERIFICATION]` |
+| CAE | CO₂ Avoidance Estimate | 13.2 | n sessions × avg travel km × 0.21 kg/km | Needs a travel-distance item, not present in C2 (F-06b); the 0.21 kg CO₂/km factor has no source and is higher than recent UK average-car factors (about 0.16–0.17 kg CO₂e/km, DESNZ 2023 set as reproduced by Durham University); use a cited Malaysian or DESNZ factor and name the year `[NEEDS VERIFICATION]` |
 
 ---
 
@@ -904,7 +904,7 @@ The workspace has three AI-adjacent capabilities that are built or stubbed, and 
 
 - **C1 FAQ bot.** Deterministic keyword matcher (§[5.1](#s5)). Not an LLM, so it has no hallucination risk and its answers are reviewable by UREC. Keep this design for participant-facing Q&A.
 - **C6 speech-to-text.** Browser Web Speech API (§[12.4](#s12-4) for privacy implications).
-- **C7 STT + auto-scoring.** Simulated. The design intent is Whisper ASR followed by NLP mapping of the utterance to a Likert value, with interviewer confirmation (DP-12).
+- **C7 speech-to-text.** Browser Web Speech API, as in C6; the interviewer selects every score. Automatic speech→Likert mapping (for example Whisper ASR plus NLP) remains a design option, to be validated before use (DP-12).
 
 <a id="s10-3"></a>
 ### 10.3 Designed multi-agent research-operations system (📐 S9)
@@ -1017,14 +1017,14 @@ Light tasks such as QA format checks are routed to a Haiku-tier model for cost; 
 | T3 | Lockout bypass | New tab or window resets the `sessionStorage` counter | Unlimited online guessing | F-11 |
 | T4 | Stored XSS via import | Crafted OMR JSON `participant_id` interpolated into `innerHTML` (C4 `:1373`) | Script execution in the admin origin (CSP `'unsafe-inline'` permits inline handlers) | F-14 |
 | T5 | Supply-chain script compromise | CDN scripts loaded without SRI; `'unsafe-eval'` | Arbitrary code in C2/C3/C5/C7 | F-19 |
-| T6 | Cross-border processing of interview audio | Web Speech API streams audio to the browser vendor's cloud | PDPA s.129 transfer concerns `[NEEDS VERIFICATION]`; undisclosed in consent | F-12 |
+| T6 | Cross-border processing of interview audio | Web Speech API (C6, C7) streams audio to the browser vendor's cloud | Transfer outside Malaysia under PDPA s.129 as amended by the Personal Data Protection (Amendment) Act 2024: the Minister's whitelist is replaced by conditions (substantially similar law or adequate protection, or a listed exception such as consent), in force 1 April 2025, with the Commissioner's cross-border transfer guideline (29 April 2025) expecting a transfer impact assessment and transfer records. Disclosed in both consent screens; STT is optional. Secondary sources only (law-firm summaries); confirm against the Act and guideline text `[NEEDS VERIFICATION]` | F-12 |
 | T7 | API-key exposure | Key typed into the browser and sent directly to the API | Key theft through XSS (T4) | DP-16 |
 | T8 | Data loss | Browser storage cleared; device lost | Irrecoverable responses (pilot mode) | F-05 |
 | T9 | Clickjacking | `frame-ancestors` is **ignored** when CSP is delivered via `<meta>` | UI redress on admin portal | F-19 |
 
 **Conclusion.** The as-built suite is appropriate for **demonstration, usability testing and ethics review with synthetic data**. It is **not** appropriate for real participant data until the 📐 server-side controls in §[12.5](#s12-5) are in place. This should be stated in the data-management documentation so reviewers do not infer that the "PDPA 2010" and "GCP compliant" badges on the C2 intro screen (`:2698–2699`) describe the current build.
 
-### 12.4 Speech-to-text privacy note (C6)
+### 12.4 Speech-to-text privacy note (C6, C7)
 
 <a id="s12-4"></a>
 Chromium-based browsers implement `SpeechRecognition` by sending audio to a vendor speech service. Interview audio from elderly participants and caregivers is sensitive personal data (health context). Options, in order of preference:
@@ -1060,7 +1060,7 @@ The Part C app now shows the equivalent notice on its consent screen, and adds i
 |---|---|---|
 | Fabricated national digital-health policy document (name withheld; harness rules `NDHB_*`) | C8 GCP-06, C8 policy item B2, C8 protocol text, C1 (policy anchors, compliance card, chatbot), C2 (`pol2`, helper text, ethics badges) | ✅ **Replaced everywhere** by the Health White Paper (2023). The harness now blocks the name in all four languages |
 | "Health White Paper (2023)" | S9 executive summary; GCP-06 anchor | ✅ **Verified against the MOH web edition (v1.4) and the tabled command paper (v1.6).** Ministry of Health Malaysia (2023). *Health White Paper for Malaysia: Strengthening people's health, future-proofing the nation's health system*. Kuala Lumpur: Ministry of Health for the Government of Malaysia (title p. 1; ©2023 MOH, p. 3). **Command Paper No. 29 of 2023**, "Submitted in the House of Representatives / Senate in accordance with orders", dated **13 June 2023** (cover of the tabled edition; matches `harness/dtam_constants.json`). The MOH web edition omits this cover sheet. The text says it "will be tabled" in Parliament (pp. 10, 63). The tabled cover is dated 13 June 2023; the subsequent approval in June 2023 is from news reports (NST, The Star, Malay Mail). See the evidence table below |
-| "12th Malaysia Plan" | C1 `polMp` | Real plan; confirm the specific digital-health commitments cited `[NEEDS VERIFICATION]` |
+| "12th Malaysia Plan" | C1 `polMp` | Real plan (2021–2025, tabled September 2021). C1 cites only "digital economy & health equity goals", which is generic; the plan's health chapter text (including its health-system reform agenda and digital service delivery) was not retrieved, so the specific commitment and page are still to be cited `[NEEDS VERIFICATION]` |
 | Instrument citations: Davis 1989; Venkatesh et al. 2012; Parmanto et al. 2016; Brooke 1996; WHO 1996; Zarit et al. 1980; Kidholm et al. 2012; WHO 2001; Braun & Clarke 2006 | C2, C3, C8 | Standard and widely cited; confirm full references in the thesis bibliography |
 | Crisis lines (Protocol §6; Part C distress form) | C8 protocol §6; C6 `DISTRESS_STEPS` | ✅ **Verified 2026-11-05 (v1.7).** Befrienders KL **03-7627 2929** (24 h, free; befrienders.org.my). **MIASA:** the previous number 03-2780 6803 did not match any current source and was replaced by the MIASA crisis helpline **1800 180 066** (24 h) and WhatsApp **03-9765 6088** (miasa.org.my; The Star, 2025). Emergency **999** added. Re-check before each data-collection wave |
 
@@ -1154,9 +1154,9 @@ Static files. Any HTTPS static host works (UTAR web space, GitHub Pages, an S3-c
 | Option | DC location | PDPA residency | Strengths | Weaknesses |
 |---|---|---|---|---|
 | **Exabytes MY** (recommended in C1/C8) | Penang + KL | ✔ In-country | Cost, local support, strict residency | Fewer managed services; you run PostgreSQL yourself |
-| GCP asia-southeast1 | Singapore | ⚠️ Cross-border (permitted with safeguards `[NEEDS VERIFICATION]`) | Cloud SQL, Bitnami images | Data leaves Malaysia |
-| GCP Malaysia region | Selangor | ✔ when live | Managed services in-country | Check live status `[NEEDS VERIFICATION]` |
-| Azure Malaysia West | KL / Johor `[NEEDS VERIFICATION]` | ✔ In-country | REDCap Quick Start; enterprise/MOH alignment | Cost |
+| GCP asia-southeast1 | Singapore | ⚠️ Cross-border: permitted under amended PDPA s.129 if a condition is met, with a transfer impact assessment (see T6) `[NEEDS VERIFICATION]` | Cloud SQL, Bitnami images | Data leaves Malaysia |
+| GCP Malaysia region | Malaysia (announced August 2022; groundbreaking reported 2024) | ✔ when live | Managed services in-country | Live status not confirmed: check cloud.google.com/about/locations `[NEEDS VERIFICATION]` |
+| Azure Malaysia West | Greater Kuala Lumpur, three availability zones (generally available 28 May 2025, per Microsoft's announcement) | ✔ In-country | REDCap Quick Start; enterprise/MOH alignment | Cost |
 
 **Reference stack (S9):** Ubuntu 22.04 · Apache · PHP 8.1 · MySQL 5.7 (for LimeSurvey/REDCap) · PostgreSQL 15 (warehouse) · Node.js 20 (API) · Python 3.11 (analytics/ML) · Let's Encrypt. ⚠️ MySQL 5.7 reached end of life in October 2023, and Node.js 20 and Python 3.11 are approaching or past their end-of-support windows by 2026–27. Pin current LTS versions at deployment time.
 
@@ -1243,7 +1243,7 @@ Status: **✅ Fixed (v1.1/v1.2)** = this branch; **✅ Fixed (`main`)** = fixed 
 | F-15 | Medium | Conflicting ML specifications | S9 §12; C8 `:286` | **✅ Fixed (v1.9).** Protocol §10 adopts the §13.2 design (pilot LOOCV feasibility; full-study RF vs XGBoost, repeated 5-fold CV, AUC ≥ 0.75, OSF pre-registration; no LSTM); pending amendment | §[13](#s13) |
 | F-16 | Medium | Research Suite previews show UTAUT2/TUQ on 1–7 scales; instruments use 1–5 | C8 `:314–316`, `:374–376` | **✅ Fixed (v1.2).** Previews show 1–5 scales | §[7.6](#s7-6) |
 | F-17 | Medium | Group key `policymaker` (C6) ≠ `policy` (C2/C4/C5); C6 has no General Public guide | C6 `QB`, `TRANSLATIONS` | **◐ Partly fixed (`main`).** Part C maps `policymaker` → `policy` in the admin index; the admin import maps it too. Open: no General Public interview guide (content decision) | §[0.3](#s0) |
-| F-18 | Medium | C7 `sessionId` recomputed every render; export lacks participant, researcher, group and language | C7 `:273`, `:452` | **✅ Fixed (`main`).** Stable session ID; export includes session metadata; simulated STT never recorded as data | §[7.2](#s7-2) |
+| F-18 | Medium | C7 `sessionId` recomputed every render; export lacks participant, researcher, group and language | C7 `:273`, `:452` | **✅ Fixed (`main`).** Stable session ID; export includes session metadata; the simulated STT was later replaced by live browser transcription with interviewer-selected scores | §[7.2](#s7-2) |
 | F-19 | Medium | CDN scripts without SRI; `'unsafe-eval'`; `frame-ancestors` ineffective in meta CSP | C2/C3/C5/C7 heads | **✅ Fixed for deployment (v1.9).** `deploy/build.mjs` pre-compiles JSX (no `'unsafe-eval'` except the OMR scanner, where OpenCV WebAssembly needs it), self-hosts React/Chart.js with SRI, and pins OpenCV.js when the build machine can reach it. `deploy/headers/` sets `frame-ancestors`, `nosniff`, Referrer-Policy, Permissions-Policy and HSTS as HTTP headers | DP-02 |
 | F-20 | Low | Phase percentages and deliverable counts disagree between C5 and C8; "PWA + APK + Node + PostgreSQL done" not reflected in the repo | C5 `:754–763`; C8 `:216–225`, `:285` | **✅ Fixed (v1.9).** App Development is 90% in both views, with the note "Server deployed". Document counts remain the PI's to reconcile | §[9.2](#s9) |
 | F-21 | Low | C1 CSP permits `connect-src api.anthropic.com` without using it | C1 line 5 | **✅ Fixed (v1.1).** `connect-src 'self'` | §[5.1](#s5) |
@@ -1394,7 +1394,7 @@ CREATE TABLE audit_log (
 | C4 | `hashPassword`, `checkSession`, `doLogin`, `doRegister`, `refreshAll`, `importOmrJson`, `sendChat` | 962, 1013, 1032, 1126, 1312, 1327, 1606 | Auth; data plane; LLM |
 | C5 | `loadData`, `mkChart`, `showTab`, `renderPhaseBars`, `renderScoreCharts`, `exportCSV` | 697, 725, 742, 754, 898, 1071 | Analytics |
 | C6 | `QB`, `S`, `render`, `startRec`, `exportSession` | 175, 344, 401, 868, 987 | Interview guide; STT; export |
-| C7 | `INSTRUMENTS`, `simulateSTT`, `App`, `confirmAndNext` | 178, 227, 250, 306 | Verbal Likert prototype |
+| C7 | `INSTRUMENTS`, `SpeechRec`, `App`, `startRecord`, `confirmAndNext` | 178, 230, 251, 298, 356 | Verbal Likert prototype |
 | C8 | `PHASES`, `ADVISORY`, `GCP_ITEMS`, `PROTO`, `FRAMEWORKS`, `SDG` | 216, 233, 252, 276, 380, 424 | Project cockpit |
 
 ### 18.4 Glossary
