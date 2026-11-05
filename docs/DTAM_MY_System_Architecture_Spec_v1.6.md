@@ -1,7 +1,7 @@
 # DTAM-MY System Architecture Specification
 
 **Digital Telerehabilitation Assessment Model — Malaysia (DTAM-MY)**
-**Document ID:** DTAM_MY_System_Architecture_Spec_v1.5 · **Status:** Draft for supervisory review · **Date:** 5 November 2026
+**Document ID:** DTAM_MY_System_Architecture_Spec_v1.6 · **Status:** Draft for supervisory review · **Date:** 5 November 2026
 
 | Field | Value |
 |---|---|
@@ -77,6 +77,7 @@ The workspace mixes *implemented code* with *designed-but-unbuilt* architecture 
 | 1.3 | 2026-11-05 | GCP-06 rectified: re-anchored to the *Health White Paper for Malaysia* (Ministry of Health Malaysia, 2023; approved by Parliament June 2023) and restored to compliant, so the score is back to 19/22 (86%). HWP added to the landing-page policy anchors, the compliance card, the questionnaire ethics badges and the protocol governing standards. |
 | 1.4 | 2026-11-05 | HWP citation checked against the MOH PDF supplied by the PI. Title and publisher confirmed; page-level evidence added (§12.6). No command-paper number appears in the MOH web edition. The parliamentary approval date is attributed to news reports. GCP-06 now carries section references (§3.1.1, §3.1.4). |
 | 1.5 | 2026-11-05 | Merged with `main` (PRs joechong9/dtam25#2, #3, #5, #6). Where both branches fixed the same issue, `main`'s implementation is kept (see §0.5). Aligned with `harness/dtam_constants.json`: UREC is **approved**; the policy anchor is the Health White Paper (2023). The fabricated citation is no longer named in this document. |
+| 1.6 | 2026-11-05 | Command-paper details verified against the tabled edition supplied by the PI: Command Paper No. 29 of 2023, submitted to the House of Representatives / Senate, dated 13 June 2023. Printed page numbers match the MOH web edition, so all §12.6 page references stand. |
 
 
 ### 0.5 Merged state (v1.5)
@@ -1047,13 +1048,15 @@ Chromium-based browsers implement `SpeechRecognition` by sending audio to a vend
 | Reference | Location | Status |
 |---|---|---|
 | Fabricated national digital-health policy document (name withheld; harness rules `NDHB_*`) | C8 GCP-06, C8 policy item B2, C8 protocol text, C1 (policy anchors, compliance card, chatbot), C2 (`pol2`, helper text, ethics badges) | ✅ **Replaced everywhere** by the Health White Paper (2023). The harness now blocks the name in all four languages |
-| "Health White Paper (2023)" | S9 executive summary; GCP-06 anchor | ✅ **Verified against the MOH PDF (v1.4).** Ministry of Health Malaysia (2023). *Health White Paper for Malaysia: Strengthening people's health, future-proofing the nation's health system*. Kuala Lumpur: Ministry of Health for the Government of Malaysia (title p. 1; ©2023 MOH, p. 3). The command-paper number (No. 29 of 2023) comes from the canonical facts table (`harness/dtam_constants.json`); the MOH web edition does not print it. The document says it "will be tabled" in Parliament (pp. 10, 63); the June 2023 approval is from news reports (NST, The Star, Malay Mail). See the evidence table below |
+| "Health White Paper (2023)" | S9 executive summary; GCP-06 anchor | ✅ **Verified against the MOH web edition (v1.4) and the tabled command paper (v1.6).** Ministry of Health Malaysia (2023). *Health White Paper for Malaysia: Strengthening people's health, future-proofing the nation's health system*. Kuala Lumpur: Ministry of Health for the Government of Malaysia (title p. 1; ©2023 MOH, p. 3). **Command Paper No. 29 of 2023**, "Submitted in the House of Representatives / Senate in accordance with orders", dated **13 June 2023** (cover of the tabled edition; matches `harness/dtam_constants.json`). The MOH web edition omits this cover sheet. The text says it "will be tabled" in Parliament (pp. 10, 63). The tabled cover is dated 13 June 2023; the subsequent approval in June 2023 is from news reports (NST, The Star, Malay Mail). See the evidence table below |
 | "12th Malaysia Plan" | C1 `polMp` | Real plan; confirm the specific digital-health commitments cited `[NEEDS VERIFICATION]` |
 | Instrument citations: Davis 1989; Venkatesh et al. 2012; Parmanto et al. 2016; Brooke 1996; WHO 1996; Zarit et al. 1980; Kidholm et al. 2012; WHO 2001; Braun & Clarke 2006 | C2, C3, C8 | Standard and widely cited; confirm full references in the thesis bibliography |
 | Crisis lines (Befrienders 03-7627 2929; MIASA 03-2780 6803) | Protocol §6 | Operational contact details. Re-verify before pilot, because numbers change `[NEEDS VERIFICATION]` |
 
 
-**GCP-06 evidence: DTAM-MY design ↔ Health White Paper for Malaysia (MOH, 2023)**
+**GCP-06 evidence: DTAM-MY design ↔ Health White Paper for Malaysia (MOH, 2023; Command Paper No. 29 of 2023)**
+
+Page numbers are the printed page numbers, which are identical in the tabled edition and the MOH web edition (the tabled PDF has one extra, unnumbered cover sheet).
 
 | DTAM-MY element | HWP evidence (verbatim where quoted) | Page |
 |---|---|---|
