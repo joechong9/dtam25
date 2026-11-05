@@ -1,7 +1,7 @@
 # DTAM-MY System Architecture Specification
 
 **Digital Telerehabilitation Assessment Model — Malaysia (DTAM-MY)**
-**Document ID:** DTAM_MY_System_Architecture_Spec_v1.7 · **Status:** Draft for supervisory review · **Date:** 5 November 2026
+**Document ID:** DTAM_MY_System_Architecture_Spec_v1.8 · **Status:** Draft for supervisory review · **Date:** 5 November 2026
 
 | Field | Value |
 |---|---|
@@ -79,6 +79,7 @@ The workspace mixes *implemented code* with *designed-but-unbuilt* architecture 
 | 1.5 | 2026-11-05 | Merged with `main` (PRs joechong9/dtam25#2, #3, #5, #6). Where both branches fixed the same issue, `main`'s implementation is kept (see §0.5). Aligned with `harness/dtam_constants.json`: UREC is **approved**; the policy anchor is the Health White Paper (2023). The fabricated citation is no longer named in this document. |
 | 1.6 | 2026-11-05 | Command-paper details verified against the tabled edition supplied by the PI: Command Paper No. 29 of 2023, submitted to the House of Representatives / Senate, dated 13 June 2023. Printed page numbers match the MOH web edition, so all §12.6 page references stand. |
 | 1.7 | 2026-11-05 | Pre-pilot items completed in code. Crisis contacts verified; the outdated MIASA number was replaced. The 7 ETHICS_STATUS baseline defects were fixed with approved wording that withholds the reference, and the harness baseline is now empty. The Part C consent screen discloses speech-to-text when it is on. Pending amendments were recorded in the protocol §11 log. Draft PIS wording added (§12.4). New finding F-28 (retention period). BM/ZH strings refined after review. |
+| 1.8 | 2026-11-05 | F-28 resolved by PI decision: retention is **7 years post-publication** everywhere. The Part C and verbal-interview consent notices now match Protocol §7, and a pending-amendment entry was added to the §11 log. |
 
 
 ### 0.5 Merged state (v1.5)
@@ -1249,7 +1250,7 @@ Status: **✅ Fixed (v1.1/v1.2)** = this branch; **✅ Fixed (`main`)** = fixed 
 | F-25 | High | No tool captures AE/SAE or distress-protocol events, although Protocol §6 requires 24-hour SAE reporting | Protocol §6 `:282`; no code | **✅ Fixed (v1.2).** C6 "⚠ Distress / AE" record (type, outcome, 7 protocol steps, PI-notified time); SAE alert; exported; the admin import flags SAEs with the 24-hour reminder | §[9.1](#s9) |
 | F-26 | Low | C5's embedded OMR scanner `<iframe src="omr_scanner.html">` is blocked by C5's own CSP (`default-src 'none'` with no `frame-src`) | C5 line 5, `:676` | **✅ Fixed (`main`).** `frame-src 'self'`; the embedded scanner loads | §[5.5](#s5) |
 | F-27 | Low | Admin Settings asked for a Gemini API key for an "AI Insights" feature that does not exist; the key was never used | C4 Settings | **✅ Fixed (v1.2).** Setting removed | §[10](#s10) |
-| F-28 | Medium | Retention periods disagree: the Part C consent notice says recordings are kept **5 years** post-publication; Protocol §7 says data are retained **7 years** post-publication | C6 `renderConsent`; C8 protocol §7 | Open: PI decision; align the consent text, PIS and protocol to one period (participant-facing) | §[12.5](#s12-5) |
+| F-28 | Medium | Retention periods disagree: the Part C consent notice says recordings are kept **5 years** post-publication; Protocol §7 says data are retained **7 years** post-publication | C6 `renderConsent`; C8 protocol §7 | **✅ Fixed (v1.8).** PI decision: 7 years. The Part C and verbal consent notices now say 7 years, matching Protocol §7 (the PIS must say the same) | §[12.5](#s12-5) |
 
 
 **Open items after v1.2.** None of these can be fixed in client code alone:
@@ -1260,7 +1261,7 @@ Status: **✅ Fixed (v1.1/v1.2)** = this branch; **✅ Fixed (`main`)** = fixed 
 | **Research decision** (instrument content) | F-02 canonical item set per instrument; F-06 ICF/policy/public scoring rules and missing items; F-06b SDG items (telerehab access, travel distance); F-07 one battery per group; F-17 General Public interview guide |
 | **Backend + Malaysian hosting** (roadmap step 2) | F-05 central data store; F-08 server-side auth/RBAC; F-10 encryption at rest |
 | **Build pipeline / hosting headers** | F-19 pre-compiled JSX (drops `'unsafe-eval'`), self-hosted OpenCV with SRI, CSP and `frame-ancestors` as HTTP headers |
-| **PI judgement / documentation** | F-15 adopt the §13.2 ML design in the protocol; F-20 phase percentages; F-28 one retention period across consent, PIS and protocol; formal amendment of the protocol and PIS (the pending entries are in the C8 §11 log) |
+| **PI judgement / documentation** | F-15 adopt the §13.2 ML design in the protocol; F-20 phase percentages; formal amendment of the protocol and PIS (the pending entries are in the C8 §11 log) |
 
 Also fixed in v1.2, outside the numbered findings: the admin activity feed sorted ISO date strings numerically (NaN), so the order was random; the admin survey CSV read non-existent `lang`/`submittedAt` fields; and "No Data" modals had no close button.
 
