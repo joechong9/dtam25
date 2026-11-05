@@ -11,7 +11,13 @@ test('Part C: a recording flushes into its own question, notes survive re-render
     await page.goto(env.base + 'partc_interview_v2.html');
     await page.fill('#f_rid', 'R"01'); await page.fill('#f_pid', 'CG-<b>7');
     await page.selectOption('#f_group', 'policymaker');
-    await page.click('#btn_setup_next'); await page.check('#cb_consent'); await page.click('#btn_consent_next');
+    await page.check('#f_stt');                                      // live transcription is opt-in
+    await page.click('#btn_setup_next');
+    const consent = await page.textContent('.consent-box');
+    assert.match(consent, /does not save an audio file/);
+    assert.match(consent, /Speech-to-text notice/, 'speech-service disclosure shown when transcription is on');
+    assert.match(consent, /5 years post-publication/);
+    await page.check('#cb_consent'); await page.click('#btn_consent_next');
     const q1 = await page.evaluate(() => currentQuestion().code);
     await page.click('#btn_rec'); await page.waitForTimeout(50);
     await page.evaluate(() => window.__sr.emit('hello world'));

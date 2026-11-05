@@ -1,8 +1,9 @@
 // Shared helpers for the DTAM-MY browser tests (node --test).
 // Pages are opened from the repository either over file:// or a local HTTP server. Requests to the
-// CDNs the apps use (cdnjs, docs.opencv.org) are answered from the pinned local copies in node_modules,
-// so the tests are deterministic and work offline. The page's own CSP still applies, so a CSP that
-// blocks a CDN script is caught.
+// CDNs the apps use (jsDelivr npm, docs.opencv.org; cdnjs for older pages) are answered from the pinned
+// local copies in node_modules, so the tests are deterministic and work offline. The page's own CSP and
+// Subresource Integrity checks still apply: jsDelivr serves npm files unchanged, so the local copies
+// match the integrity hashes, and a CSP or SRI mismatch still fails the test.
 import { chromium } from 'playwright';
 import http from 'node:http';
 import fs from 'node:fs';
@@ -46,11 +47,20 @@ export async function setup(mode = 'file', opts = {}) {
   }
   const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
   const ctx = await browser.newContext();
-  await ctx.route(/^https:\/\/(cdnjs\.cloudflare\.com|docs\.opencv\.org)\//, route => {
+  const js = file => ({ path: file, contentType: 'application/javascript', headers: { 'access-control-allow-origin': '*' } });
+  await ctx.route(/^https:\/\/(cdnjs\.cloudflare\.com|docs\.opencv\.org|cdn\.jsdelivr\.net)\//, route => {
     const url = route.request().url();
     if (opts.block && opts.block.test(url)) return route.abort();
+    // jsDelivr: https://cdn.jsdelivr.net/npm/<pkg>@<version>/<path>  ->  node_modules/<pkg>/<path>
+    const m = url.match(/^https:\/\/cdn\.jsdelivr\.net\/npm\/((?:@[^/]+\/)?[^@/]+)@([^/]+)\/(.+)$/);
+    if (m) {
+      const [, pkg, version, file] = m;
+      const pinned = JSON.parse(fs.readFileSync(path.join(NM, pkg, 'package.json'), 'utf8')).version;
+      if (pinned !== version) throw new Error(`${pkg}@${version} requested but ${pinned} is pinned in package.json`);
+      return route.fulfill(js(path.join(NM, pkg, file)));
+    }
     const local = CDN_FILES[url.split('/').pop()];
-    if (local) return route.fulfill({ path: path.join(NM, local), contentType: 'application/javascript' });
+    if (local) return route.fulfill(js(path.join(NM, local)));
     return route.abort();
   });
   // Anthropic API is never called for real in tests.
