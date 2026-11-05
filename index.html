@@ -563,7 +563,7 @@
           </span>
         </div>
         <div style="font-size:var(--fs-xs);color:var(--muted);margin-top:4px;" id="i18n-plat-ios-note">
-          ⏳ Distribution pending UREC ethics clearance (Phase 4)
+          ⏳ Distribution planned for Phase 4 (pilot)
         </div>
       </div>
 
@@ -649,7 +649,7 @@
         <div class="about-card" style="margin-top:16px;">
           <h4 id="i18n-pol-title">📋 Policy Anchors</h4>
           <div class="framework-list">
-            <div class="fw-row"><span class="fw-pill" style="min-width:80px;font-size:9px;">HWP 2023</span><span class="fw-desc" id="i18n-pol-hwp">Health White Paper for Malaysia (MOH, 2023)</span></div>
+            <div class="fw-row"><span class="fw-pill" style="min-width:80px;font-size:9px;">HWP 2023</span><span class="fw-desc" id="i18n-pol-ndhb">Health White Paper (2023), MOH Malaysia</span></div>
             <div class="fw-row"><span class="fw-pill" style="min-width:80px;font-size:9px;">PDPA 2010</span><span class="fw-desc" id="i18n-pol-pdpa">Personal Data Protection Act 2010 (Act 709)</span></div>
             <div class="fw-row"><span class="fw-pill" style="min-width:80px;font-size:9px;">12th MP</span><span class="fw-desc" id="i18n-pol-mp">12th Malaysia Plan — Digital economy & health equity goals</span></div>
           </div>
@@ -990,7 +990,7 @@
       </div>
       <div class="comp-card">
         <div class="comp-icon">📱</div>
-        <div><div class="comp-title" id="i18n-c6-ti">Health White Paper for Malaysia (2023)</div><div class="comp-desc" id="i18n-c6-de">MOH health-system reform agenda — telehealth, electronic lifetime health records and health information exchange.</div></div>
+        <div><div class="comp-title" id="i18n-c6-ti">Health White Paper (2023)</div><div class="comp-desc" id="i18n-c6-de">MOH Malaysia 15-year health reform agenda — digital health records and equitable, sustainable care.</div></div>
       </div>
       <div class="comp-card">
         <div class="comp-icon">🏫</div>
@@ -998,7 +998,7 @@
       </div>
       <div class="comp-card" style="border-color:var(--teal);background:var(--lteal);">
         <div class="comp-icon">✅</div>
-        <div><div class="comp-title" style="color:var(--teal);" id="i18n-c8-ti">Audit Score: 19/22 (86%)</div><div class="comp-desc" id="i18n-c8-de">Full 22-item GCP audit completed. Three procedural items pending: ethics reference number, MREC registration and OSF pre-registration.</div></div>
+        <div><div class="comp-title" style="color:var(--teal);" id="i18n-c8-ti">Audit Score: 19/22 (86%)</div><div class="comp-desc" id="i18n-c8-de">Full 22-item GCP audit completed. Three procedural items pending ethics ref number and MREC registration.</div></div>
       </div>
     </div>
   </div>
@@ -1299,7 +1299,7 @@
 
   <div class="chat-input-row">
     <input class="chat-input" id="chatInput" type="text" placeholder="Ask about the study…"
-      onkeydown="if(event.key==='Enter')sendMessage()"/>
+      onkeydown="if(event.key==='Enter'&&!event.isComposing)sendMessage()"/>
     <button class="chat-send" id="chatSendBtn" onclick="sendMessage()">➤</button>
   </div>
 </div>
@@ -1352,7 +1352,7 @@ const LANG_DATA = {
       fwSus:'Brooke, 1996 — System usability scale',
       fwWhoqol:'WHO, 1996 — Quality of life (BREF)',
       fwZbi:'Zarit et al., 1980 — Caregiver burden interview',
-      polHwp:'Health White Paper for Malaysia (MOH, 2023)',
+      polNdhb:'Health White Paper (2023), MOH Malaysia',
       polPdpa:'Personal Data Protection Act 2010 (Act 709)',
       polMp:'12th Malaysia Plan — Digital economy & health equity goals'
     },
@@ -1404,9 +1404,9 @@ const LANG_DATA = {
       c3Ti:'Belmont Report',                           c3De:'U.S. National Commission, 1979 — respect for persons, beneficence, justice.',
       c4Ti:'CIOMS Guidelines 2016',                    c4De:'International ethical guidelines for health-related research with human participants.',
       c5Ti:'PDPA 2010 (Act 709)',                      c5De:"Malaysia's Personal Data Protection Act — data processing, storage, and consent.",
-      c6Ti:'Health White Paper for Malaysia (2023)', c6De:'MOH health-system reform agenda — telehealth, electronic lifetime health records and health information exchange.',
+      c6Ti:'Health White Paper (2023)', c6De:'MOH Malaysia 15-year health reform agenda — digital health records and equitable, sustainable care.',
       c7Ti:'UTAR UREC',                                c7De:'Universiti Tunku Abdul Rahman Research Ethics Committee — local institutional review.',
-      c8Ti:'Audit Score: 19/22 (86%)',                 c8De:'Full 22-item GCP audit completed. Three procedural items pending: ethics reference number, MREC registration and OSF pre-registration.'
+      c8Ti:'Audit Score: 19/22 (86%)',                 c8De:'Full 22-item GCP audit completed. Three procedural items pending ethics ref number and MREC registration.'
     },
     team2:{
       piBio:'Researching the development of a digital telerehabilitation technology assessment model for Malaysia, with a focus on elderly post-stroke patients and multi-stakeholder engagement. The dissertation integrates biomedical engineering, health informatics, and data science to produce a GCP-compliant, policy-aligned assessment framework across five stakeholder groups and four languages.',
@@ -1432,7 +1432,7 @@ const LANG_DATA = {
       iosDesc:'Native iPhone and iPad app built with Capacitor 6 + WKWebView. Supports camera-based OMR scanning, offline data entry, and Face ID–protected admin portal. Distributed via TestFlight for pilot study researchers and field enumerators.',
       iosSpec1:'PDPA Compliant', iosSpec2:'Offline-capable',
       iosBtn1:'✈ TestFlight — Pending', iosBtn2:'🍎 App Store — Pending',
-      iosNote:'⏳ Distribution pending UREC ethics clearance (Phase 4)',
+      iosNote:'⏳ Distribution planned for Phase 4 (pilot)',
       andName:'Android App', andStatus:'Coming Soon',
       andDesc:'Android APK built with Capacitor 6. Targets Android 8.0+ for broad coverage across Malaysia\'s diverse device landscape. Supports low-end hardware commonly used in rural and semi-urban healthcare settings.',
       andSpec1:'APK sideload', andSpec2:'Play Store (planned)',
@@ -1485,7 +1485,7 @@ const LANG_DATA = {
       fwSus:'Brooke, 1996 — Skala kebolehgunaan sistem',
       fwWhoqol:'WHO, 1996 — Kualiti hidup (Ringkas)',
       fwZbi:'Zarit et al., 1980 — Temuduga beban penjaga',
-      polHwp:'Kertas Putih Kesihatan Malaysia (KKM, 2023)',
+      polNdhb:'Kertas Putih Kesihatan (2023), KKM',
       polPdpa:'Akta Perlindungan Data Peribadi 2010 (Akta 709)',
       polMp:'Rancangan Malaysia Ke-12 — Ekonomi digital & matlamat ekuiti kesihatan'
     },
@@ -1537,9 +1537,9 @@ const LANG_DATA = {
       c3Ti:'Laporan Belmont',                         c3De:'Suruhanjaya Kebangsaan AS, 1979 — menghormati orang, kebajikan, keadilan.',
       c4Ti:'Garis Panduan CIOMS 2016',                c4De:'Garis panduan etika antarabangsa untuk penyelidikan berkaitan kesihatan dengan peserta manusia.',
       c5Ti:'PDPA 2010 (Akta 709)',                    c5De:'Akta Perlindungan Data Peribadi Malaysia — pemprosesan data, penyimpanan, dan persetujuan.',
-      c6Ti:'Kertas Putih Kesihatan Malaysia (2023)', c6De:'Agenda reformasi sistem kesihatan KKM — telekesihatan, rekod kesihatan sepanjang hayat elektronik dan pertukaran maklumat kesihatan.',
+      c6Ti:'Kertas Putih Kesihatan (2023)', c6De:'Agenda reformasi kesihatan 15 tahun KKM — rekod kesihatan digital dan penjagaan yang saksama serta mampan.',
       c7Ti:'UTAR UREC',                               c7De:'Jawatankuasa Etika Penyelidikan Universiti Tunku Abdul Rahman — semakan institusi tempatan.',
-      c8Ti:'Skor Audit: 19/22 (86%)',                 c8De:'Audit GCP 22-item selesai. Tiga item prosedural menunggu: nombor rujukan etika, pendaftaran MREC dan pra-pendaftaran OSF.'
+      c8Ti:'Skor Audit: 19/22 (86%)',                 c8De:'Audit GCP 22-item selesai. Tiga item prosedural menunggu nombor rujukan etika dan pendaftaran MREC.'
     },
     team2:{
       piBio:'Menyelidik pembangunan model penilaian teknologi telepemuliharaan digital untuk Malaysia, dengan tumpuan kepada pesakit warga emas selepas strok dan penglibatan pelbagai pemegang taruh. Disertasi ini mengintegrasikan kejuruteraan bioperubatan, informatik kesihatan, dan sains data untuk menghasilkan rangka kerja penilaian pematuhan GCP, selaras dasar merentas lima kumpulan pemegang taruh dan empat bahasa.',
@@ -1565,7 +1565,7 @@ const LANG_DATA = {
       iosDesc:'Aplikasi iPhone dan iPad asli dibina dengan Capacitor 6 + WKWebView. Menyokong pengimbasan OMR berasaskan kamera, kemasukan data luar talian, dan portal pentadbir dilindungi Face ID. Diedarkan melalui TestFlight untuk penyelidik kajian perintis dan enumerator lapangan.',
       iosSpec1:'Pematuhan PDPA', iosSpec2:'Boleh digunakan luar talian',
       iosBtn1:'✈ TestFlight — Menunggu', iosBtn2:'🍎 App Store — Menunggu',
-      iosNote:'⏳ Pengedaran menunggu kelulusan etika UREC (Fasa 4)',
+      iosNote:'⏳ Pengedaran dirancang untuk Fasa 4 (kajian perintis)',
       andName:'Aplikasi Android', andStatus:'Akan Datang',
       andDesc:'APK Android dibina dengan Capacitor 6. Menyasarkan Android 8.0+ untuk liputan luas merentas landskap peranti pelbagai Malaysia. Menyokong perkakasan peringkat rendah yang biasa digunakan dalam tetapan penjagaan kesihatan luar bandar dan separa bandar.',
       andSpec1:'Pemasangan APK terus', andSpec2:'Play Store (dirancang)',
@@ -1618,7 +1618,7 @@ const LANG_DATA = {
       fwSus:'Brooke, 1996 — 系统可用性量表',
       fwWhoqol:'WHO, 1996 — 生活质量（简版）',
       fwZbi:'Zarit et al., 1980 — 照护者负担访谈',
-      polHwp:'马来西亚卫生白皮书（卫生部，2023）',
+      polNdhb:'《卫生白皮书》（2023，马来西亚卫生部）',
       polPdpa:'2010年个人数据保护法（第709号法令）',
       polMp:'第12个马来西亚计划 — 数字经济与健康公平目标'
     },
@@ -1670,9 +1670,9 @@ const LANG_DATA = {
       c3Ti:'贝尔蒙特报告',                      c3De:'美国国家委员会，1979 年 — 尊重人、善行、公正。',
       c4Ti:'CIOMS 指南 2016',                   c4De:'涉及人类参与者的健康相关研究国际伦理指南。',
       c5Ti:'PDPA 2010（第709号法令）',           c5De:'马来西亚个人数据保护法 — 数据处理、存储和同意。',
-      c6Ti:'马来西亚卫生白皮书（2023）',        c6De:'卫生部卫生体系改革议程 — 远程医疗、电子终身健康记录与卫生信息交换。',
+      c6Ti:'《卫生白皮书》（2023）',        c6De:'马来西亚卫生部15年卫生改革议程 — 数字健康记录与公平、可持续的医疗服务。',
       c7Ti:'UTAR UREC',                         c7De:'拉曼大学学院研究伦理委员会 — 本地机构审查。',
-      c8Ti:'审计分数：19/22 (86%)',              c8De:'已完成 22 项 GCP 审计。三个程序性项目待完成：伦理参考号、MREC 注册及 OSF 预注册。'
+      c8Ti:'审计分数：19/22 (86%)',              c8De:'已完成 22 项 GCP 审计。三个程序性项目等待伦理参考号和 MREC 注册。'
     },
     team2:{
       piBio:'研究马来西亚数字远程康复技术评估模型的开发，专注于脑卒中后老年患者和多利益相关者参与。论文整合生物医学工程、健康信息学和数据科学，为五个利益相关者群体和四种语言制定符合 GCP、政策一致的评估框架。',
@@ -1698,7 +1698,7 @@ const LANG_DATA = {
       iosDesc:'基于 Capacitor 6 + WKWebView 构建的 iPhone 和 iPad 原生应用。支持相机 OMR 扫描、离线数据录入及 Face ID 保护的管理员门户。通过 TestFlight 向试点研究人员和现场枚举员分发。',
       iosSpec1:'符合 PDPA', iosSpec2:'支持离线使用',
       iosBtn1:'✈ TestFlight — 待发布', iosBtn2:'🍎 App Store — 待发布',
-      iosNote:'⏳ 分发等待 UREC 伦理审批（第 4 阶段）',
+      iosNote:'⏳ 计划于第 4 阶段（试点研究）分发',
       andName:'Android 应用', andStatus:'即将推出',
       andDesc:'基于 Capacitor 6 构建的 Android APK，目标 Android 8.0+，覆盖马来西亚多样化设备环境。支持农村和半城市医疗环境中常见的低端硬件。',
       andSpec1:'APK 直接安装', andSpec2:'Play Store（计划中）',
@@ -1751,7 +1751,7 @@ const LANG_DATA = {
       fwSus:'Brooke, 1996 — அமைப்பு பயன்பாட்டு அளவை',
       fwWhoqol:'WHO, 1996 — வாழ்க்கைத் தரம் (சுருக்கம்)',
       fwZbi:'Zarit et al., 1980 — பராமரிப்பாளர் சுமை நேர்காணல்',
-      polHwp:'மலேசிய சுகாதார வெள்ளை அறிக்கை (MOH, 2023)',
+      polNdhb:'சுகாதார வெள்ளை அறிக்கை (2023), MOH மலேசியா',
       polPdpa:'தனிப்பட்ட தரவு பாதுகாப்பு சட்டம் 2010 (சட்டம் 709)',
       polMp:'12வது மலேசியா திட்டம் — டிஜிட்டல் பொருளாதாரம் மற்றும் சுகாதார சமபங்கு இலக்குகள்'
     },
@@ -1803,9 +1803,9 @@ const LANG_DATA = {
       c3Ti:'பெல்மான்ட் அறிக்கை',                  c3De:'அமெரிக்க தேசிய ஆணையம், 1979 — நபர்களை மதித்தல், நன்மை செய்தல், நீதி.',
       c4Ti:'CIOMS வழிகாட்டுதல்கள் 2016',          c4De:'மனித பங்கேற்பாளர்களுடன் சுகாதார ஆராய்ச்சிக்கான சர்வதேச நெறிமுறை வழிகாட்டுதல்கள்.',
       c5Ti:'PDPA 2010 (சட்டம் 709)',              c5De:'மலேசிய தனிப்பட்ட தரவு பாதுகாப்பு சட்டம் — தரவு செயலாக்கம், சேமிப்பு மற்றும் சம்மதம்.',
-      c6Ti:'மலேசிய சுகாதார வெள்ளை அறிக்கை (2023)', c6De:'MOH சுகாதார அமைப்புச் சீர்திருத்தம் — தொலை சுகாதாரம், மின்னணு வாழ்நாள் சுகாதாரப் பதிவுகள் மற்றும் சுகாதாரத் தகவல் பரிமாற்றம்.',
+      c6Ti:'சுகாதார வெள்ளை அறிக்கை (2023)', c6De:'MOH மலேசியாவின் 15 ஆண்டு சுகாதார சீர்திருத்தத் திட்டம் — டிஜிட்டல் சுகாதாரப் பதிவுகள் மற்றும் சமமான, நிலையான சேவைகள்.',
       c7Ti:'UTAR UREC',                           c7De:'தொன்கு அப்துல் ரஹ்மான் பல்கலைக்கழக ஆராய்ச்சி நெறிமுறை குழு — உள்ளூர் நிறுவன மதிப்பாய்வு.',
-      c8Ti:'தணிக்கை மதிப்பெண்: 19/22 (86%)',     c8De:'22-உருப்படி GCP தணிக்கை முடிந்தது. மூன்று நடைமுறை உருப்படிகள் நிலுவையில் உள்ளன: நெறிமுறை குறிப்பு எண், MREC பதிவு மற்றும் OSF முன்பதிவு.'
+      c8Ti:'தணிக்கை மதிப்பெண்: 19/22 (86%)',     c8De:'22-உருப்படி GCP தணிக்கை முடிந்தது. மூன்று நடைமுறை உருப்படிகள் நெறிமுறை குறிப்பு எண் மற்றும் MREC பதிவுக்காக நிலுவையில் உள்ளன.'
     },
     team2:{
       piBio:'மலேசியாவிற்கான டிஜிட்டல் தொலை மறுவாழ்வு தொழில்நுட்ப மதிப்பீட்டு மாதிரியின் வளர்ச்சியை ஆராய்கிறார், பக்கவாதத்திற்குப் பிந்தைய முதியோர் நோயாளிகள் மற்றும் பல பங்குதாரர் ஈடுபாட்டில் கவனம் செலுத்துகிறார். ஆய்வுரை உயிரியல் மருத்துவ பொறியியல், சுகாதார தகவல் அறிவியல் மற்றும் தரவு அறிவியலை ஒருங்கிணைத்து ஐந்து பங்குதாரர் குழுக்கள் மற்றும் நான்கு மொழிகள் மூலம் GCP இணக்கமான மதிப்பீட்டு கட்டமைப்பை உருவாக்குகிறது.',
@@ -1831,7 +1831,7 @@ const LANG_DATA = {
       iosDesc:'Capacitor 6 + WKWebView கொண்டு உருவாக்கப்பட்ட iPhone மற்றும் iPad பயன்பாடு. கேமரா OMR ஸ்கேனிங், இணைய இல்லாமல் தரவு உள்ளீடு, மற்றும் Face ID பாதுகாக்கப்பட்ட நிர்வாக போர்டலை ஆதரிக்கிறது.',
       iosSpec1:'PDPA இணக்கம்', iosSpec2:'இணைய இல்லாமல் பயன்படுத்தலாம்',
       iosBtn1:'✈ TestFlight — நிலுவையில்', iosBtn2:'🍎 App Store — நிலுவையில்',
-      iosNote:'⏳ UREC நெறிமுறை ஒப்புதல் வரை விநியோகம் நிலுவையில் (கட்டம் 4)',
+      iosNote:'⏳ விநியோகம் கட்டம் 4 (சோதனை ஆய்வு) இல் திட்டமிடப்பட்டுள்ளது',
       andName:'Android பயன்பாடு', andStatus:'விரைவில் வரும்',
       andDesc:'Capacitor 6 கொண்டு உருவாக்கப்பட்ட Android APK. மலேசியாவின் பல்வேறு சாதன சூழலில் பரந்த கவரேஜுக்காக Android 8.0+ ஐ இலக்காக கொண்டுள்ளது. கிராமப்புற மற்றும் அரை நகர்ப்புற சுகாதார சூழல்களில் பொதுவாக பயன்படுத்தப்படும் குறைந்த-நிலை வன்பொருளை ஆதரிக்கிறது.',
       andSpec1:'APK நேரடி நிறுவல்', andSpec2:'Play Store (திட்டமிடப்பட்டது)',
@@ -1904,7 +1904,7 @@ function setLang(lang){
     s('i18n-fw-utaut2',T.about2.fwUtaut2); s('i18n-fw-tuq',T.about2.fwTuq);
     s('i18n-fw-icf',T.about2.fwIcf); s('i18n-fw-sus',T.about2.fwSus);
     s('i18n-fw-whoqol',T.about2.fwWhoqol); s('i18n-fw-zbi',T.about2.fwZbi);
-    s('i18n-pol-hwp',T.about2.polHwp); s('i18n-pol-pdpa',T.about2.polPdpa);
+    s('i18n-pol-ndhb',T.about2.polNdhb); s('i18n-pol-pdpa',T.about2.polPdpa);
     s('i18n-pol-mp',T.about2.polMp);
   }
   // instruments2
@@ -1992,7 +1992,7 @@ function setLang(lang){
 
   // reset chatbot with new language greeting
   const msgs = document.getElementById('chatMessages');
-  if(msgs){ msgs.innerHTML = ''; addBotMsg(T.chat.greeting, T.chat.quick); }
+  if(msgs){ chatGen++; msgs.innerHTML = ''; addBotMsg(T.chat.greeting, T.chat.quick); document.getElementById('chatSendBtn').disabled = false; }
 }
 
 // ─── Knowledge base ────────────────────────────────────────────────────────────
@@ -2109,7 +2109,7 @@ Used exclusively with the <b>Caregiver</b> stakeholder group to assess caregivin
     reply:`Your privacy is fully protected under <b>PDPA 2010 (Act 709)</b> — Malaysia's Personal Data Protection Act.<br><br>
 🔒 All responses are <b>anonymous and confidential</b><br>
 🗄️ Data is stored on <b>Malaysian-territory servers</b> only<br>
-📋 Ethics application submitted to UTAR UREC — <b>approval pending</b> (ICH E6(R2) GCP)<br>
+📋 Ethics approval received from UTAR UREC (ICH E6(R2) GCP)<br>
 ✅ Compliant with the <b>Declaration of Helsinki</b> and <b>CIOMS Guidelines 2016</b><br><br>
 You may withdraw from the study at any time without consequence.`,
     quick:['What is PDPA?','Who is the research team?','How do I participate?']
@@ -2121,7 +2121,8 @@ Under PDPA, this study:<br>
 • Collects only the minimum data necessary<br>
 • Stores all data on Malaysian-territory servers<br>
 • Does not share data with third parties without consent<br>
-• Allows participants to withdraw and request data deletion`,
+• Allows participants to withdraw and request data deletion<br><br>
+The study also aligns with MOH Malaysia's <b>Health White Paper (2023)</b>.`,
     quick:['Is my data safe?','Who is the research team?']
   },
   {
@@ -2182,15 +2183,15 @@ This study assesses how ready Malaysia's healthcare system is to adopt and scale
 3️⃣ HIS Referral<br>
 4️⃣ ML Model Input/Output<br>
 5️⃣ Audit Trail<br><br>
-These interfaces support the health information exchange envisioned in the <b>Health White Paper for Malaysia (2023)</b>.`,
+This supports the digital health goals of MOH Malaysia's <b>Health White Paper (2023)</b>.`,
     quick:['What is DTAM-MY?','What frameworks are used?']
   },
   {
     keys:['contact','email','reach','get in touch','enquir'],
     reply:`For research enquiries, please refer to the contact details in the <b>Participant Information Sheet</b> provided at the start of the survey.<br><br>
 You may also contact the supervisory team directly:<br>
-📧 Dr Kwan Ban Hoe — <a href="mailto:kwanbh@utar.edu.my" style="color:var(--teal);">kwanbh@utar.edu.my</a><br>
-📧 Ir Dr Goh Choon Hian — <a href="mailto:gohch@utar.edu.my" style="color:var(--teal);">gohch@utar.edu.my</a>`,
+📧 Assoc. Prof. Dr. Kwan Ban Hoe — <a href="mailto:kwanbh@utar.edu.my" style="color:var(--teal);">kwanbh@utar.edu.my</a><br>
+📧 Assoc. Prof. Ir. Dr. Goh Choon Hian — <a href="mailto:gohch@utar.edu.my" style="color:var(--teal);">gohch@utar.edu.my</a>`,
     quick:['Who is the research team?','How do I participate?']
   },
   {
@@ -2268,7 +2269,7 @@ Skor domain 0–100. Sasaran: peningkatan ≥10% pada 12 minggu (p&lt;0.05).`,
     { reply:`Privasi anda dilindungi sepenuhnya di bawah <b>PDPA 2010 (Akta 709)</b>.<br><br>
 🔒 Semua respons adalah <b>tanpa nama dan sulit</b><br>
 🗄️ Data disimpan di <b>pelayan berpangkalan Malaysia</b> sahaja<br>
-📋 Permohonan etika dikemukakan kepada UTAR UREC — <b>kelulusan belum diterima</b><br>
+📋 Kelulusan etika telah diterima daripada UTAR UREC<br>
 ✅ Mematuhi <b>Deklarasi Helsinki</b> dan <b>Garis Panduan CIOMS 2016</b><br><br>
 Anda boleh menarik diri daripada kajian pada bila-bila masa.`,
       quick:['Apakah PDPA?','Siapakah pasukan penyelidikan?','Bagaimana untuk sertai?'] },
@@ -2306,8 +2307,8 @@ Untuk <b>pesakit warga emas selepas strok</b>, telepemuliharaan boleh:<br>
     { reply:`Sebagai sebahagian Fasa 3, DTAM-MY akan menentukan <b>antara muka FHIR R4</b> untuk integrasi dengan sistem maklumat kesihatan sedia ada termasuk MySejahtera dan KKM MyHEALTH.`,
       quick:['Apakah DTAM-MY?','Apakah rangka kerja yang digunakan?'] },
     { reply:`Untuk pertanyaan penyelidikan, sila rujuk butiran hubungan dalam <b>Helaian Maklumat Peserta</b>.<br><br>
-📧 Dr Kwan Ban Hoe — <a href="mailto:kwanbh@utar.edu.my" style="color:var(--teal);">kwanbh@utar.edu.my</a><br>
-📧 Ir Dr Goh Choon Hian — <a href="mailto:gohch@utar.edu.my" style="color:var(--teal);">gohch@utar.edu.my</a>`,
+📧 Assoc. Prof. Dr. Kwan Ban Hoe — <a href="mailto:kwanbh@utar.edu.my" style="color:var(--teal);">kwanbh@utar.edu.my</a><br>
+📧 Assoc. Prof. Ir. Dr. Goh Choon Hian — <a href="mailto:gohch@utar.edu.my" style="color:var(--teal);">gohch@utar.edu.my</a>`,
       quick:['Siapakah pasukan penyelidikan?','Bagaimana untuk sertai?'] },
     { reply:`Terima kasih atas minat anda terhadap kajian DTAM-MY! 🙏<br><br>
 Penyertaan anda membantu meningkatkan perkhidmatan telepemuliharaan untuk warga emas Malaysia. Setiap respons sangat bermakna. Semoga berjaya! 💪`,
@@ -2365,7 +2366,7 @@ Penyertaan anda membantu meningkatkan perkhidmatan telepemuliharaan untuk warga 
       quick:['使用了哪些工具？','如何参与？'] },
     { reply:`您的隐私受<b>PDPA 2010（第709法令）</b>全面保护。<br><br>
 🔒 所有回答<b>匿名且保密</b> · 🗄️ 数据仅存储在<b>马来西亚境内服务器</b><br>
-📋 伦理申请已提交 UTAR UREC — <b>审批中</b> · ✅ 符合<b>赫尔辛基宣言</b><br><br>
+📋 已获得 UTAR UREC 伦理批准 · ✅ 符合<b>赫尔辛基宣言</b><br><br>
 您可随时退出研究。`,
       quick:['什么是 PDPA？','研究团队是谁？','如何参与？'] },
     { reply:`<b>PDPA 2010（第709法令）</b>是马来西亚个人数据保护法。<br><br>
@@ -2393,8 +2394,8 @@ UTAR 研究伦理委员会（UREC）提供机构监督。`,
     { reply:`作为第3阶段的一部分，DTAM-MY 将指定 <b>FHIR R4 互操作接口</b>，实现与 MySejahtera、KKM MyHEALTH 等现有医疗信息系统的集成。`,
       quick:['什么是 DTAM-MY？','使用了哪些框架？'] },
     { reply:`如有研究咨询，请参阅问卷开始时提供的<b>参与者信息表</b>中的联系方式。<br><br>
-📧 Dr Kwan Ban Hoe — <a href="mailto:kwanbh@utar.edu.my" style="color:var(--teal);">kwanbh@utar.edu.my</a><br>
-📧 Ir Dr Goh Choon Hian — <a href="mailto:gohch@utar.edu.my" style="color:var(--teal);">gohch@utar.edu.my</a>`,
+📧 Assoc. Prof. Dr. Kwan Ban Hoe — <a href="mailto:kwanbh@utar.edu.my" style="color:var(--teal);">kwanbh@utar.edu.my</a><br>
+📧 Assoc. Prof. Ir. Dr. Goh Choon Hian — <a href="mailto:gohch@utar.edu.my" style="color:var(--teal);">gohch@utar.edu.my</a>`,
       quick:['研究团队是谁？','如何参与？'] },
     { reply:`感谢您对 DTAM-MY 研究的关注！🙏<br><br>
 您的参与有助于改善马来西亚老年人的远程康复服务。每一份回答都很珍贵，加油！💪`,
@@ -2447,7 +2448,7 @@ UTAR 研究伦理委员会（UREC）提供机构监督。`,
     { reply:`உங்கள் தனியுரிமை <b>PDPA 2010 (சட்டம் 709)</b> கீழ் முழுமையாக பாதுகாக்கப்படுகிறது.<br><br>
 🔒 அனைத்து பதில்களும் <b>அநாமதேயமானவை</b><br>
 🗄️ தரவு <b>மலேசிய சேவையகங்களில்</b> மட்டும் சேமிக்கப்படுகிறது<br>
-📋 UTAR UREC-க்கு நெறிமுறை விண்ணப்பம் சமர்ப்பிக்கப்பட்டது — <b>ஒப்புதல் நிலுவையில்</b>`,
+📋 UTAR UREC நெறிமுறை அங்கீகாரம் பெறப்பட்டது`,
       quick:['PDPA என்றால் என்ன?','ஆராய்ச்சி குழு யார்?','எவ்வாறு பங்கேற்பது?'] },
     { reply:`<b>PDPA 2010 (சட்டம் 709)</b> மலேசியாவின் தனிப்பட்ட தரவு பாதுகாப்பு சட்டம்.<br><br>
 இந்த ஆராய்ச்சி: தேவையான குறைந்தபட்ச தரவை மட்டும் சேகரிக்கிறது; மலேசிய சேவையகங்களில் மட்டும் சேமிக்கிறது; சம்மதமின்றி மூன்றாம் தரப்பினரிடம் பகிர்வதில்லை.`,
@@ -2500,6 +2501,11 @@ const FALLBACK_TRANS = {
 // ─── State ─────────────────────────────────────────────────────────────────────
 let chatOpen = false;
 let badgeShown = true;
+let chatGen = 0;   // bumped when the chat is reset (language switch) so pending replies are dropped
+
+function escHtml(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 
 function toggleChat(){
   chatOpen = !chatOpen;
@@ -2537,7 +2543,7 @@ function addUserMsg(text){
   const msgs = document.getElementById('chatMessages');
   const wrap = document.createElement('div');
   wrap.className='msg user';
-  wrap.innerHTML=`<div><div class="msg-bubble">${text}</div><div class="msg-time">${now()}</div></div>`;
+  wrap.innerHTML=`<div><div class="msg-bubble">${escHtml(text)}</div><div class="msg-time">${now()}</div></div>`;   // visitor text is never HTML
   msgs.appendChild(wrap);
   setQuickReplies([]);
   msgs.scrollTop = msgs.scrollHeight;
@@ -2599,7 +2605,9 @@ function handleInput(text){
   document.getElementById('chatSendBtn').disabled=true;
   addUserMsg(text);
   showTyping();
+  const gen = chatGen;
   setTimeout(()=>{
+    if (gen !== chatGen) return;   // chat was reset (e.g. language switch) while this reply was pending
     removeTyping();
     const {reply, quick} = findResponse(text);
     addBotMsg(reply, quick);

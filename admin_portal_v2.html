@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.anthropic.com; img-src 'self' data: blob:; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.anthropic.com https://*.workers.dev; img-src 'self' data: blob:; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>DTAM-MY | Administrator Portal v2</title>
 <style>
@@ -157,8 +157,8 @@ tr:hover td{background:#fafafa}
 .setting-label{font-size:13px;font-weight:600;color:var(--text)}
 .setting-desc{font-size:12px;color:var(--muted);margin-top:2px}
 .setting-val{font-size:12px;color:var(--teal);font-weight:700;text-align:right;flex-shrink:0}
-input[type=text].api-input{border:1px solid #d1d5db;border-radius:8px;padding:8px 12px;font-size:13px;width:100%;outline:none;transition:border-color .2s;margin-top:6px;font-family:monospace}
-input[type=text].api-input:focus{border-color:var(--teal)}
+input[type=text].api-input,input[type=password].api-input,input[type=url].api-input,select.api-input{border:1px solid #d1d5db;border-radius:8px;padding:8px 12px;font-size:13px;width:100%;outline:none;transition:border-color .2s;margin-top:6px;font-family:monospace}
+input[type=text].api-input:focus,input[type=password].api-input:focus,input[type=url].api-input:focus,select.api-input:focus{border-color:var(--teal)}
 
 @media(max-width:768px){
   .sidebar{transform:translateX(-100%);transition:transform .3s}
@@ -384,7 +384,7 @@ input[type=text].api-input:focus{border-color:var(--teal)}
 
   <div class="sb-section">
     <div class="sb-label">Resources</div>
-    <a class="sb-item" href="index.html" target="_blank">
+    <a class="sb-item" href="index_v2.html" target="_blank">
       <span class="icon">🌐</span> Project Website
     </a>
     <a class="sb-item" href="DTAM_MY_User_Guide_v1.docx" download>
@@ -465,14 +465,14 @@ input[type=text].api-input:focus{border-color:var(--teal)}
             <div class="tool-tags"><span class="tool-tag">4 Languages</span><span class="tool-tag">5 Groups</span></div>
             <div class="tool-launch">Open Survey →</div>
           </a>
-          <a class="tool-card featured" href="omr_scanner.html" target="_blank">
+          <a class="tool-card featured" href="omr_scanner_v2.html" target="_blank">
             <div class="tool-icon">🔍</div>
             <div class="tool-name">OMR Scanner</div>
             <div class="tool-desc">Scan printed answer sheets by camera or flatbed. Auto perspective-correct, extract responses, score all 7 instruments, export CSV/JSON.</div>
             <div class="tool-tags"><span class="tool-tag teal">5 Sheet Types</span><span class="tool-tag">OpenCV</span><span class="tool-tag">CSV/JSON</span></div>
             <div class="tool-launch">Open Scanner →</div>
           </a>
-          <a class="tool-card" href="index.html" target="_blank">
+          <a class="tool-card" href="index_v2.html" target="_blank">
             <div class="tool-icon">🌐</div>
             <div class="tool-name">Project Introduction Page</div>
             <div class="tool-desc">Public-facing study overview with research team, ethics information, and participant information.</div>
@@ -526,7 +526,7 @@ input[type=text].api-input:focus{border-color:var(--teal)}
             <div class="tool-tags"><span class="tool-tag teal">Live</span><span class="tool-tag">Export CSV</span></div>
             <div class="tool-launch">Open →</div>
           </a>
-          <a class="tool-card featured" href="omr_scanner.html" target="_blank">
+          <a class="tool-card featured" href="omr_scanner_v2.html" target="_blank">
             <div class="tool-icon">🔍</div>
             <div class="tool-name">OMR Scanner v1.1</div>
             <div class="tool-desc">Upload or photograph printed OMR answer sheets. OpenCV perspective correction, bubble detection, automatic scoring of TAM · UTAUT2 · TUQ · SUS · ZBI · MAST · WHOQOL-BREF.</div>
@@ -551,7 +551,7 @@ input[type=text].api-input:focus{border-color:var(--teal)}
         <div class="card-title" style="margin-bottom:16px">🗂️ Documents & Resources</div>
         <div class="tool-grid">
           <a class="tool-card" href="DTAM_MY_User_Guide_v1.docx" download><div class="tool-icon">📖</div><div class="tool-name">User Guide</div><div class="tool-desc">Comprehensive guide covering all app features, AI setup, Android installation, troubleshooting.</div><div class="tool-launch">Download DOCX →</div></a>
-          <a class="tool-card" href="index.html" target="_blank"><div class="tool-icon">🌐</div><div class="tool-name">Project Introduction</div><div class="tool-desc">Public-facing DTAM-MY study overview — share with potential participants.</div><div class="tool-launch">Open →</div></a>
+          <a class="tool-card" href="index_v2.html" target="_blank"><div class="tool-icon">🌐</div><div class="tool-name">Project Introduction</div><div class="tool-desc">Public-facing DTAM-MY study overview — share with potential participants.</div><div class="tool-launch">Open →</div></a>
         </div>
       </div>
     </div>
@@ -565,7 +565,7 @@ input[type=text].api-input:focus{border-color:var(--teal)}
       </div>
       <div class="card">
         <div class="card-title" style="margin-bottom:14px">Data Collection Timeline</div>
-        <div class="setting-row"><div><div class="setting-label">Phase 1 — Pilot</div><div class="setting-desc">Allied Health + Caregiver pilot (n=30 each)</div></div><div class="setting-val status-badge pending">In Progress</div></div>
+        <div class="setting-row"><div><div class="setting-label">Phase 1 — Pilot</div><div class="setting-desc">Elderly pilot (n=70: 42 urban + 28 rural; 45 effective completers)</div></div><div class="setting-val status-badge pending">In Progress</div></div>
         <div class="setting-row"><div><div class="setting-label">Phase 2 — Full Survey Rollout</div><div class="setting-desc">All 5 groups quantitative questionnaire (n=370 total)</div></div><div class="setting-val status-badge pending">Pending</div></div>
         <div class="setting-row"><div><div class="setting-label">Phase 3 — Qualitative Interviews</div><div class="setting-desc">Semi-structured interviews across all stakeholder groups</div></div><div class="setting-val status-badge pending">Pending</div></div>
         <div class="setting-row"><div><div class="setting-label">Phase 4 — ML Pipeline Integration</div><div class="setting-desc">React + Node.js + PostgreSQL PWA deployment</div></div><div class="setting-val status-badge pending">Planned</div></div>
@@ -600,7 +600,7 @@ input[type=text].api-input:focus{border-color:var(--teal)}
           <div class="card-title">Session Log</div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-secondary" style="font-size:12px;padding:7px 14px" onclick="refreshAll()">🔄 Refresh</button>
-            <label class="btn btn-secondary" style="font-size:12px;padding:7px 14px;cursor:pointer">📥 Import Session JSON
+            <label class="btn btn-secondary" style="font-size:12px;padding:7px 14px;cursor:pointer" title="For interviews run on another device">📥 Import Session JSON
               <input type="file" accept=".json" multiple style="display:none" onchange="importInterviewJson(event)"/>
             </label>
             <button class="btn btn-primary" style="font-size:12px;padding:7px 14px" onclick="exportInterviewCSV()">⬇️ Export CSV</button>
@@ -642,7 +642,7 @@ input[type=text].api-input:focus{border-color:var(--teal)}
           <div class="mt-4" style="display:flex;flex-direction:column;gap:8px">
             <button class="btn btn-primary" onclick="exportOmrCSV()">⬇️ Export OMR CSV</button>
             <button class="btn btn-secondary" onclick="exportOmrJSON()">⬇️ Export OMR JSON</button>
-            <a href="omr_scanner.html" target="_blank" class="btn btn-secondary" style="text-decoration:none;text-align:center">🔍 Open OMR Scanner</a>
+            <a href="omr_scanner_v2.html" target="_blank" class="btn btn-secondary" style="text-decoration:none;text-align:center">🔍 Open OMR Scanner</a>
           </div>
         </div>
       </div>
@@ -671,16 +671,21 @@ input[type=text].api-input:focus{border-color:var(--teal)}
         <p class="card-desc">Keys are stored in memory only — you will need to re-enter after a page refresh.</p>
         <div class="setting-row" style="flex-direction:column;align-items:flex-start">
           <div><div class="setting-label">Anthropic API Key (Claude Chatbot)</div><div class="setting-desc">Required for the Claude AI assistant in the admin portal. Get key at console.anthropic.com</div></div>
-          <input type="text" class="api-input" id="claude-key-input" placeholder="sk-ant-api..." oninput="saveKey('claude',this.value)"/>
-          <div style="margin-top:6px;font-size:11px;color:var(--muted)">Model: claude-haiku-4-5-20251001</div>
+          <input type="password" autocomplete="off" class="api-input" id="claude-key-input" placeholder="sk-ant-api... (not needed when a proxy URL is set)" oninput="saveKey('claude',this.value)"/>
+          <div class="setting-desc" style="margin-top:8px">Key proxy URL (recommended: keeps the API key off this browser; see proxy/README.md)</div>
+          <input type="url" class="api-input" id="claude-proxy-input" placeholder="https://dtam-claude-proxy.&lt;account&gt;.workers.dev" oninput="saveLlmSetting('proxy',this.value)"/>
+          <input type="password" autocomplete="off" class="api-input" id="claude-proxy-token" style="margin-top:6px" placeholder="Proxy access token (only if the proxy sets PORTAL_TOKEN)" oninput="saveLlmSetting('token',this.value)"/>
+          <div class="setting-desc" style="margin-top:8px">Model</div>
+          <select class="api-input" id="claude-model-select" onchange="saveLlmSetting('model',this.value)"></select>
+          <div style="margin-top:6px;font-size:11px;color:var(--muted)">Replies are checked against the DTAM drift rules (fabricated citations, wrong faculty) before display.</div>
         </div>
       </div>
       <div class="card">
         <div class="card-title" style="margin-bottom:12px">ℹ️ Study Information</div>
         <div class="setting-row"><div><div class="setting-label">Study ID</div></div><div class="setting-val">DTAM-MY-2025</div></div>
         <div class="setting-row"><div><div class="setting-label">Principal Investigator</div></div><div class="setting-val">CHONG Yu Zheng · 24UED03838</div></div>
-        <div class="setting-row"><div><div class="setting-label">Main Supervisor</div></div><div class="setting-val">Dr Kwan Ban Hoe</div></div>
-        <div class="setting-row"><div><div class="setting-label">Co-Supervisor</div></div><div class="setting-val">Ir Dr Goh Choon Hian</div></div>
+        <div class="setting-row"><div><div class="setting-label">Main Supervisor</div></div><div class="setting-val">Assoc. Prof. Dr. Kwan Ban Hoe</div></div>
+        <div class="setting-row"><div><div class="setting-label">Co-Supervisor</div></div><div class="setting-val">Assoc. Prof. Ir. Dr. Goh Choon Hian</div></div>
         <div class="setting-row"><div><div class="setting-label">Institution</div></div><div class="setting-val">UTAR LKC FES</div></div>
         <div class="setting-row"><div><div class="setting-label">Ethics</div></div><div class="setting-val">UTAR UREC · PDPA 2010</div></div>
         <div class="setting-row"><div><div class="setting-label">Target Sample</div></div><div class="setting-val">n = 370</div></div>
@@ -714,14 +719,34 @@ input[type=text].api-input:focus{border-color:var(--teal)}
         <div class="card-header">
           <div>
             <div class="card-title">🎟️ Registration Tokens</div>
-            <div class="card-desc">Single-use codes that let a new researcher create their own account. Valid for 7 days; stored only as hashes.</div>
+            <div class="card-desc">Single-use codes that let a new team member create their own account on the sign-in page.
+              Only a hash is stored; the code is shown once. Accounts and tokens are stored in this browser,
+              so the person must register on <strong>this device</strong>.</div>
           </div>
-          <button class="btn btn-primary" style="font-size:12px;padding:7px 14px" onclick="issueRegToken()">+ Issue Token</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
+          <div style="flex:1 1 200px">
+            <div class="setting-label" style="margin-bottom:4px">Label (optional)</div>
+            <input type="text" class="api-input" id="tok-label" maxlength="60" placeholder="e.g. RA – Aisyah" style="width:100%"/>
+          </div>
+          <div>
+            <div class="setting-label" style="margin-bottom:4px">Expires after</div>
+            <select id="tok-days" class="api-input" style="width:auto">
+              <option value="1">1 day</option>
+              <option value="7" selected>7 days</option>
+              <option value="30">30 days</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="font-size:12px;padding:8px 14px" onclick="generateRegToken()">+ Generate Token</button>
         </div>
         <div style="overflow-x:auto">
           <table>
-            <thead><tr><th>Token</th><th>Issued</th><th>Expires</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody id="tokens-table"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No tokens issued.</td></tr></tbody>
+            <thead>
+              <tr><th>Label</th><th>Created</th><th>Expires</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody id="tokens-table">
+              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No tokens issued yet.</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -745,7 +770,7 @@ input[type=text].api-input:focus{border-color:var(--teal)}
             Bubble detection · Auto-score 7 instruments · Export CSV/JSON
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
-            <a href="omr_scanner.html" target="_blank"
+            <a href="omr_scanner_v2.html" target="_blank"
               style="background:#fff;color:#0E8B8B;border:none;border-radius:7px;
                 padding:9px 20px;font-weight:800;font-size:13px;text-decoration:none;
                 display:inline-flex;align-items:center;gap:5px">↗ Open OMR Scanner</a>
@@ -760,7 +785,7 @@ input[type=text].api-input:focus{border-color:var(--teal)}
         </div>
         <!-- Per-group quick launch -->
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;min-width:300px">
-          <a href="omr_scanner.html?sheet=CAREGIVER"     target="_blank"
+          <a href="omr_scanner_v2.html?sheet=CAREGIVER"     target="_blank"
             style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
               border-radius:8px;padding:8px 4px;text-align:center;text-decoration:none;
               color:#fff;font-size:10px;font-weight:700;transition:background .2s"
@@ -768,7 +793,7 @@ input[type=text].api-input:focus{border-color:var(--teal)}
             onmouseout="this.style.background='rgba(255,255,255,.15)'">
             <div style="font-size:18px;margin-bottom:3px">👨‍👩‍👧</div>Caregiver
           </a>
-          <a href="omr_scanner.html?sheet=ALLIED_HEALTH"  target="_blank"
+          <a href="omr_scanner_v2.html?sheet=ALLIED_HEALTH"  target="_blank"
             style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
               border-radius:8px;padding:8px 4px;text-align:center;text-decoration:none;
               color:#fff;font-size:10px;font-weight:700"
@@ -776,7 +801,7 @@ input[type=text].api-input:focus{border-color:var(--teal)}
             onmouseout="this.style.background='rgba(255,255,255,.15)'">
             <div style="font-size:18px;margin-bottom:3px">🩺</div>Allied Health
           </a>
-          <a href="omr_scanner.html?sheet=POLICY_MAKER"   target="_blank"
+          <a href="omr_scanner_v2.html?sheet=POLICY_MAKER"   target="_blank"
             style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
               border-radius:8px;padding:8px 4px;text-align:center;text-decoration:none;
               color:#fff;font-size:10px;font-weight:700"
@@ -784,7 +809,7 @@ input[type=text].api-input:focus{border-color:var(--teal)}
             onmouseout="this.style.background='rgba(255,255,255,.15)'">
             <div style="font-size:18px;margin-bottom:3px">🏛️</div>Policy-Maker
           </a>
-          <a href="omr_scanner.html?sheet=GENERAL_PUBLIC" target="_blank"
+          <a href="omr_scanner_v2.html?sheet=GENERAL_PUBLIC" target="_blank"
             style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
               border-radius:8px;padding:8px 4px;text-align:center;text-decoration:none;
               color:#fff;font-size:10px;font-weight:700"
@@ -792,7 +817,7 @@ input[type=text].api-input:focus{border-color:var(--teal)}
             onmouseout="this.style.background='rgba(255,255,255,.15)'">
             <div style="font-size:18px;margin-bottom:3px">🌐</div>Gen. Public
           </a>
-          <a href="omr_scanner.html?sheet=ELDERLY"        target="_blank"
+          <a href="omr_scanner_v2.html?sheet=ELDERLY"        target="_blank"
             style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
               border-radius:8px;padding:8px 4px;text-align:center;text-decoration:none;
               color:#fff;font-size:10px;font-weight:700"
@@ -913,7 +938,7 @@ input[type=text].api-input:focus{border-color:var(--teal)}
 <div class="modal-overlay" id="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <h3 id="modal-title"></h3>
-    <p id="modal-msg"></p>
+    <p id="modal-msg" style="white-space:pre-line"></p>
     <div class="modal-btns" id="modal-btns"></div>
   </div>
 </div>
@@ -973,31 +998,49 @@ input[type=text].api-input:focus{border-color:var(--teal)}
 
 const USERS_KEY = 'dtam_admin_users_v2';
 
-// Password storage: PBKDF2-HMAC-SHA256, 600,000 iterations, 16-byte random salt per account.
-// Legacy accounts (unsalted SHA-256) still verify and are upgraded automatically at next login.
-const PBKDF2_ITER = 600000;
-function bytesToHex(buf) { return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join(''); }
-function hexToBytes(hex) { return new Uint8Array(hex.match(/../g).map(h => parseInt(h, 16))); }
-async function pbkdf2Hex(password, saltHex, iterations) {
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
-  const bits = await crypto.subtle.deriveBits({ name:'PBKDF2', hash:'SHA-256', salt: hexToBytes(saltHex), iterations }, key, 256);
-  return bytesToHex(bits);
-}
-async function makePasswordRecord(password) {
-  const pwSalt = bytesToHex(crypto.getRandomValues(new Uint8Array(16)));
-  return { pwAlgo:'pbkdf2-sha256', pwIter: PBKDF2_ITER, pwSalt, passwordHash: await pbkdf2Hex(password, pwSalt, PBKDF2_ITER) };
-}
-async function verifyPassword(account, password) {
-  if (account.pwAlgo === 'pbkdf2-sha256')
-    return (await pbkdf2Hex(password, account.pwSalt, account.pwIter)) === account.passwordHash;
-  return (await hashPassword(password)) === account.passwordHash;   // legacy v2 record
+/**
+ * @typedef {Object} Account
+ * @property {string} username      Lower-cased email address (unique key)
+ * @property {string} passwordHash  Hex digest (PBKDF2 when `kdf` is set, legacy unsalted SHA-256 otherwise)
+ * @property {string} [salt]        Hex salt for PBKDF2 records
+ * @property {string} [kdf]         Key-derivation identifier, e.g. 'pbkdf2-sha256-210000'
+ * @property {string} display       Display name
+ * @property {boolean} builtin
+ * @property {string} createdAt     ISO timestamp
+ */
+
+const toHex = buf => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+const fromHex = hex => new Uint8Array((hex.match(/../g) || []).map(h => parseInt(h, 16)));
+const KDF_ID = 'pbkdf2-sha256-210000';
+const KDF_ITERATIONS = 210000;
+
+// Legacy: unsalted SHA-256 (kept only to verify and upgrade accounts created by earlier versions)
+async function hashPassword(password) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+  return toHex(buf);
 }
 
-// Legacy: unsalted SHA-256 (kept only to verify and upgrade old accounts, and to hash registration tokens)
-async function hashPassword(password) {
-  const enc = new TextEncoder();
-  const buf = await crypto.subtle.digest('SHA-256', enc.encode(password));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+async function pbkdf2Hex(password, saltHex) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name:'PBKDF2', hash:'SHA-256', salt: fromHex(saltHex), iterations: KDF_ITERATIONS }, key, 256);
+  return toHex(bits);
+}
+
+/** Create the stored fields for a new password: per-account random salt + PBKDF2 digest. */
+async function makePasswordRecord(password) {
+  const salt = toHex(crypto.getRandomValues(new Uint8Array(16)));
+  return { passwordHash: await pbkdf2Hex(password, salt), salt, kdf: KDF_ID };
+}
+
+/** @param {Account} account */
+async function verifyPassword(account, password) {
+  if (account.kdf === KDF_ID && account.salt) return (await pbkdf2Hex(password, account.salt)) === account.passwordHash;
+  return (await hashPassword(password)) === account.passwordHash;
+}
+
+/** Escape a value for safe interpolation into HTML (text or quoted attribute). */
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 function loadCreatedAccounts() {
@@ -1012,50 +1055,124 @@ function saveCreatedAccounts(arr) {
   localStorage.setItem(USERS_KEY, JSON.stringify(arr));
 }
 
-// [v2] Registration tokens set by admin after first login (stored hashed)
+// ── Registration tokens (issued in Settings, redeemed on the sign-in page) ──
+/**
+ * @typedef {Object} RegToken
+ * @property {string} id
+ * @property {string} hash        SHA-256 of the normalised code (the code itself is never stored)
+ * @property {string} label
+ * @property {string} createdAt   ISO
+ * @property {string} createdBy   username of the issuing admin
+ * @property {string} expiresAt   ISO
+ * @property {string} [usedAt]
+ * @property {string} [usedBy]
+ * @property {string} [revokedAt]
+ */
 const REG_TOKENS_KEY = 'dtam_reg_tokens';
+const TOKEN_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no 0/O/1/I to avoid misreading
+/** @returns {(RegToken|string)[]} string entries are legacy plaintext tokens */
 function getRegTokens() {
-  try { return JSON.parse(localStorage.getItem(REG_TOKENS_KEY) || '[]'); } catch(e) { return []; }
+  try { const t = JSON.parse(localStorage.getItem(REG_TOKENS_KEY) || '[]'); return Array.isArray(t) ? t : []; } catch(e) { return []; }
 }
 function saveRegTokens(arr) { localStorage.setItem(REG_TOKENS_KEY, JSON.stringify(arr)); }
-const TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-async function issueRegToken() {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';           // no 0/O/1/I
-  const rnd = crypto.getRandomValues(new Uint8Array(10));
-  const body = Array.from(rnd, b => alphabet[b % alphabet.length]).join('');
-  const token = `DTAM-${body.slice(0,5)}-${body.slice(5)}`;
-  const sess = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}');
-  const tokens = getRegTokens().filter(t => t && typeof t === 'object');
-  tokens.push({ hash: await hashPassword(token), hint: token.slice(-4), createdAt: Date.now(),
-                expiresAt: Date.now() + TOKEN_TTL_MS, createdBy: sess.username || '' });
-  saveRegTokens(tokens);
-  renderTokensTable();
-  showModal('Registration Token Issued',
-    `${token}\n\nShare this with one researcher. It works once and expires in 7 days. It is stored only as a hash, so it cannot be shown again.`,
-    [{ label:'Copy & Close', cls:'btn-primary', action:`navigator.clipboard&&navigator.clipboard.writeText(${escHtml(JSON.stringify(token))});closeModal()` }]);
+const normaliseToken = code => String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+function tokenStatus(t) {
+  if (t.usedAt)    return { key:'used',    text:`Used by ${t.usedBy || 'unknown'}` };
+  if (t.revokedAt) return { key:'revoked', text:'Revoked' };
+  if (Date.now() >= new Date(t.expiresAt).getTime()) return { key:'expired', text:'Expired' };
+  return { key:'active', text:'Active' };
 }
-function revokeRegToken(hash) {
-  const tokens = getRegTokens();
-  const t = tokens.find(x => x && x.hash === hash);
-  if (t) { t.revokedAt = Date.now(); saveRegTokens(tokens); }
-  renderTokensTable();
+
+function currentAdmin() {
+  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}').username || ''; } catch(e) { return ''; }
 }
+
+async function generateRegToken() {
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  const raw = Array.from(bytes, b => TOKEN_ALPHABET[b % TOKEN_ALPHABET.length]).join('');   // 32 divides 256: unbiased
+  const code = raw.match(/.{4}/g).join('-');                                                   // XXXX-XXXX-XXXX
+  const days = parseInt(document.getElementById('tok-days').value, 10) || 7;
+  const labelEl = document.getElementById('tok-label');
+  /** @type {RegToken} */
+  const token = {
+    id: 'tok_' + Date.now().toString(36) + toHex(crypto.getRandomValues(new Uint8Array(3))),
+    hash: await hashPassword(normaliseToken(code)),
+    label: labelEl.value.trim(),
+    createdAt: new Date().toISOString(),
+    createdBy: currentAdmin(),
+    expiresAt: new Date(Date.now() + days * 86400000).toISOString(),
+  };
+  saveRegTokens([...getRegTokens(), token]);
+  labelEl.value = '';
+  renderTokensTable();
+  showModal('Registration Token Created',
+    `${code}\n\nGive this code to ${token.label || 'the new team member'}. It works once, on this device's sign-in page ` +
+    `(Create Account), until ${new Date(token.expiresAt).toLocaleString()}. It will not be shown again.`,
+    [
+      { label:'Copy code', cls:'btn-secondary', action: async (ev) => {
+          try { await navigator.clipboard.writeText(code); ev.target.textContent = 'Copied ✓'; }
+          catch(e) { ev.target.textContent = 'Copy failed — select the code above'; }
+        } },
+      { label:'Done', cls:'btn-primary', action: closeModal },
+    ]);
+}
+
 function renderTokensTable() {
   const tbody = document.getElementById('tokens-table');
   if (!tbody) return;
-  const tokens = getRegTokens().filter(t => t && typeof t === 'object').slice().reverse();
-  if (!tokens.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No tokens issued.</td></tr>'; return; }
-  tbody.innerHTML = tokens.map(t => {
-    const status = t.usedAt ? `Used by ${escHtml(t.usedBy||'')}` : t.revokedAt ? 'Revoked' : t.expiresAt <= Date.now() ? 'Expired' : 'Active';
-    const active = status === 'Active';
+  const tokens = getRegTokens().filter(t => typeof t === 'object' && t);
+  if (!tokens.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No tokens issued yet.</td></tr>';
+    return;
+  }
+  const badge = { active:'active', used:'done', expired:'pending', revoked:'pending' };
+  tbody.innerHTML = tokens.slice().reverse().map(t => {
+    const st = tokenStatus(t);
     return `<tr>
-      <td style="font-family:monospace">…${escHtml(t.hint||'')}</td>
-      <td style="font-size:11px">${new Date(t.createdAt).toLocaleString()}</td>
-      <td style="font-size:11px">${new Date(t.expiresAt).toLocaleString()}</td>
-      <td><span class="status-badge ${active?'done':'pending'}">${status}</span></td>
-      <td>${active ? `<button class="btn btn-danger" style="font-size:11px;padding:4px 10px" onclick="revokeRegToken('${escHtml(t.hash)}')">Revoke</button>` : '—'}</td>
+      <td style="font-weight:600">${esc(t.label || '—')}</td>
+      <td style="font-size:11px;color:var(--muted)">${esc(new Date(t.createdAt).toLocaleString())}${t.createdBy ? '<br/>by ' + esc(t.createdBy) : ''}</td>
+      <td style="font-size:11px;color:var(--muted)">${esc(new Date(t.expiresAt).toLocaleString())}</td>
+      <td><span class="status-badge ${badge[st.key]}">${esc(st.text)}</span></td>
+      <td>${st.key === 'active'
+        ? `<button class="btn btn-danger" style="font-size:11px;padding:4px 10px" data-tok="${esc(t.id)}" onclick="revokeRegToken(this.dataset.tok)">Revoke</button>`
+        : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
     </tr>`;
   }).join('');
+}
+
+function revokeRegToken(id) {
+  showModal('Revoke Token', 'This token will stop working immediately. Continue?', [
+    { label:'Cancel', cls:'btn-secondary', action: closeModal },
+    { label:'Revoke', cls:'btn-danger', action: () => {
+        saveRegTokens(getRegTokens().map(t => (typeof t === 'object' && t.id === id) ? { ...t, revokedAt: new Date().toISOString() } : t));
+        closeModal(); renderTokensTable();
+      } },
+  ]);
+}
+
+/**
+ * Find a redeemable token for the entered code.
+ * @returns {Promise<{index:number}|null>}
+ */
+async function findActiveToken(code) {
+  const norm = normaliseToken(code);
+  if (norm.length < 8) return null;
+  const hash = await hashPassword(norm);
+  const tokens = getRegTokens();
+  const index = tokens.findIndex(t => typeof t === 'string'
+    ? normaliseToken(t) === norm                                 // legacy plaintext entry
+    : t && t.hash === hash && tokenStatus(t).key === 'active');
+  return index >= 0 ? { index } : null;
+}
+
+/** Mark a token used (legacy plaintext entries are removed). */
+function consumeToken(index, username) {
+  const tokens = getRegTokens();
+  const t = tokens[index];
+  if (typeof t === 'string') tokens.splice(index, 1);
+  else if (t) tokens[index] = { ...t, usedAt: new Date().toISOString(), usedBy: username };
+  saveRegTokens(tokens);
 }
 
 // Show first-run setup if no accounts exist
@@ -1082,20 +1199,23 @@ function showSetupWizard() {
 }
 
 const SESSION_KEY = 'dtam_admin_session';
-let MAX_ATTEMPTS  = 5;
-// Lockout persists across tabs/reloads (localStorage) and expires after 15 minutes
-const LOCK_KEY = 'dtam_login_lock';
-const LOCK_MS  = 15 * 60 * 1000;
-function getLock() {
-  try { return JSON.parse(localStorage.getItem(LOCK_KEY)) || { count:0, lockedUntil:0 }; }
-  catch(e) { return { count:0, lockedUntil:0 }; }
+const MAX_ATTEMPTS  = 5;
+const LOCKOUT_MS    = 5 * 60 * 1000;
+const LOCK_KEY      = 'dtam_login_lock_until';
+let loginAttempts = parseInt(sessionStorage.getItem('dtam_login_attempts') || '0', 10);
+let loginBusy = false;
+
+function lockRemainingMs() {
+  const until = parseInt(sessionStorage.getItem(LOCK_KEY) || '0', 10);
+  if (until && Date.now() >= until) {
+    // Lockout expired: reset the counter
+    sessionStorage.removeItem(LOCK_KEY);
+    sessionStorage.removeItem('dtam_login_attempts');
+    loginAttempts = 0;
+    return 0;
+  }
+  return Math.max(0, until - Date.now());
 }
-function setLock(l) { localStorage.setItem(LOCK_KEY, JSON.stringify(l)); }
-function lockMessage(l) {
-  const mins = Math.max(1, Math.ceil((l.lockedUntil - Date.now()) / 60000));
-  return `Too many failed attempts. Sign-in is locked for ${mins} more minute${mins!==1?'s':''}.`;
-}
-let loginAttempts = getLock().count;
 
 function checkSession() {
   const sess = sessionStorage.getItem(SESSION_KEY);
@@ -1117,10 +1237,12 @@ function checkSession() {
 }
 
 async function doLogin() {
-  let lock = getLock();
-  if (lock.lockedUntil > Date.now()) { showLoginError(lockMessage(lock)); return; }
-  if (lock.lockedUntil && lock.lockedUntil <= Date.now()) { lock = { count:0, lockedUntil:0 }; setLock(lock); }
-  loginAttempts = lock.count;
+  if (loginBusy) return;   // Enter key + button click can fire while hashing is in flight
+  const lockMs = lockRemainingMs();
+  if (lockMs > 0) {
+    showLoginError(`Too many failed attempts. Try again in ${Math.ceil(lockMs / 60000)} min.`);
+    return;
+  }
 
   const userEl = document.getElementById('login-user');
   const passEl = document.getElementById('login-pass');
@@ -1129,19 +1251,25 @@ async function doLogin() {
 
   if (!user || !pass) { showLoginError('Please enter both username and password.'); return; }
 
-  // Verify against the stored salted hash (never compare plaintext)
-  const candidate = loadAllAccounts().find(a => a.username.toLowerCase() === user);
-  const account = candidate && await verifyPassword(candidate, pass) ? candidate : null;
+  // Compare derived hashes — never compare plaintext
+  loginBusy = true;
+  let account = null;
+  try {
+    const candidate = loadAllAccounts().find(a => a.username.toLowerCase() === user);
+    if (candidate && await verifyPassword(candidate, pass)) account = candidate;
+    // Transparently upgrade legacy unsalted SHA-256 records to salted PBKDF2
+    if (account && account.kdf !== KDF_ID) {
+      const rec = await makePasswordRecord(pass);
+      saveCreatedAccounts(loadCreatedAccounts().map(a => a.username === account.username ? { ...a, ...rec } : a));
+    }
+  } finally {
+    loginBusy = false;
+  }
 
   if (account) {
     loginAttempts = 0;
-    setLock({ count:0, lockedUntil:0 });
-    if (account.pwAlgo !== 'pbkdf2-sha256') {
-      // Upgrade legacy unsalted SHA-256 record in place
-      const created = loadCreatedAccounts();
-      const i = created.findIndex(a => a.username === account.username);
-      if (i >= 0) { Object.assign(created[i], await makePasswordRecord(pass)); saveCreatedAccounts(created); }
-    }
+    sessionStorage.removeItem('dtam_login_attempts');
+    sessionStorage.removeItem(LOCK_KEY);
     sessionStorage.setItem(SESSION_KEY, JSON.stringify({
       username: account.username,
       display:  account.display,
@@ -1150,14 +1278,15 @@ async function doLogin() {
     showPortal(account.display);
   } else {
     loginAttempts++;
-    setLock({ count: loginAttempts, lockedUntil: loginAttempts >= MAX_ATTEMPTS ? Date.now() + LOCK_MS : 0 });
+    sessionStorage.setItem('dtam_login_attempts', loginAttempts);
     userEl.classList.add('error');
     passEl.classList.add('error');
     passEl.value = '';
     const remaining = MAX_ATTEMPTS - loginAttempts;
+    if (remaining <= 0) sessionStorage.setItem(LOCK_KEY, String(Date.now() + LOCKOUT_MS));
     showLoginError(remaining > 0
       ? `Invalid credentials. ${remaining} attempt${remaining!==1?'s':''} remaining.`
-      : lockMessage(getLock()));
+      : `Too many failed attempts. Try again in ${LOCKOUT_MS / 60000} min.`);
     setTimeout(() => { userEl.classList.remove('error'); passEl.classList.remove('error'); }, 600);
     passEl.focus();
   }
@@ -1214,7 +1343,13 @@ function checkPwStrength(pw, barId='pw-bar', labelId='pw-label') {
 }
 
 // ── REGISTER (login page) ─────────────────────────────
+let regBusy = false;
 async function doRegister() {
+  if (regBusy) return;   // double-click / Enter while hashing could register twice with one token
+  regBusy = true;
+  try { await doRegisterInner(); } finally { regBusy = false; }
+}
+async function doRegisterInner() {
   const nameEl  = document.getElementById('reg-name');
   const emailEl = document.getElementById('reg-email');
   const passEl  = document.getElementById('reg-pass');
@@ -1240,20 +1375,18 @@ async function doRegister() {
   if (pass.length < 8)   return showErr('Password must be at least 8 characters.');
   if (pass !== pass2)    return showErr('Passwords do not match.');
   // [v2] First-run (no accounts yet) skips token check; subsequent registrations validate token
-  const isFirstRun = document.getElementById('reg-btn').getAttribute('data-firstrun') === '1';
-  let tokenEntry = null;
+  const isFirstRun = loadAllAccounts().length === 0;
+  let tokenMatch = null;
   if (!isFirstRun) {
-    // Tokens are stored as SHA-256 hashes, single-use, with an expiry (issued in Settings → Registration Tokens)
-    const codeHash = await hashPassword(code.toUpperCase());
-    tokenEntry = getRegTokens().find(t => t && t.hash === codeHash && !t.usedAt && !t.revokedAt && t.expiresAt > Date.now());
-    if (!code || !tokenEntry) return showErr('Invalid or expired registration token. Contact the PI for a new token.');
+    tokenMatch = await findActiveToken(code);
+    if (!tokenMatch) return showErr('Invalid, expired or already-used registration token. Ask the PI for a new token.');
   }
 
   const all = loadAllAccounts();
   if (all.some(a => a.username.toLowerCase() === email))
     return showErr('An account with this email already exists.');
 
-  // Salted PBKDF2 hash before storage
+  // Salted PBKDF2 before storage
   const newAccount = {
     username: email,
     ...(await makePasswordRecord(pass)),
@@ -1262,14 +1395,15 @@ async function doRegister() {
     createdAt: new Date().toISOString(),
   };
 
+  // Re-check right before writing: the token may have been used or revoked while hashing
+  if (tokenMatch) {
+    tokenMatch = await findActiveToken(code);
+    if (!tokenMatch) return showErr('This registration token is no longer valid.');
+  }
   const created = loadCreatedAccounts();
   created.push(newAccount);
   saveCreatedAccounts(created);
-  if (tokenEntry) {
-    const tokens = getRegTokens();
-    const t = tokens.find(x => x && x.hash === tokenEntry.hash);
-    if (t) { t.usedAt = Date.now(); t.usedBy = email; saveRegTokens(tokens); }
-  }
+  if (tokenMatch) consumeToken(tokenMatch.index, email);
 
   // If this was the first-run setup, restore the registration code field and button
   if (document.getElementById('reg-btn').getAttribute('data-firstrun') === '1') {
@@ -1323,8 +1457,9 @@ async function submitAddUser() {
   if (all.some(a => a.username.toLowerCase() === email))
     return showErr('An account with this email already exists.');
 
+  const rec = await makePasswordRecord(pass);
   const created = loadCreatedAccounts();
-  created.push({ username:email, ...(await makePasswordRecord(pass)), display:name, builtin:false, createdAt:new Date().toISOString() });
+  created.push({ username:email, ...rec, display:name, builtin:false, createdAt:new Date().toISOString() });
   saveCreatedAccounts(created);
   closeAddUser();
   renderUsersTable();
@@ -1339,13 +1474,13 @@ function renderUsersTable() {
   const accounts = loadAllAccounts();
   tbody.innerHTML = accounts.map(a => `
     <tr>
-      <td style="font-weight:600">${escHtml(a.display)}</td>
-      <td style="font-size:12px;font-family:monospace">${escHtml(a.username)}</td>
+      <td style="font-weight:600">${esc(a.display)}</td>
+      <td style="font-size:12px;font-family:monospace">${esc(a.username)}</td>
       <td><span class="status-badge ${a.builtin ? 'active' : 'done'}">${a.builtin ? '🔒 Built-in' : '👤 Created'}</span></td>
       <td style="font-size:11px;color:var(--muted)">${a.createdAt ? new Date(a.createdAt).toLocaleDateString() : 'System'}</td>
       <td>${a.builtin ? '<span style="color:var(--muted);font-size:12px">—</span>'
         : `<button class="btn btn-danger" style="font-size:11px;padding:4px 10px"
-             onclick="deleteUser(${escHtml(JSON.stringify(a.username))})">Delete</button>`}</td>
+             data-user="${esc(a.username)}" onclick="deleteUser(this.dataset.user)">Delete</button>`}</td>
     </tr>`).join('');
 }
 
@@ -1354,7 +1489,7 @@ function deleteUser(username) {
     `Remove account for "${username}"? This cannot be undone.`,
     [
       { label:'Cancel',  cls:'btn-secondary', action:'closeModal()' },
-      { label:'Delete',  cls:'btn-danger',    action:`confirmDeleteUser(${escHtml(JSON.stringify(username))})` },
+      { label:'Delete',  cls:'btn-danger',    action:() => confirmDeleteUser(username) },
     ]);
 }
 
@@ -1366,7 +1501,6 @@ function confirmDeleteUser(username) {
 }
 
 function showPortal(displayName) {
-  renderTokensTable();
   document.getElementById('login-page').style.display = 'none';
   document.getElementById('sidebar').style.display    = 'flex';
   document.getElementById('topbar-user').textContent  = displayName;
@@ -1400,11 +1534,45 @@ function saveKey(type, val) {
   if (type === 'claude') _claudeKey = val.trim();
 }
 
-// ── DATA LOADERS ─────────────────────────────────────
-// Escape values from storage/imported files before inserting into innerHTML templates
-function escHtml(v) {
-  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// ── LLM SETTINGS + DRIFT RULES ────────────────────────
+/* DTAM_RULES:BEGIN - generated by harness/dtam_harness.py sync --write from harness/drift_rules.json + harness/dtam_constants.json. Do not edit by hand. */
+const DTAM_DRIFT_RULES = [{"id": "NDHB_EN", "sev": "error", "p": "National\\s+Digital\\s+Health\\s+(Blueprint|Roadmap)", "f": "iu", "fix": "Fabricated policy. Replace with: Health White Paper (2023), MOH Malaysia (Command Paper No. 29 of 2023)."}, {"id": "NDHB_ACRONYM", "sev": "error", "p": "\\bNDH[BR]\\b", "f": "u", "fix": "Acronym of the fabricated 'National Digital Health Blueprint'. Replace with Health White Paper (2023)."}, {"id": "NDHB_BM", "sev": "error", "p": "Pelan\\s+(Hala\\s+Tuju|Induk)\\s+Kesihatan\\s+Digital", "f": "iu", "fix": "BM form of the fabricated blueprint. Replace with Kertas Putih Kesihatan (2023)."}, {"id": "NDHB_ZH", "sev": "error", "p": "(数字|數字|数码|數碼|數位)(健康|卫生|衛生)(蓝图|藍圖)", "f": "u", "fix": "ZH form of the fabricated blueprint. Replace with the Health White Paper (2023) equivalent."}, {"id": "NDHB_TA", "sev": "error", "p": "தேசிய\\s+\\S{0,4}ஜிட்டல்\\s+சுகாதார\\s+(வரைவு|திட்ட)|டிஜிட்டல்\\s+சுகாதார\\s+வரைவு", "f": "u", "fix": "TA form of the fabricated blueprint. Replace with the Health White Paper (2023) equivalent."}, {"id": "NDHB_BM_SHORT", "sev": "warn", "p": "Pelan\\s+Induk", "f": "iu", "fix": "Short BM paraphrase that usually refers to the fabricated blueprint. Confirm and replace."}, {"id": "NDHB_ZH_SHORT", "sev": "warn", "p": "蓝图|藍圖", "f": "u", "fix": "Short ZH paraphrase ('blueprint') that usually refers to the fabricated blueprint. Confirm and replace."}, {"id": "NDHB_TA_SHORT", "sev": "warn", "p": "வரைவின்", "f": "u", "fix": "Short TA paraphrase ('of the draft/blueprint') that usually refers to the fabricated blueprint. Confirm and replace."}, {"id": "NDHB_EN_SHORT", "sev": "warn", "p": "\\bBlueprint\\b", "f": "iu", "fix": "Bare 'Blueprint' usually refers to the fabricated National Digital Health Blueprint. Confirm and replace (e.g. 'the White Paper')."}, {"id": "LIM2017", "sev": "error", "p": "Lim\\s+et\\s+al\\.?,?\\s*\\(?2017", "f": "iu", "fix": "Fabricated citation. Attrition justification is Abdullah, N. et al. (2021), IJERPH 18(14), 7216."}, {"id": "FACULTY", "sev": "error", "p": "\\bFICT\\b", "f": "u", "fix": "Wrong faculty. Use LKC FES (Lee Kong Chian Faculty of Engineering and Science)."}, {"id": "KAPPA_ATTR", "sev": "warn", "p": "Polit\\s*(&|and)\\s*Beck,?\\s*\\(?2006", "f": "iu", "fix": "Misattribution. Correct source is Polit, Beck & Owen (2007)."}, {"id": "WHITEBOOK", "sev": "warn", "p": "Health(care)?\\s+White\\s+Book", "f": "iu", "fix": "Naming variant. Approved name is 'Health White Paper (2023)'."}];
+const DTAM_CHAT_MODEL_DEFAULT = "claude-haiku-5-5";
+const DTAM_CHAT_MODEL_OPTIONS = ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-haiku-4-5"];
+/* DTAM_RULES:END */
+// Proxy URL and model are per-browser conveniences (localStorage); the API key never is.
+function _llmGet(k, d) { try { return localStorage.getItem('dtam_llm_' + k) || d; } catch (e) { return d; } }
+function saveLlmSetting(k, v) { try { localStorage.setItem('dtam_llm_' + k, String(v).trim()); } catch (e) {} }
+function llmProxy() { return _llmGet('proxy', '').replace(/\/+$/, ''); }
+function llmModel() {
+  const m = _llmGet('model', DTAM_CHAT_MODEL_DEFAULT);
+  return DTAM_CHAT_MODEL_OPTIONS.includes(m) ? m : DTAM_CHAT_MODEL_DEFAULT;
 }
+function initLlmSettings() {
+  const sel = document.getElementById('claude-model-select');
+  if (sel) {
+    sel.innerHTML = DTAM_CHAT_MODEL_OPTIONS.map(m => '<option value="' + m + '">' + m +
+      (m === DTAM_CHAT_MODEL_DEFAULT ? ' (default)' : '') + '</option>').join('');
+    sel.value = llmModel();
+  }
+  const px = document.getElementById('claude-proxy-input');
+  if (px) px.value = llmProxy();
+  const tk = document.getElementById('claude-proxy-token');
+  if (tk) tk.value = _llmGet('token', '');
+}
+document.addEventListener('DOMContentLoaded', initLlmSettings);
+// Returns drift findings for a model reply (same rules as harness/drift_rules.json).
+function driftCheck(text) {
+  const hits = [];
+  for (const r of DTAM_DRIFT_RULES) {
+    let re; try { re = new RegExp(r.p, r.f); } catch (e) { continue; }
+    const m = text.match(re);
+    if (m) hits.push(r.sev.toUpperCase() + ' ' + r.id + ': "' + m[0] + '" - ' + r.fix);
+  }
+  return hits;
+}
+
+// ── DATA LOADERS ─────────────────────────────────────
 function loadSurveys()    { try { return JSON.parse(localStorage.getItem(SURVEY_KEY)||'[]'); } catch(e) { return []; } }
 function loadInterviews() { try { return JSON.parse(localStorage.getItem(INTERVIEW_KEY)||'[]'); } catch(e) { return []; } }
 function loadOmrScans()   { try { return JSON.parse(localStorage.getItem(OMR_KEY)||'[]'); } catch(e) { return []; } }
@@ -1432,11 +1600,16 @@ function importOmrJson(event) {
     try {
       const data = JSON.parse(e.target.result);
       // Accept single scan object or array of scans
-      const scans = Array.isArray(data) ? data : [data];
+      const scans = (Array.isArray(data) ? data : [data]).filter(s => s && typeof s === 'object' && !Array.isArray(s));
+      if (!scans.length) throw new Error('no scan objects');
       const existing = loadOmrScans();
-      // Deduplicate by participant_id + timestamp
-      const deduped = scans.filter(s =>
-        !existing.some(ex => ex.participant_id === s.participant_id && ex.timestamp === s.timestamp));
+      // Deduplicate by participant_id + timestamp (against stored scans and within this file)
+      const seen = new Set(existing.map(ex => ex.participant_id + '|' + ex.timestamp));
+      const deduped = scans.filter(s => {
+        const k = s.participant_id + '|' + s.timestamp;
+        if (seen.has(k)) return false;
+        seen.add(k); return true;
+      });
       if (!deduped.length) {
         showModal('Already Imported', 'This file has already been imported (duplicate participant_id + timestamp).', [{label:'OK',cls:'btn-secondary',action:'closeModal()'}]);
         return;
@@ -1452,32 +1625,33 @@ function importOmrJson(event) {
   reader.readAsText(file);
 }
 
-// ── INTERVIEW IMPORT (Part C + verbal interview exports) ─
-// Maps the apps' {meta, responses, incidents} export to the interview summary record shown here.
-function normaliseGroup(g) { return g === 'policymaker' ? 'policy' : g; }
+// ── INTERVIEW IMPORT (sessions exported on another device) ──
+// Part C writes dtam_my_interviews itself when run on this device. For interviews run elsewhere, import the
+// exported session JSON (Part C or verbal interview). Only metadata is kept, matching the Part C index:
+// no transcripts or notes are stored here.
 function interviewRecordFrom(data, fileName) {
   const legacyVerbal = Array.isArray(data);                       // early verbal exports: bare log array
-  const meta = legacyVerbal ? {} : (data.meta || {});
-  const responses = legacyVerbal ? data : (data.responses || []);
-  if (!legacyVerbal && !data.meta) return null;
-  const kind = responses.some(r => 'confirmedScore' in r || 'autoScore' in r) ? 'verbal' : 'partc';
-  const total = meta.totalQ ?? meta.totalItems ?? null;
-  const done  = kind === 'partc' ? responses.filter(r => r.status === 'done').length : (meta.completed ?? responses.length);
+  if (!legacyVerbal && !data.meta && !data.sessionId) return null;
+  const meta = legacyVerbal ? {} : (data.meta || data);
+  const responses = legacyVerbal ? data : (data.responses || data.items || data.log || []);
+  const kind = responses.some(r => r && ('confirmedScore' in r || 'autoScore' in r)) ? 'verbal' : 'partc';
+  const total = meta.totalQ ?? meta.totalItems ?? (kind === 'verbal' ? null : responses.length);
+  const answered = kind === 'partc' ? responses.filter(r => r.status === 'done').length : responses.length;
+  const group = meta.group === 'policymaker' ? 'policy' : (meta.group || '');
   return {
-    id: meta.sessionId || (fileName||'').replace(/\.json$/i,''),
-    kind,
-    group: normaliseGroup(meta.group) || '',
+    id: meta.sessionId || String(fileName||'').replace(/\.json$/i,''),
+    kind, group,
     interviewer: meta.researcherId || '',
-    participantId: meta.participantId || '',
-    language: meta.language || '',
+    language: meta.language || meta.lang || '',
     site: meta.site || '',
-    duration: kind === 'partc' ? responses.reduce((a,r) => a + (r.recordedSecs||0), 0) : null,
     startedAt: meta.startedAt || null,
     endedAt: meta.exportedAt || null,
-    completed: total != null ? done >= total : false,
-    incidents: Array.isArray(data.incidents) ? data.incidents : [],
+    duration: null,
+    recordedSecs: responses.reduce((a,r) => a + ((r && r.recordedSecs) || 0), 0),
+    questions: total, answered,
+    completed: total != null ? answered >= total : false,
+    incidents: (Array.isArray(data.incidents) ? data.incidents : []).map(i => ({ type: i.type, recordedAt: i.recordedAt })),
     importedAt: new Date().toISOString(),
-    source: data,
   };
 }
 function importInterviewJson(event) {
@@ -1495,7 +1669,7 @@ function importInterviewJson(event) {
       sae += rec.incidents.filter(i => i.type === 'sae').length;
     });
     try { localStorage.setItem(INTERVIEW_KEY, JSON.stringify(existing)); }
-    catch(e) { showModal('Storage Full', 'Browser storage is full. Export and archive existing interview data, then clear it before importing more.', []); return; }
+    catch(e) { showModal('Storage Full', 'Browser storage is full. Export and archive existing data first.', []); return; }
     refreshAll();
     let msg = `Imported ${added} session(s).` + (dup ? ` ${dup} already imported.` : '') + (bad ? ` ${bad} file(s) not recognised.` : '');
     if (sae) msg += `\n\n⚠ ${sae} serious adverse event(s) recorded in these sessions. Report to UREC within 24 hours (Protocol §6).`;
@@ -1517,20 +1691,20 @@ function updateOmrTable(scans) {
     const missing = res.filter(r => r.no_response).length;
     const ambig   = res.filter(r => r.ambiguous).length;
     const sc      = s.scores || {};
-    const tamVal  = sc.tam?.tam_mean  ? sc.tam.tam_mean+'/5'  : '—';
-    const susVal  = sc.sus?.score     ? sc.sus.score+'/100'   : '—';
-    const zbiVal  = sc.zbi?.total     != null ? sc.zbi.total+'/88' : (sc.zbi ? 'incomplete' : '—');
+    const tamVal  = sc.tam?.tam_mean != null ? esc(sc.tam.tam_mean)+'/5'  : '—';
+    const susVal  = sc.sus?.score    != null ? esc(sc.sus.score)+'/100'   : '—';
+    const zbiVal  = sc.zbi?.total    != null ? esc(sc.zbi.total)+'/88'    : '—';
     const flag    = missing > 0 || ambig > 0;
     return `<tr>
-      <td style="font-family:monospace;font-size:12px;font-weight:700">${escHtml(s.participant_id||'—')}</td>
-      <td>${escHtml(s.sheet||'—')}</td>
+      <td style="font-family:monospace;font-size:12px;font-weight:700">${esc(s.participant_id||'—')}</td>
+      <td>${esc(s.sheet||'—')}</td>
       <td style="font-size:11px">${s.timestamp ? new Date(s.timestamp).toLocaleString() : '—'}</td>
       <td style="text-align:center">${res.length}</td>
       <td style="text-align:center;color:${missing>0?'var(--danger)':'var(--muted)'}">${missing||'0'}</td>
       <td style="text-align:center;color:${ambig>0?'var(--warn)':'var(--muted)'}">${ambig||'0'}</td>
-      <td style="text-align:center;font-weight:700;color:var(--teal)">${escHtml(tamVal)}</td>
-      <td style="text-align:center;font-weight:700;color:var(--teal)">${escHtml(susVal)}</td>
-      <td style="text-align:center;font-weight:700;color:var(--orange)">${escHtml(zbiVal)}</td>
+      <td style="text-align:center;font-weight:700;color:var(--teal)">${tamVal}</td>
+      <td style="text-align:center;font-weight:700;color:var(--teal)">${susVal}</td>
+      <td style="text-align:center;font-weight:700;color:var(--orange)">${zbiVal}</td>
       <td><span class="status-badge ${flag?'pending':'done'}">${flag?'⚠ Review':'✓ Clean'}</span></td>
     </tr>`;
   }).join('');
@@ -1547,16 +1721,16 @@ function exportOmrCSV() {
   scans.forEach(s => {
     (s.results||[]).forEach(r => {
       rows.push([
-        s.participant_id||'', s.sheet||'', s.timestamp||'',
-        r.page||'', r.section_id||'', r.code||'',
-        `"${(r.label||'').replace(/"/g,'""')}"`,
-        r.selectedValue||'', r.ambiguous?'1':'0',
-        r.maxFill !== undefined ? (r.maxFill*100).toFixed(0)+'%' : '',
-        r.overridden?'1':'0', r.overridden?(r.autoValue??''):''
-      ].join(','));
+        s.participant_id, s.sheet, s.timestamp,
+        r.page, r.section_id, r.code, r.label,
+        r.selectedValue,            // 0 is a valid response (e.g. ZBI "Never") — do not coerce to ''
+        r.ambiguous?'1':'0',
+        typeof r.maxFill === 'number' ? (r.maxFill*100).toFixed(0)+'%' : '',
+        r.overridden?'1':'0', r.overridden ? r.autoValue : ''
+      ].map(csvCell).join(','));
     });
   });
-  downloadText(rows.join('\n'), `dtam_omr_scans_${dateStr()}.csv`);
+  downloadText(rows.join('\n'), `dtam_omr_scans_${dateStr()}.csv`, 'text/csv');
 }
 function exportOmrJSON() {
   const scans = loadOmrScans();
@@ -1604,6 +1778,7 @@ function updateGroupProgress(surveys, interviews) {
 // ── ACTIVITY FEED ─────────────────────────────────────
 function updateActivityFeed(surveys, interviews, omrScans) {
   const all = [
+    // Convert to epoch ms: ISO strings made the numeric sort return NaN (random order)
     ...surveys.map(r => ({ type:'survey', group:r.group, time:new Date(r.submittedAt||r.timestamp||Date.now()).getTime(), label:'Survey completed' })),
     ...interviews.map(r => ({ type:'interview', group:r.group, time:new Date(r.endedAt||r.startedAt||r.importedAt||Date.now()).getTime(), label:'Interview session' })),
     ...(omrScans||[]).map(r => ({ type:'system', group:r.sheet||'', time:r.timestamp ? new Date(r.timestamp).getTime() : Date.now(), label:`OMR scan imported — ${r.participant_id||'unknown'}` })),
@@ -1614,7 +1789,7 @@ function updateActivityFeed(surveys, interviews, omrScans) {
   feed.innerHTML = all.map(a => `
     <div class="activity-item">
       <div class="act-dot ${a.type}"></div>
-      <div><div class="act-text">${escHtml(a.label)} — <strong>${escHtml(GROUP_LABELS[a.group]||a.group||'Unknown')}</strong></div>
+      <div><div class="act-text">${esc(a.label)} — <strong>${esc(GROUP_LABELS[a.group]||a.group||'Unknown')}</strong></div>
       <div class="act-time">${new Date(a.time).toLocaleString()}</div></div>
     </div>`).join('');
 }
@@ -1625,9 +1800,9 @@ function updateParticipantTable(surveys) {
   if (!surveys.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-muted" style="text-align:center;padding:20px">No survey responses found.</td></tr>'; return; }
   tbody.innerHTML = surveys.slice().reverse().map(r => `
     <tr>
-      <td style="font-family:monospace;font-size:11px">${escHtml(String(r.id||'—').slice(0,12))}</td>
-      <td>${GROUP_ICONS[r.group]||''} ${escHtml(GROUP_LABELS[r.group]||r.group||'—')}</td>
-      <td>${escHtml(String((r.meta && (r.meta.surveyLang || r.meta.lang)) || r.lang || '—').toUpperCase())}</td>
+      <td style="font-family:monospace;font-size:11px">${esc(String(r.id||'—').slice(0,12))}</td>
+      <td>${GROUP_ICONS[r.group]||''} ${esc(GROUP_LABELS[r.group]||r.group||'—')}</td>
+      <td>${r.lang ? esc(String(r.lang).toUpperCase()) : '—'}</td>
       <td>${r.submittedAt ? new Date(r.submittedAt).toLocaleString() : (r.timestamp ? new Date(r.timestamp).toLocaleString() : '—')}</td>
       <td><span class="status-badge done">✓ Complete</span></td>
     </tr>`).join('');
@@ -1642,12 +1817,12 @@ function updateInterviewTable(interviews) {
   }
   tbody.innerHTML = interviews.slice().reverse().map(r => `
     <tr>
-      <td style="font-family:monospace;font-size:11px">${escHtml(String(r.id||'—').slice(0,12))}</td>
-      <td>${GROUP_ICONS[r.group]||''} ${escHtml(GROUP_LABELS[r.group]||r.group||'—')}</td>
-      <td>${escHtml(r.interviewer||'—')}</td>
+      <td style="font-family:monospace;font-size:11px">${esc(String(r.id||'—').slice(0,12))}</td>
+      <td>${GROUP_ICONS[r.group]||''} ${esc(GROUP_LABELS[r.group]||r.group||'—')}</td>
+      <td>${esc(r.interviewer||'—')}</td>
       <td>${r.duration ? Math.ceil(r.duration/60) + ' min' : '—'}</td>
       <td>${r.endedAt ? new Date(r.endedAt).toLocaleString() : (r.startedAt ? new Date(r.startedAt).toLocaleString() : '—')}</td>
-      <td><span class="status-badge ${r.completed ? 'done' : 'pending'}">${r.completed ? '✓ Complete' : '⏳ Partial'}</span>${
+      <td><span class="status-badge ${r.completed ? 'done' : 'pending'}">${r.completed ? '✓ Complete' : '⏳ In Progress'}</span>${
         (r.incidents||[]).length ? ` <span class="status-badge pending" style="background:#fee2e2;color:#991b1b">⚠ ${(r.incidents||[]).length} incident${(r.incidents||[]).length>1?'s':''}${(r.incidents||[]).some(i=>i.type==='sae')?' · SAE':''}</span>` : ''}</td>
     </tr>`).join('');
 }
@@ -1680,35 +1855,37 @@ function updateProgressDetail(surveys, interviews) {
 function exportSurveyCSV() {
   const data = loadSurveys();
   if (!data.length) { showModal('No Data','No survey responses to export.',[]); return; }
-  // Field names follow the questionnaire record (survey language and browser locale live under meta)
-  const cols = {
-    id: r => r.id, group: r => r.group,
-    survey_lang:  r => (r.meta && r.meta.surveyLang) || '',
-    browser_lang: r => (r.meta && r.meta.lang) || r.lang || '',
-    timestamp:    r => r.timestamp || r.submittedAt || '',
-  };
+  // Field names follow the questionnaire record (records carry `timestamp`, not `submittedAt`)
+  const cols = { id: r => r.id, group: r => r.group, survey_lang: r => r.lang,
+                 browser_lang: r => r.meta && r.meta.lang, timestamp: r => r.timestamp || r.submittedAt };
   const keys = Object.keys(cols);
-  const rows = [keys.join(','), ...data.map(r => keys.map(k => `"${(cols[k](r)||'').toString().replace(/"/g,'""')}"`).join(','))];
-  downloadText(rows.join('\n'), `dtam_my_surveys_${dateStr()}.csv`);
+  const rows = [keys.join(','), ...data.map(r => keys.map(k => csvCell(cols[k](r))).join(','))];
+  downloadText(rows.join('\n'), `dtam_my_surveys_${dateStr()}.csv`, 'text/csv');
 }
 function exportInterviewCSV() {
   const data = loadInterviews();
   if (!data.length) { showModal('No Data','No interview sessions to export.',[]); return; }
-  const keys = ['id','kind','group','participantId','interviewer','language','site','endedAt','duration','completed','incidents','sae'];
+  const keys = ['id','group','interviewer','language','site','startedAt','endedAt','duration','completed','incidents','sae'];
   const val = (r, k) => k === 'incidents' ? (r.incidents||[]).length : k === 'sae' ? (r.incidents||[]).filter(i=>i.type==='sae').length : r[k];
-  const rows = [keys.join(','), ...data.map(r => keys.map(k => `"${(val(r,k) ?? '').toString().replace(/"/g,'""')}"`).join(','))];
-  downloadText(rows.join('\n'), `dtam_my_interviews_${dateStr()}.csv`);
+  const rows = [keys.join(','), ...data.map(r => keys.map(k => csvCell(val(r,k))).join(','))];
+  downloadText(rows.join('\n'), `dtam_my_interviews_${dateStr()}.csv`, 'text/csv');
 }
 function exportInterviewJSON() {
   const data = loadInterviews();
   if (!data.length) { showModal('No Data','No interview sessions to export.',[]); return; }
   downloadText(JSON.stringify(data, null, 2), `dtam_my_interviews_${dateStr()}.json`);
 }
-function downloadText(text, filename) {
+/** Quote a CSV cell; null/undefined become empty, but 0 and false are kept. */
+function csvCell(v) {
+  return `"${String(v ?? '').replace(/"/g,'""')}"`;
+}
+function downloadText(text, filename, type = 'text/plain') {
+  const url = URL.createObjectURL(new Blob([text], {type}));
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([text], {type:'text/plain'}));
+  a.href = url;
   a.download = filename;
   a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);   // release the blob
 }
 function dateStr() { return new Date().toISOString().slice(0,10); }
 function openDashboard() { window.open('telerehab_dashboard_v2.html','_blank'); }
@@ -1734,13 +1911,25 @@ function doeClear(type) {
 }
 
 // ── MODAL ──────────────────────────────────────────────
+/**
+ * @param {string} title
+ * @param {string} msg
+ * @param {{label:string, cls:string, action:(string|Function)}[]} [btns]
+ *   `action` may be a function (preferred) or a legacy inline-handler string.
+ */
 function showModal(title, msg, btns) {
-  if (!btns || !btns.length) btns = [{ label:'OK', cls:'btn-secondary', action:'closeModal()' }];
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-msg').textContent   = msg;
-  document.getElementById('modal-msg').style.whiteSpace = 'pre-line';
-  document.getElementById('modal-btns').innerHTML = btns.map(b =>
-    `<button class="btn ${b.cls}" onclick="${b.action}">${b.label}</button>`).join('');
+  if (!btns || !btns.length) btns = [{ label:'OK', cls:'btn-secondary', action: closeModal }];
+  const wrap = document.getElementById('modal-btns');
+  wrap.replaceChildren(...btns.map(b => {
+    const btn = document.createElement('button');
+    btn.className = 'btn ' + b.cls;
+    btn.textContent = b.label;
+    if (typeof b.action === 'function') btn.addEventListener('click', b.action);
+    else btn.setAttribute('onclick', b.action);
+    return btn;
+  }));
   document.getElementById('modal-overlay').style.display = 'flex';
 }
 function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
@@ -1753,7 +1942,7 @@ function showSection(name, el) {
   if (el) el.classList.add('active');
   const titles = {dashboard:'Dashboard',tools:'All Tools',progress:'Study Progress',participants:'Survey Participants',sessions:'Interview Sessions',export:'Export & Reports',settings:'Settings',omr:'OMR Scanner'};
   document.getElementById('topbar-title').textContent = titles[name] || name;
-  if (name === 'settings') renderUsersTable();
+  if (name === 'settings') { renderUsersTable(); renderTokensTable(); }
 }
 
 // ── CLAUDE CHAT ────────────────────────────────────────
@@ -1767,19 +1956,21 @@ function toggleChat() {
   document.getElementById('chat-window').style.flexDirection = 'column';
 }
 
+let chatBusy = false;
 async function sendChat() {
   const input = document.getElementById('chat-input');
   const msg = input.value.trim();
-  if (!msg) return;
+  if (!msg || chatBusy) return;   // Enter key bypasses the disabled send button
 
-  if (!_claudeKey) {
+  if (!_claudeKey && !llmProxy()) {
     const k = prompt('Enter your Anthropic API key to enable the Claude assistant.\n\nGet a free key at: https://console.anthropic.com/settings/keys');
     _claudeKey = (k || '').trim();
     if (!_claudeKey) return;
     document.getElementById('claude-key-input').value = _claudeKey;
   }
 
-  appendChat('user', msg);
+  chatBusy = true;
+  appendChat('user', msg);   // rendered as text, not HTML
   input.value = '';
   document.getElementById('chat-send').disabled = true;
   const typingId = appendChat('model', '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>', true);
@@ -1795,17 +1986,24 @@ async function sendChat() {
     Object.entries(TARGETS).map(([g,t]) => `${GROUP_LABELS[g]}: ${surveys.filter(r=>r.group===g).length} surveys (target ${t})`).join(', ') + '.';
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const proxy = llmProxy();
+    const model = llmModel();
+    const headers = {'content-type':'application/json','anthropic-version':'2023-06-01'};
+    if (!proxy) { headers['x-api-key'] = _claudeKey; headers['anthropic-dangerous-direct-browser-access'] = 'true'; }
+    else if (_llmGet('token', '')) headers['x-dtam-token'] = _llmGet('token', '');
+    const res = await fetch(proxy ? proxy + '/v1/messages' : 'https://api.anthropic.com/v1/messages', {
       method:'POST',
-      headers:{'content-type':'application/json','x-api-key':_claudeKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      headers,
       body:JSON.stringify({
-        model:'claude-haiku-4-5-20251001',
-        max_tokens:768,
+        model,
+        max_tokens:4096,
+        // Claude 4.6+ models take an effort level; low suits short chat answers. Haiku 4.5 rejects it.
+        ...(model === 'claude-haiku-4-5' ? {} : { output_config:{ effort:'low' } }),
         system:`You are a knowledgeable, concise research assistant for the DTAM-MY PhD study at UTAR. ` +
         `${statsCtx} ` +
         `The study explores telerehabilitation acceptance for elderly post-stroke patients in Malaysia using 8 validated instruments ` +
         `(TAM, UTAUT2, TUQ, MAST, SUS, WHOQOL-BREF, ZBI, ICF) across 5 stakeholder groups (target n=370). ` +
-        `Ethics: UTAR UREC (approval pending), PDPA 2010 (Act 709), ICH E6(R2) GCP. ` +
+        `Ethics: UTAR UREC (approved), PDPA 2010 (Act 709), ICH E6(R2) GCP. ` +
         `PI: CHONG Yu Zheng (24UED03838), UTAR Lee Kong Chian FES. ` +
         `IMPORTANT CONSTRAINTS: (1) You must NOT provide clinical diagnoses, medical advice, or treatment recommendations. ` +
         `(2) All responses must comply with PDPA 2010 — do not suggest actions that would compromise participant data privacy. ` +
@@ -1817,23 +2015,35 @@ async function sendChat() {
     });
     const data = await res.json();
     if (!res.ok) { if(res.status===401){_claudeKey='';} throw new Error(data?.error?.message||'API error'); }
-    const reply = data?.content?.[0]?.text || 'Sorry, no response generated.';
+    if (data?.stop_reason === 'refusal') throw new Error('The model declined this request. Rephrase it, or ask a human reviewer.');
+    // Current models can return thinking blocks before the answer: read text blocks only.
+    let reply = (data?.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim()
+      || 'Sorry, no response generated.';
+    if (data?.stop_reason === 'max_tokens') reply += '\n\n[Answer cut off at the length limit.]';
     chatHistory.push({ role:'assistant', content:reply });
-    updateChat(typingId, reply);
+    const drift = driftCheck(reply);
+    updateChat(typingId, drift.length
+      ? reply + '\n\n⚠ DTAM drift check - verify before using:\n' + drift.join('\n')
+      : reply);
   } catch(e) {
+    // Drop the unanswered user turn so history keeps alternating user/assistant
+    if (chatHistory[chatHistory.length - 1] === userMsg) chatHistory.pop();
     updateChat(typingId, '⚠ ' + e.message);
   } finally {
+    chatBusy = false;
     document.getElementById('chat-send').disabled = false;
   }
 }
 
-function appendChat(role, html, isTyping=false) {
+let chatMsgSeq = 0;
+/** Append a chat bubble. Only the built-in typing indicator is passed as HTML (`isTyping`); everything else is text. */
+function appendChat(role, content, isTyping=false) {
   const msgs = document.getElementById('chat-msgs');
-  const id = 'msg-' + Date.now();
+  const id = 'msg-' + (++chatMsgSeq);   // Date.now() collided when two bubbles were added in the same ms
   const div = document.createElement('div');
   div.className = 'chat-msg ' + (role==='user' ? 'user' : 'model');
   div.id = id;
-  div.innerHTML = html;
+  if (isTyping) div.innerHTML = content; else div.textContent = content;
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
   return id;
@@ -1852,6 +2062,10 @@ setInterval(() => {
   // Only auto-refresh if logged in
   if (sessionStorage.getItem(SESSION_KEY)) refreshAll();
 }, 30000);
+// Refresh immediately when the questionnaire / interview / OMR apps write in another tab
+window.addEventListener('storage', e => {
+  if ([SURVEY_KEY, INTERVIEW_KEY, OMR_KEY].includes(e.key) && sessionStorage.getItem(SESSION_KEY)) refreshAll();
+});
 </script>
 </body>
 </html>

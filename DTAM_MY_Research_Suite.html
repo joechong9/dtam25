@@ -217,7 +217,7 @@ var PHASES=[
   {name:'Ph 1 · Ethics & Design',pct:90,status:'active',note:'Protocol v2.0 · GCP 86% · Dossier ready'},
   {name:'Ph 2 · Questionnaires',pct:100,status:'done',note:'16 docs · 5 OMR sheet types · 4 languages'},
   {name:'Ph 3 · App Development',pct:80,status:'active',note:'PWA + APK done · Backend hosting TBD'},
-  {name:'Ph 4 · Pilot Study',pct:0,status:'pending',note:'n=70 · pending ethics clearance (UREC)'},
+  {name:'Ph 4 · Pilot Study',pct:0,status:'pending',note:'n=70 · UREC approved'},
   {name:'Ph 5 · Data Collection',pct:0,status:'pending',note:'n=370 · 5 stakeholder groups'},
   {name:'Ph 6 · Analytics',pct:0,status:'pending',note:'EFA · PLS-SEM · WHOQOL change'},
   {name:'Ph 7 · ML Pipeline',pct:0,status:'pending',note:'React + Node.js + PostgreSQL'},
@@ -234,7 +234,7 @@ var ADVISORY=[
   {id:'A1',label:'SDG Alignment',desc:'4 quantified indicators (TAI/DEGR/APES/CAE)',done:true},
   {id:'A2',label:'Pilot n=70',desc:'42 urban + 28 rural; effective completers = 45',done:true},
   {id:'A3',label:'FHIR R4',desc:'5 interfaces · Domain 6 added to DTAM-MY',done:true},
-  {id:'P1',label:'UREC Reference',desc:'Pending ethics submission',done:false},
+  {id:'P1',label:'UREC Reference',desc:'UREC approval received',done:true},
   {id:'P2',label:'MREC Registration',desc:'Follows UREC approval',done:false},
   {id:'P3',label:'OSF Pre-registration',desc:'Before data collection',done:false},
 ];
@@ -255,7 +255,7 @@ var GCP_ITEMS=[
   {id:'GCP-03',desc:'Belmont Principles',ok:true},
   {id:'GCP-04',desc:'CIOMS Guidelines 2016',ok:true},
   {id:'GCP-05',desc:'PDPA 2010 Compliance',ok:true},
-  {id:'GCP-06',desc:'National health policy alignment: Health White Paper for Malaysia (MOH, 2023), §3.1.1 & §3.1.4',ok:true},
+  {id:'GCP-06',desc:'Health White Paper (2023) alignment (§3.1.1, §3.1.4)',ok:true},
   {id:'GCP-07',desc:'UTAR UREC Ethics Policy',ok:true},
   {id:'GCP-08',desc:'Informed Consent Process',ok:true},
   {id:'GCP-09',desc:'Participant Information Sheet',ok:true},
@@ -274,7 +274,7 @@ var GCP_ITEMS=[
   {id:'GCP-22',desc:'OSF Pre-registration',ok:false},
 ];
 var PROTO=[
-  {num:'1',title:'Background and Rationale',body:'Malaysia faces a significant stroke rehabilitation gap: 40,000+ new strokes annually, with 60% requiring long-term rehabilitation. Telerehabilitation offers scalable access particularly for rural and elderly populations.\n\nThis study develops DTAM-MY (Digital Telerehabilitation Assessment Model - Malaysia) to evaluate technology acceptance, usability, and quality-of-life impact across five stakeholder groups.\n\nTheoretical anchors: MAST (Kidholm et al., 2012), TAM (Davis, 1989), UTAUT2 (Venkatesh et al., 2012), TUQ (Parmanto et al., 2016), ICF (WHO, 2001), SUS (Brooke, 1996), WHOQOL-BREF (WHO, 1996), ZBI (Zarit et al., 1980).\n\nPolicy anchors: Health White Paper for Malaysia (MOH, 2023) - telehealth and remote rehabilitative care (pp. 11, 32-33, 36), interoperable EMR/ELHR and Health Information Exchange (pp. 34-36), health data privacy (pp. 36-37); PDPA 2010 (Act 709); 12th Malaysia Plan.'},
+  {num:'1',title:'Background and Rationale',body:'Malaysia faces a significant stroke rehabilitation gap: 40,000+ new strokes annually, with 60% requiring long-term rehabilitation. Telerehabilitation offers scalable access particularly for rural and elderly populations.\n\nThis study develops DTAM-MY (Digital Telerehabilitation Assessment Model - Malaysia) to evaluate technology acceptance, usability, and quality-of-life impact across five stakeholder groups.\n\nTheoretical anchors: MAST (Kidholm et al., 2012), TAM (Davis, 1989), UTAUT2 (Venkatesh et al., 2012), TUQ (Parmanto et al., 2016), ICF (WHO, 2001), SUS (Brooke, 1996), WHOQOL-BREF (WHO, 1996), ZBI (Zarit et al., 1980).\n\nPolicy anchors: Health White Paper (2023), MOH Malaysia (Command Paper No. 29 of 2023) - telehealth and remote rehabilitative care (pp. 11, 32-33, 36), interoperable EMR/ELHR and Health Information Exchange (pp. 34-36), health data privacy (pp. 36-37); PDPA 2010 (Act 709); 12th Malaysia Plan.'},
   {num:'2',title:'Research Objectives (SMART)',body:'O1 - Develop and validate DTAM-MY instrument suite (n=370, S-CVI >=0.80) by Month 18.\nO2 - Measure technology acceptance (TAM, UTAUT2) across Allied Health (n=100), Caregiver (n=100), Policy-Maker (n=20), General Public (n=50) by Month 24.\nO3 - Assess elderly post-stroke QoL change (WHOQOL-BREF, >=10% domain change, p less than 0.05) over 12 weeks (n=100) by Month 30.\nO4 - Evaluate system usability (SUS >=70; TUQ mean >=3.5/5) with Allied Health and Elderly by Month 24.\nO5 - Specify FHIR R4 interoperability (5 interfaces) and deliver Phase 3 ML pipeline by Month 36.'},
   {num:'3',title:'Study Design',body:'Mixed-methods convergent parallel design:\n\nQUANTITATIVE ARM - Cross-sectional survey (Allied Health, Caregiver, Policy-Maker, General Public) + Longitudinal pre/post (Elderly, 12 weeks). Analysis: EFA, PLS-SEM, WHOQOL-BREF domain change, SUS scoring.\n\nQUALITATIVE ARM - Semi-structured interviews (purposive sample, 8-12 per group) + Part C verbal interview app for cognitive impairment accommodation.\n\nPILOT STUDY - n=70 (42 urban + 28 rural), 8-week timeline. Tests instrument reliability, validity (CVI), and logistics.\n\nPLATFORM - LimeSurvey CE + REDCap (clinical) + KoBoToolbox (rural/offline). PDPA-compliant hosting: Exabytes MY or Azure Malaysia West.'},
   {num:'4',title:'Participant Selection',body:'INCLUSION (Elderly):\n- Age >=60; diagnosed ischaemic or haemorrhagic stroke (ICD-10 I60-I69)\n- >=3 months post-stroke; receiving/referred for outpatient rehabilitation\n- Able to provide informed consent (self or LAR); Malaysian resident\n\nEXCLUSION (Elderly):\n- Severe aphasia precluding questionnaire completion without accommodation\n- Active uncontrolled psychiatric disorder\n- No internet access and no caregiver to assist\n\nALLIED HEALTH: Registered physiotherapist or OT; >=1 year experience; working in Malaysian facility.\n\nPOLICY-MAKER: Government official/regulator with health/digital policy portfolio; purposive via MOH, MOSTI, MCMC.\n\nWITHDRAWAL: Participants may withdraw at any time. Data retained unless deletion requested (PDPA s.30).'},
@@ -284,7 +284,7 @@ var PROTO=[
   {num:'8',title:'Instruments and Theoretical Framework',body:'INSTRUMENT SUITE (8 frameworks):\n- MAST (7 domains): All 5 groups; S-CVI >=0.80; >=6/7 domain coverage\n- TAM (Davis, 1989): AH, CG, PM, GP; alpha >=0.70; 2-factor EFA\n- UTAUT2 (Venkatesh et al., 2012): AH, CG; PLS-SEM; AVE >=0.50\n- TUQ (Parmanto et al., 2016): Elderly, AH; subscale mean >=3.5/5\n- ICF (WHO, 2001): Elderly, CG; >=2 urban + >=2 rural sites\n- SUS (Brooke, 1996): Elderly, AH; >=70 Acceptable; >=85 Excellent\n- WHOQOL-BREF (WHO, 1996): Elderly; 4 domains; 12-week change\n- ZBI (Zarit et al., 1980): Caregiver; burden cross-tabs\n\nLANGUAGES: English (EN), Bahasa Malaysia (BM), Simplified Chinese (ZH), Tamil (TA)\nTRANSLATION: Forward-back translation; bilingual expert panel; pilot cognitive testing'},
   {num:'9',title:'Engineering Deliverables and Interoperability',body:'PHASE 3 DELIVERABLES (completed):\n- DTAM-MY PWA (React + Node.js + PostgreSQL)\n- Android APK (Capacitor)\n- Admin Portal\n- Part C Verbal Interview App\n\nFHIR R4 INTERFACES (5):\n1. Patient Identity / MySejahtera - Patient resource; NRIC mapping\n2. Outcome Export / KKM MyHEALTH - Observation resource; LOINC codes\n3. HIS Referral - ServiceRequest; ICD-10 stroke codes; HL7 v2.5 bridge\n4. ML I/O - Custom FHIR extension; QuestionnaireResponse; JSON payload\n5. Audit Trail - AuditEvent resource; ATNA profile; immutable log\n\nDOMAIN 6 - System Interoperability (added per Advisory A3):\nExpert panel CVI >=0.80 (n=5 HIT experts) validates all 5 interfaces.'},
   {num:'10',title:'Model Validation Plan',body:'STAGE 1 - Content Validity (pilot n=70):\n- Expert panel (n=10): I-CVI >=0.78 per item; S-CVI >=0.80\n- Cognitive interviews (n=8): Think-aloud; Flesch-Kincaid <=8th grade\n\nSTAGE 2 - Construct Validity (full n=370):\n- EFA (AH, CG; n=100 each): Factor loadings >=0.40; 5:1 item-to-respondent\n- PLS-SEM (UTAUT2): Convergent (AVE >=0.50); Discriminant (HTMT less than 0.85)\n\nSTAGE 3 - Model Fit and Predictive Validity:\n- WHOQOL-BREF domain change >=10% at 12 weeks (p less than 0.05)\n- SUS: >=70 Acceptable; >=85 Excellent\n- SDG indicators: TAI, DEGR, APES, CAE computed from questionnaire data\n- ML: Random Forest + XGBoost; k-fold CV (k=5); AUC >=0.75'},
-  {num:'11',title:'Protocol Authorisation and Signature Page',body:'AMENDMENT LOG:\nv1.0 (Jan 2026) - Initial proposal\nv2.0 (Jun 2026) - Post-advisory corrections: n=70 pilot; FHIR Domain 6; SDG indicators; GCP 19/22\nPending amendment (Nov 2026) - GCP-06 re-anchored to the Health White Paper for Malaysia (MOH, 2023), replacing an unverified policy citation; GCP 19/22\n\nSIGNATORIES:\n- Principal Investigator: YZ (24UED03838), UTAR Faculty of Engineering\n- Main Supervisor: [Name], UTAR\n- Co-Supervisor: [Name], UTAR / External\n- UREC Chair: [Name], UTAR Research Ethics Committee\n\nEthics Reference: [Pending UREC submission]\n\nGOVERNING STANDARDS:\nICH E6(R2) - Declaration of Helsinki (WMA 2013) - Belmont Report (1979)\nCIOMS 2016 - PDPA 2010 (Act 709) - Health White Paper for Malaysia (MOH, 2023) - UTAR UREC Guidelines'},
+  {num:'11',title:'Protocol Authorisation and Signature Page',body:'AMENDMENT LOG:\nv1.0 (Jan 2026) - Initial proposal\nv2.0 (Jun 2026) - Post-advisory corrections: n=70 pilot; FHIR Domain 6; SDG indicators; GCP 19/22\n\nSIGNATORIES:\n- Principal Investigator: CHONG Yu Zheng (24UED03838), LKC FES, UTAR\n- Main Supervisor: A/Prof Dr Kwan Ban Hoe, LKC FES, UTAR\n- Co-Supervisor: A/Prof. Ir. Dr Goh Choon Hian, LKC FES, UTAR\n- UREC Chair: [Name], UTAR Research Ethics Committee\n\nEthics Reference: [Pending UREC submission]\n\nGOVERNING STANDARDS:\nICH E6(R2) - Declaration of Helsinki (WMA 2013) - Belmont Report (1979)\nCIOMS 2016 - PDPA 2010 (Act 709) - Health White Paper (2023) - UTAR UREC Guidelines'},
 ];
 var LANGS=[{id:'en',label:'English'},{id:'bm',label:'Bahasa Malaysia'},{id:'zh',label:'简体中文'},{id:'ta',label:'தமிழ்'}];
 var GROUPS=[
@@ -301,17 +301,17 @@ var QDATA={
       {id:'A2',text:{en:'Gender',bm:'Jantina',zh:'性别',ta:'பாலினம்'}},
       {id:'A3',text:{en:'Professional role (PT / OT / other)',bm:'Peranan profesional',zh:'专业角色',ta:'தொழில்முறை பங்கு'}},
       {id:'A4',text:{en:'Years of clinical experience',bm:'Tahun pengalaman klinikal',zh:'临床经验年数',ta:'மருத்துவ அனுபவம் (ஆண்டுகள்)'}},
-      {id:'A5',text:{en:'Prior telerehabilitation experience (Yes/No)',bm:'Pengalaman telerehabilitation terdahulu',zh:'远程康复经验',ta:'முன்னர் ඤெலிரிஹேப் அனுபவம்'}},
+      {id:'A5',text:{en:'Prior telerehabilitation experience (Yes/No)',bm:'Pengalaman telerehabilitation terdahulu',zh:'远程康复经验',ta:'முன்னர் டெலிரிஹேப் அனுபவம்'}},
      ]},
     {title:{en:'Part B: Technology Acceptance (TAM)',bm:'Bahagian B: Penerimaan Teknologi (TAM)',zh:'B部分：技术接受度（TAM）',ta:'பகுதி ஆ: தொழில்நுட்ப ஏற்புடைமை (TAM)'},
      items:[
-      {id:'B1',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Using telerehabilitation improves my work performance',bm:'Menggunakan telerehabilitation meningkatkan prestasi kerja saya',zh:'使用远程康复提高了我的工作效率',ta:'ඤெலிரிஹேப் பயன்படுத்துவது என் பணி செயல்திறனை மேம்படுத்துகிறது'}},
-      {id:'B2',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Telerehabilitation systems are easy to learn',bm:'Sistem telerehabilitation mudah dipelajari',zh:'远程康复系统易于学习',ta:'ඤெலிரிஹேப் அமைப்புகளை கற்பது எளிது'}},
-      {id:'B3',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'I intend to use telerehabilitation in my practice',bm:'Saya bercadang menggunakan telerehabilitation dalam amalan',zh:'我打算在实践中使用远程康复',ta:'என் நடைமுறையில் ඤெலிரிஹேப் பயன்படுத்த விரும்புகிறேன்'}},
+      {id:'B1',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Using telerehabilitation improves my work performance',bm:'Menggunakan telerehabilitation meningkatkan prestasi kerja saya',zh:'使用远程康复提高了我的工作效率',ta:'டெலிரிஹேப் பயன்படுத்துவது என் பணி செயல்திறனை மேம்படுத்துகிறது'}},
+      {id:'B2',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Telerehabilitation systems are easy to learn',bm:'Sistem telerehabilitation mudah dipelajari',zh:'远程康复系统易于学习',ta:'டெலிரிஹேப் அமைப்புகளை கற்பது எளிது'}},
+      {id:'B3',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'I intend to use telerehabilitation in my practice',bm:'Saya bercadang menggunakan telerehabilitation dalam amalan',zh:'我打算在实践中使用远程康复',ta:'என் நடைமுறையில் டெலிரிஹேப் பயன்படுத்த விரும்புகிறேன்'}},
      ]},
     {title:{en:'Part C: UTAUT2 Constructs',bm:'Bahagian C: Konstruk UTAUT2',zh:'C部分：UTAUT2构念',ta:'பகுதி இ: UTAUT2 கட்டுமானங்கள்'},
      items:[
-      {id:'C1',scale:'Likert 1-5',sc:'#1B3A6B',text:{en:'Performance expectancy: Telerehabilitation enables better patient outcomes',bm:'Jangkaan prestasi: Telerehabilitation membolehkan hasil pesakit lebih baik',zh:'绩效期望：远程康复能带来更好的患者结果',ta:'செயல்திறன் எதிர்பார்ப்பு: ඤெலிரிஹேப் சிறந்த முடிவுகளை அளிக்கும்'}},
+      {id:'C1',scale:'Likert 1-5',sc:'#1B3A6B',text:{en:'Performance expectancy: Telerehabilitation enables better patient outcomes',bm:'Jangkaan prestasi: Telerehabilitation membolehkan hasil pesakit lebih baik',zh:'绩效期望：远程康复能带来更好的患者结果',ta:'செயல்திறன் எதிர்பார்ப்பு: டெலிரிஹேப் சிறந்த முடிவுகளை அளிக்கும்'}},
       {id:'C2',scale:'Likert 1-5',sc:'#1B3A6B',text:{en:'Effort expectancy: I can use telerehabilitation tools without difficulty',bm:'Jangkaan usaha: Boleh menggunakan alat tanpa kesukaran',zh:'努力期望：使用工具毫不费力',ta:'முயற்சி எதிர்பார்ப்பு: சிரமமின்றி கருவிகள் பயன்படுத்தலாம்'}},
       {id:'C3',scale:'Likert 1-5',sc:'#1B3A6B',text:{en:'Social influence: Colleagues support telerehabilitation adoption',bm:'Pengaruh sosial: Rakan sekerja menyokong penggunaan',zh:'社会影响：同事支持采用远程康复',ta:'சமூக செல்வாக்கு: சக ஊழியர்கள் ஆதரிக்கின்றனர்'}},
      ]},
@@ -336,8 +336,8 @@ var QDATA={
      ]},
     {title:{en:'Part C: Technology Acceptance',bm:'Bahagian C: Penerimaan Teknologi',zh:'C部分：技术接受度',ta:'பகுதி இ: தொழில்நுட்ப ஏற்புடைமை'},
      items:[
-      {id:'C1',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Telerehabilitation would help manage my caregiving responsibilities',bm:'Telerehabilitation akan membantu tanggungjawab penjagaan saya',zh:'远程康复将帮助管理我的照护责任',ta:'ඤெலிரிஹேப் பராமரிப்பு பொறுப்புகளை நிர்வகிக்க உதவும்'}},
-      {id:'C2',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'I would feel confident using digital health tools for my relative',bm:'Saya yakin menggunakan alat kesihatan digital untuk saudara saya',zh:'我对为亲属使用数字健康工具感到有信心',ta:'ඤிஜிட்டல் சுகாதார கருவிகளை பயன்படுத்த நம்பிக்கை உணர்கிறேன்'}},
+      {id:'C1',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Telerehabilitation would help manage my caregiving responsibilities',bm:'Telerehabilitation akan membantu tanggungjawab penjagaan saya',zh:'远程康复将帮助管理我的照护责任',ta:'டெலிரிஹேப் பராமரிப்பு பொறுப்புகளை நிர்வகிக்க உதவும்'}},
+      {id:'C2',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'I would feel confident using digital health tools for my relative',bm:'Saya yakin menggunakan alat kesihatan digital untuk saudara saya',zh:'我对为亲属使用数字健康工具感到有信心',ta:'டிஜிட்டல் சுகாதார கருவிகளை பயன்படுத்த நம்பிக்கை உணர்கிறேன்'}},
      ]},
   ],
   policy:[
@@ -350,9 +350,9 @@ var QDATA={
     {title:{en:'Part B: Policy Readiness (MAST)',bm:'Bahagian B: Kesediaan Dasar (MAST)',zh:'B部分：政策准备度（MAST）',ta:'பகுதி ஆ: கொள்கை தயார்நிலை (MAST)'},
      items:[
       {id:'B1',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Malaysia has adequate regulatory infrastructure for telerehabilitation',bm:'Malaysia mempunyai infrastruktur peraturan yang mencukupi',zh:'马来西亚具备充足的监管基础设施',ta:'மலேசியாவில் போதுமான கட்டுப்பாட்டு கட்டமைப்பு உள்ளது'}},
-      {id:'B2',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Current national digital health policy provides sufficient guidance',bm:'Dasar kesihatan digital kebangsaan semasa memberikan panduan yang mencukupi',zh:'现行国家数字卫生政策提供足够指导',ta:'தற்போதைய தேசிய டிஜிட்டல் சுகாதாரக் கொள்கை போதுமான வழிகாட்டுதலை வழங்குகிறது'}},
+      {id:'B2',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Health White Paper (2023) provides sufficient guidance',bm:'Kertas Putih Kesihatan (2023) memberikan panduan mencukupi',zh:'《卫生白皮书》（2023）提供足够指导',ta:'சுகாதார வெள்ளை அறிக்கை (2023) போதுமான வழிகாட்டுதல் வழங்குகிறது'}},
       {id:'B3',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'PDPA 2010 adequately protects patient data in telerehabilitation contexts',bm:'PDPA 2010 melindungi data pesakit secara mencukupi',zh:'PDPA 2010充分保护患者数据',ta:'PDPA 2010 நோயாளி தரவை போதுமான அளவில் பாதுகாக்கிறது'}},
-      {id:'B4',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Public funding models exist for digital rehabilitation services',bm:'Model pembiayaan awam wujud untuk perkhidmatan rehabilitasi digital',zh:'存在数字康复服务公共资金模式',ta:'ඤிஜிட்டல் மறுவாழ்வு சேவைகளுக்கு பொது நிதியுதவி மாதிரிகள் உள்ளன'}},
+      {id:'B4',scale:'Likert 1-5',sc:'#0E8B8B',text:{en:'Public funding models exist for digital rehabilitation services',bm:'Model pembiayaan awam wujud untuk perkhidmatan rehabilitasi digital',zh:'存在数字康复服务公共资金模式',ta:'டிஜிட்டல் மறுவாழ்வு சேவைகளுக்கு பொது நிதியுதவி மாதிரிகள் உள்ளன'}},
      ]},
   ],
   elderly:[
@@ -369,9 +369,9 @@ var QDATA={
       {id:'B2',scale:'WHOQOL 1-5',sc:'#3A5B6B',text:{en:'How satisfied are you with your health?',bm:'Sejauh mana anda berpuas hati dengan kesihatan?',zh:'您对自己的健康有多满意？',ta:'உங்கள் சுகாதாரத்தில் எவ்வளவு திருப்தி?'}},
       {id:'B3',scale:'WHOQOL 1-5',sc:'#3A5B6B',text:{en:'Do you have enough energy for everyday life?',bm:'Adakah anda mempunyai tenaga cukup untuk kehidupan seharian?',zh:'您是否有足够精力应对日常生活？',ta:'அன்றாட வாழ்க்கைக்கு போதுமான ஆற்றல் இருக்கிறதா?'}},
      ]},
-    {title:{en:'Part C: Telerehabilitation Usability (TUQ + SUS)',bm:'Bahagian C: Kebolehgunaan Telerehabilitation (TUQ + SUS)',zh:'C部分：远程康复可用性（TUQ + SUS）',ta:'பகுதி இ: ඤெலிரிஹேப் பயன்பாட்டு தரம் (TUQ + SUS)'},
+    {title:{en:'Part C: Telerehabilitation Usability (TUQ + SUS)',bm:'Bahagian C: Kebolehgunaan Telerehabilitation (TUQ + SUS)',zh:'C部分：远程康复可用性（TUQ + SUS）',ta:'பகுதி இ: டெலிரிஹேப் பயன்பாட்டு தரம் (TUQ + SUS)'},
      items:[
-      {id:'C1',scale:'TUQ 1-5',sc:'#E07B39',text:{en:'The telerehabilitation system is easy to use',bm:'Sistem telerehabilitation mudah digunakan',zh:'远程康复系统易于使用',ta:'ඤெலிரிஹேப் அமைப்பு பயன்படுத்த எளிதானது'}},
+      {id:'C1',scale:'TUQ 1-5',sc:'#E07B39',text:{en:'The telerehabilitation system is easy to use',bm:'Sistem telerehabilitation mudah digunakan',zh:'远程康复系统易于使用',ta:'டெலிரிஹேப் அமைப்பு பயன்படுத்த எளிதானது'}},
       {id:'C2',scale:'TUQ 1-5',sc:'#E07B39',text:{en:'The system helps me communicate with my therapist',bm:'Sistem ini membantu berkomunikasi dengan ahli terapi',zh:'该系统帮助我与治疗师沟通',ta:'இந்த அமைப்பு சிகிச்சையாளருடன் தொடர்பு கொள்ள உதவுகிறது'}},
       {id:'C3',scale:'TUQ 1-5',sc:'#E07B39',text:{en:'I feel confident using the system on my own',bm:'Saya yakin menggunakan sistem telerehabilitation sendiri',zh:'我能自信地独立使用系统',ta:'அமைப்பை சொந்தமாக பயன்படுத்த நம்பிக்கை உணர்கிறேன்'}},
      ]},
@@ -457,6 +457,7 @@ function showTab(id,btn){
   document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on');});
   $id('page-'+id).classList.add('on');
   btn.classList.add('on');
+  if(id==='dash') renderBarChart();
 }
 
 // ---- DASHBOARD ----
@@ -480,17 +481,18 @@ function renderPhases(){
 
 function renderBarChart(){
   var svg=$id('barchart');
+  if(!$id('page-dash').classList.contains('on')) return;
   var W=svg.parentElement.clientWidth||300;
   svg.setAttribute('width',W);
   var H=190,pad={l:32,r:10,t:10,b:50};
   var bw=Math.min(40,Math.floor((W-pad.l-pad.r)/SAMPLES.length*0.6));
   var gap=Math.floor((W-pad.l-pad.r)/SAMPLES.length);
-  var maxN=100;
+  var maxN=Math.max(100,Math.ceil(Math.max.apply(null,SAMPLES.map(function(s){return s.n;}))/25)*25);
   var ch=H-pad.t-pad.b;
   var ns='http://www.w3.org/2000/svg';
   svg.innerHTML='';
   // y-axis ticks
-  [0,25,50,75,100].forEach(function(v){
+  [0,0.25,0.5,0.75,1].map(function(f){return Math.round(maxN*f);}).forEach(function(v){
     var y=pad.t+ch*(1-v/maxN);
     var line=document.createElementNS(ns,'line');
     line.setAttribute('x1',pad.l); line.setAttribute('x2',W-pad.r);
@@ -550,8 +552,8 @@ function renderDeliverables(){
   });
 }
 
-function renderGCPTable(){
-  var t=$id('gcp-table');
+function renderGCPTable(tableId){
+  var t=$id(tableId||'gcp-table');
   t.innerHTML='<thead><tr><th>ID</th><th>Description</th><th style="text-align:center">Status</th></tr></thead>';
   var tbody=document.createElement('tbody');
   GCP_ITEMS.forEach(function(g){
@@ -628,17 +630,6 @@ function renderQSections(){
 }
 
 // ---- PROTOCOL ----
-function renderProtoGCPTable(){
-  var t=$id('proto-gcp-table');
-  t.innerHTML='<thead><tr><th>ID</th><th>Description</th><th style="text-align:center">Status</th></tr></thead>';
-  var tbody=document.createElement('tbody');
-  GCP_ITEMS.forEach(function(g){
-    var tr=document.createElement('tr');
-    tr.innerHTML='<td class="mono" style="color:'+(g.ok?'#15803d':'#b45309')+'">'+g.id+'</td><td>'+g.desc+'</td><td style="text-align:center;color:'+(g.ok?'#22c55e':'#f59e0b')+'">'+(g.ok?'&#10003;':'&#9651;')+'</td>';
-    tbody.appendChild(tr);
-  });
-  t.appendChild(tbody);
-}
 function toggleProtoGCP(btn){
   var m=$id('proto-gcp');
   var shown=m.style.display==='block';
@@ -795,7 +786,7 @@ window.addEventListener('DOMContentLoaded',function(){
   renderAdvisory();
   renderDeliverables();
   renderGCPTable();
-  renderProtoGCPTable();
+  renderGCPTable('proto-gcp-table');
   renderGroupBtns();
   renderLangBtns();
   renderQHeader();
@@ -807,7 +798,11 @@ window.addEventListener('DOMContentLoaded',function(){
   renderFWMatrix();
   renderSDG();
 });
-window.addEventListener('resize',function(){renderBarChart();});
+var resizeRaf=0;
+window.addEventListener('resize',function(){
+  if(resizeRaf) cancelAnimationFrame(resizeRaf);
+  resizeRaf=requestAnimationFrame(function(){resizeRaf=0;renderBarChart();});
+});
 </script>
 </body>
 </html>

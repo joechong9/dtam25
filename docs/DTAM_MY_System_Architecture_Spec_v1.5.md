@@ -1,7 +1,7 @@
 # DTAM-MY System Architecture Specification
 
 **Digital Telerehabilitation Assessment Model — Malaysia (DTAM-MY)**
-**Document ID:** DTAM_MY_System_Architecture_Spec_v1.4 · **Status:** Draft for supervisory review · **Date:** 5 November 2026
+**Document ID:** DTAM_MY_System_Architecture_Spec_v1.5 · **Status:** Draft for supervisory review · **Date:** 5 November 2026
 
 | Field | Value |
 |---|---|
@@ -10,7 +10,7 @@
 | Faculty | Lee Kong Chian Faculty of Engineering and Science (LKC FES), Universiti Tunku Abdul Rahman (UTAR) |
 | Repository | `joechong9/dtam25` |
 | Study ID in code | `DTAM-MY-2025` (`telerehab_questionnaire_app_v2.html:1147`) |
-| Sample constants | Total n = 370 · Pilot n = 70 (42 urban + 28 rural; 45 effective completers) · GCP 19/22 (GCP-06 re-anchored to the Health White Paper for Malaysia in v1.3) |
+| Sample constants | Total n = 370 · Pilot n = 70 (42 urban + 28 rural; 45 effective completers) · GCP 19/22 · UREC approved (reference held by the PI; not stored in this public repo) |
 
 ---
 
@@ -72,10 +72,28 @@ The workspace mixes *implemented code* with *designed-but-unbuilt* architecture 
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 2026-11-05 | First synthesis from the repository code base and the DTAM-MY architecture reference. |
-| 1.1 | 2026-11-05 | Roadmap step 0 applied in code: F-01, F-04, F-13, F-14, F-18, F-21 and F-24 resolved (see §16 status column). GCP-06 reopened → 18/22. SRI deferred. New finding F-26. Line references in §5–§18 remain as of `ccf443b`; small offsets apply in edited files. |
+| 1.1 | 2026-11-05 | Roadmap step 0 applied in code: F-01, F-04, F-13, F-14, F-18, F-21 and F-24 resolved (see §16 status column). GCP-06 temporarily reopened (score lowered by one item). SRI deferred. New finding F-26. Line references in §5–§18 remain as of `ccf443b`; small offsets apply in edited files. |
 | 1.2 | 2026-11-05 | All findings that can be fixed in client code are resolved: F-02b, F-03, F-04b, F-06 (TUQ, TAM-BI), F-07 (ZBI rule), F-08 (PBKDF2), F-09, F-11, F-12, F-14 (Part C), F-16, F-17, F-19 (SRI via jsDelivr), F-20 (sheet count), F-22, F-23, F-25, F-26, F-27. Remaining open items need research decisions or a backend (see §16 open-items summary). |
 | 1.3 | 2026-11-05 | GCP-06 rectified: re-anchored to the *Health White Paper for Malaysia* (Ministry of Health Malaysia, 2023; approved by Parliament June 2023) and restored to compliant, so the score is back to 19/22 (86%). HWP added to the landing-page policy anchors, the compliance card, the questionnaire ethics badges and the protocol governing standards. |
 | 1.4 | 2026-11-05 | HWP citation checked against the MOH PDF supplied by the PI. Title and publisher confirmed; page-level evidence added (§12.6). No command-paper number appears in the MOH web edition. The parliamentary approval date is attributed to news reports. GCP-06 now carries section references (§3.1.1, §3.1.4). |
+| 1.5 | 2026-11-05 | Merged with `main` (PRs joechong9/dtam25#2, #3, #5, #6). Where both branches fixed the same issue, `main`'s implementation is kept (see §0.5). Aligned with `harness/dtam_constants.json`: UREC is **approved**; the policy anchor is the Health White Paper (2023). The fabricated citation is no longer named in this document. |
+
+
+### 0.5 Merged state (v1.5)
+
+Sections 5–7 describe the code as audited at commit `ccf443b`. Since then, `main` has merged its own fixes plus a **DTAM harness** (`harness/`, run in CI and by Claude Code hooks), which enforces the canonical constants in `harness/dtam_constants.json`. Where the merged code now differs from the snapshot:
+
+| Topic | Merged behaviour (source) |
+|---|---|
+| Canonical files | `dtam_manifest.json` names the canonical file per app. `index_v2.html`, `omr_scanner_v2.html` and `telerehab_dashboard.html` are redirect stubs, not duplicates (F-24) |
+| Survey language | Stored as top-level `lang` on each response; `meta.lang` is only the browser locale (F-04, F-04b) |
+| Interview index | Part C writes metadata-only entries to `dtam_my_interviews` (no transcripts). The admin portal can also import session JSON from another device (F-03) |
+| Admin accounts | Salted PBKDF2 hashes, persistent lockout, single-use hashed registration tokens (F-08, F-09, F-11) |
+| Claude assistant | Optional proxy (`proxy/claude-proxy-worker.js`) keeps the API key out of the browser; replies are checked against the drift rules before display; the default model is set in the constants file |
+| Deep links | The scanner accepts `?sheet=` and `#SHEET` (F-13) |
+| Group keys | Part C keeps `policymaker` internally and maps it to `policy` in the admin index (F-17) |
+| Verbal prototype | Simulated STT is never recorded as data; stable session ID; export includes session metadata (F-18) |
+| Ethics status | UREC approved (constants file). GCP-20 stays unticked only because the reference number is not published in this public repo |
 
 ---
 
@@ -103,10 +121,10 @@ The components work together through a **browser-local data bus** (`localStorage
 
 **Top findings for supervisory attention** (full list in §[16](#s16)):
 
-1. **Blocked citation in the compliance record (F-01) — ✅ resolved in v1.1.** The "National Digital Health Blueprint 2023–2030" appeared as GCP-06 (counted towards 19/22), as live questionnaire item `pol2`, in helper text and ethics badges, and on the landing page. It has been removed everywhere. `pol2` is reworded neutrally ("Current national digital health policy provides clear guidance…"), In v1.3 GCP-06 was re-anchored to the **Health White Paper for Malaysia (MOH, 2023)**, a real command paper approved by Parliament in June 2023 that commits to telehealth, electronic lifetime health records and health information exchange. The score is back to **19/22 (86%)**. The page-level evidence is in §12.6, checked against the MOH PDF.
+1. **Fabricated policy citation in the compliance record (F-01) — ✅ resolved.** A non-existent national digital-health policy document appeared as GCP-06 (counted towards 19/22), as questionnaire item `pol2`, in helper text and ethics badges, and on the landing page. It has been replaced everywhere by the **Health White Paper (2023), MOH Malaysia**. `pol2` now reads "The Health White Paper (2023) provides clear guidance for telerehabilitation implementation." GCP-06 remains compliant at **19/22 (86%)**. The page-level evidence is in §12.6, checked against the MOH PDF.
 2. **Three incompatible item-coding schemes (F-02).** The digital questionnaire, the paper/OMR route and the verbal route use different item counts and codes for the same instrument (e.g., TAM has 7 items digitally and 10 on paper; UTAUT2 has 10 digital items covering all 7 constructs, while the paper version has 18 items covering 6 constructs and omits Performance Expectancy and Price Value). Responses from different modes cannot be pooled for EFA/PLS-SEM without a harmonisation layer (§[7.6](#s7-6)).
-3. **Broken data contracts (F-03, F-04).** The admin portal reads interview records from a storage key that no app writes, and the Part C export schema does not match what the portal expects. The admin portal reads `r.lang` while the questionnaire stores `meta.lang`.
-4. **Client-side-only security (F-08–F-12).** Authentication, password hashing (unsalted SHA-256) and the 8-hour session are enforced only in the browser. Participant data sits unencrypted in `localStorage`. Before real participant data is collected, the planned controls (pgcrypto AES-256, audit_log, RBAC) must exist on a server.
+3. **Broken data contracts (F-03, F-04) — ✅ resolved (§0.5).** The admin portal reads interview records from a storage key that no app writes, and the Part C export schema does not match what the portal expects. The admin portal reads `r.lang` while the questionnaire stores `meta.lang`.
+4. **Client-side-only security (F-08–F-12) — ◐ hardened, still client-side (§0.5).** Authentication, password hashing (unsalted SHA-256 at the snapshot) and the 8-hour session are enforced only in the browser. Participant data sits unencrypted in `localStorage`. Before real participant data is collected, the planned controls (pgcrypto AES-256, audit_log, RBAC) must exist on a server.
 5. **Conflicting ML specifications (F-15).** LSTM + Random Forest with LOOCV (architecture reference) versus Random Forest + XGBoost with 5-fold CV and AUC ≥ 0.75 (protocol §10). §[13](#s13) recommends one reconciled design.
 
 
@@ -189,7 +207,7 @@ The recruitment targets are encoded identically in two components: `TARGETS = { 
 
 ### 3.4 Constraints
 
-- **Regulatory.** PDPA 2010; UTAR UREC approval (pending: GCP-20); MREC registration (pending: GCP-21); OSF pre-registration (pending: GCP-22).
+- **Regulatory.** PDPA 2010; UTAR UREC approval in place (reference held by the PI, not stored in this public repo; GCP-20); MREC registration (GCP-21) and OSF pre-registration (GCP-22) outstanding.
 - **Technical.** The pilot must be deployable without institutional servers. Hence the client-only design and the `API_ENDPOINT: null` "pilot mode" (`telerehab_questionnaire_app_v2.html:1140–1143`).
 - **Clinical.** No clinical diagnosis or advice may be produced by any AI component. This constraint is encoded in the Claude system prompt (`admin_portal_v2.html:1646–1649`).
 
@@ -296,7 +314,7 @@ Each component entry gives purpose, technology, state model, interfaces (inputs/
 | Chatbot | **Rule-based**, not an LLM: `KB` keyword table (`:1999`, 20 entries) → `findResponse()` (`:2573`) substring match → translated reply from `KB_TRANS` (`:2216`) or `FALLBACK_TRANS` (`:2488`). A simulated typing delay of 600–1000 ms is used (`:2600`) |
 | Outbound links | `telerehab_questionnaire_app_v2.html` only |
 | Patterns | DP-01, DP-06, DP-13 |
-| Issues | F-01 (NDHB reference at `:652`, `:1355`, `:1488`, `:1621`); CSP allows `connect-src https://api.anthropic.com` though no call is made (least-privilege drift, F-21) |
+| Issues | F-01 (fabricated policy reference at `:652`, `:1355`, `:1488`, `:1621`; now the Health White Paper); CSP allows `connect-src https://api.anthropic.com` though no call is made (least-privilege drift, F-21) |
 
 ### 5.2 C2 — Questionnaire App (`telerehab_questionnaire_app_v2.html`) ✅
 
@@ -477,7 +495,7 @@ flowchart LR
 |---|---|---|
 | `PHASES` | 216 | 8 project phases with % and notes |
 | `SAMPLES` | 226 | Group targets (100/100/100/20/50) |
-| `ADVISORY` | 233 | A1 SDG ✔, A2 Pilot n=70 ✔, A3 FHIR R4 ✔, P1 UREC ✘, P2 MREC ✘, P3 OSF ✘ |
+| `ADVISORY` | 233 | A1 SDG ✔, A2 Pilot n=70 ✔, A3 FHIR R4 ✔, P1 UREC ✔ (approved; merged state), P2 MREC ✘, P3 OSF ✘ |
 | `DELIVERABLES` | 241 | 20 completed deliverables |
 | `GCP_ITEMS` | 252 | 22-item GCP audit matrix (19 ✔) |
 | `PROTO` | 276 | Master Protocol v2.0, 11 sections |
@@ -497,7 +515,7 @@ This section catalogues the recurring patterns in the code base. Each pattern gi
 ### DP-01 Single-File Application
 
 - **Where.** All of C1–C8.
-- **Forces.** Zero-ops deployment (QA-6). Easy to email or USB-transfer to field sites. Each file is reviewable as one unit for ethics submission.
+- **Forces.** Zero-ops deployment (QA-6). Easy to email or USB-transfer to field sites. Each file is reviewable as one unit for ethics review.
 - **Consequences.** (+) No build step; opens from `file://` or any static host. (−) Large files (C2 is 3,085 lines). No module reuse, so constants such as `TARGETS`, `GROUP_LABELS` and the design tokens are duplicated (DP-13), and the item banks diverge (F-02). Cache invalidation is all-or-nothing.
 - **Evolution.** Extract shared modules (`items.js`, `scoring.js`, `i18n/*.json`, `tokens.css`) behind a bundler (Vite, as per the S9 design) while still emitting single-file builds for field use (`vite-plugin-singlefile`).
 
@@ -805,7 +823,7 @@ Two different "8-phase" models appear in the sources. They are **orthogonal**: o
 
 | # | Phase | Tooling (as-built) | Gate condition (S9) | Emitted signal (📐) |
 |---|---|---|---|---|
-| 1 | Recruit | C1 landing page; manual | UREC clearance | `PROTOCOL_AMENDED` (on change) |
+| 1 | Recruit | C1 landing page; manual | UREC approval (in place) | `PROTOCOL_AMENDED` (on change) |
 | 2 | Intake | **none**: no screening or eligibility tool; no pseudo-ID issuance | n ≥ target per group | `EXCLUSION_ALERT` |
 | 3 | Questionnaire | C2 (digital), C7 (verbal 🟡) | Completion rate ≥ 80% | — |
 | 4 | OMR | C3 → C4 import | Paper batch processed | `QA_COMPLETE` |
@@ -826,7 +844,7 @@ Cross-cutting signal: `SAE_LOGGED` (Protocol §6: SAE reported to UREC within 24
 | Ph 1 Ethics & Design | 90% | 90% | GCP 86% (19/22); dossier ready |
 | Ph 2 Questionnaires | 100%: "12 docs · 5 OMR sheet types" | 100%: "16 docs · 3 OMR sheets" | ⚠️ C3 implements 5 sheet types |
 | Ph 3 App Development | 90%: "PWA + APK + OMR Scanner done" | 80%: "PWA + APK done" | ⚠️ Neither APK nor PWA artefacts are in the repo |
-| Ph 4 Pilot | 0% | 0% | n = 70, pending UREC |
+| Ph 4 Pilot | 0% | 0% | n = 70, UREC approved |
 | Ph 5 Data Collection | 0% | 0% | n = 370 |
 | Ph 6 Analytics | 0% | 0% | EFA, PLS-SEM, WHOQOL change |
 | Ph 7 ML Pipeline | 0%: "React + Node.js + PostgreSQL PWA" | 0% | Note text describes the app stack, not ML |
@@ -839,7 +857,7 @@ Cross-cutting signal: `SAE_LOGGED` (Protocol §6: SAE reported to UREC within 24
 ```mermaid
 stateDiagram-v2
   [*] --> Recruit
-  Recruit --> Intake: UREC ref issued (GCP-20)
+  Recruit --> Intake: UREC approval in place (GCP-20)
   Intake --> Questionnaire: eligible ∧ pseudo-ID issued
   Intake --> Excluded: EXCLUSION_ALERT
   Questionnaire --> OMR: paper mode
@@ -965,7 +983,7 @@ Light tasks such as QA format checks are routed to a Haiku-tier model for cost; 
 
 - **PDPA 2010 (Act 709)**, with its seven Personal Data Protection Principles: General, Notice & Choice, Disclosure, Security, Retention, Data Integrity, Access.
 - **ICH E6(R2) GCP**, Declaration of Helsinki, CIOMS 2016 (GCP-01–04).
-- **UTAR UREC** ethics policy (GCP-07; reference pending as GCP-20).
+- **UTAR UREC** ethics policy (GCP-07). The study is UREC-approved; GCP-20 stays unticked only because the reference is not published in this public repo.
 - **Retention:** 7 years post-publication (Protocol §7).
 - **Withdrawal:** at any time; data retained unless deletion is requested (Protocol §4, citing PDPA s.30 `[NEEDS VERIFICATION: section number]`).
 
@@ -998,7 +1016,7 @@ Light tasks such as QA format checks are routed to a Haiku-tier model for cost; 
 | T8 | Data loss | Browser storage cleared; device lost | Irrecoverable responses (pilot mode) | F-05 |
 | T9 | Clickjacking | `frame-ancestors` is **ignored** when CSP is delivered via `<meta>` | UI redress on admin portal | F-19 |
 
-**Conclusion.** The as-built suite is appropriate for **demonstration, usability testing and ethics review with synthetic data**. It is **not** appropriate for real participant data until the 📐 server-side controls in §[12.5](#s12-5) are in place. This should be stated in the UREC dossier so the review board does not infer that the "PDPA 2010" and "GCP compliant" badges on the C2 intro screen (`:2698–2699`) describe the current build.
+**Conclusion.** The as-built suite is appropriate for **demonstration, usability testing and ethics review with synthetic data**. It is **not** appropriate for real participant data until the 📐 server-side controls in §[12.5](#s12-5) are in place. This should be stated in the data-management documentation so reviewers do not infer that the "PDPA 2010" and "GCP compliant" badges on the C2 intro screen (`:2698–2699`) describe the current build.
 
 ### 12.4 Speech-to-text privacy note (C6)
 
@@ -1028,8 +1046,8 @@ Chromium-based browsers implement `SpeechRecognition` by sending audio to a vend
 
 | Reference | Location | Status |
 |---|---|---|
-| "National Digital Health Blueprint 2023–2030" / "NDHB" | C8 GCP-06 (`:258`), C8 Policy item B2 (`:353`), C8 protocol text (`:277`, `:287`), C1 (`:652`, `:993`, `:1355`, `:1407`, `:1488`, `:1540`, `:1621`, `:1673`, `:1754`, `:1806`, `:2125`, `:2186`), C2 (`:496`, `:578`, `:660`, `:742`, `:929`, `:955`, `:1422`, `:1563`, `:1704`, `:2113`, `:2125`, `:2254`, `:2266`, `:2395`, `:2407`) | ✅ **Removed in v1.1** from C1, C2 (`pol2` in EN/BM/ZH/TA, `mast10`/`pol2` helper text, ethics badge lists), C5 and C8. **v1.3:** GCP-06 re-anchored to the Health White Paper for Malaysia (MOH, 2023) and restored to compliant (19/22). The C8 amendment log records the change as a pending amendment |
-| "Health White Paper (2023)" | S9 executive summary; GCP-06 anchor | ✅ **Verified against the MOH PDF (v1.4).** Ministry of Health Malaysia (2023). *Health White Paper for Malaysia: Strengthening people's health, future-proofing the nation's health system*. Kuala Lumpur: Ministry of Health for the Government of Malaysia (title p. 1; ©2023 MOH, p. 3). The MOH web edition prints no command-paper number. The document says it "will be tabled" in Parliament (pp. 10, 63); the June 2023 approval is from news reports (NST, The Star, Malay Mail). See the evidence table below |
+| Fabricated national digital-health policy document (name withheld; harness rules `NDHB_*`) | C8 GCP-06, C8 policy item B2, C8 protocol text, C1 (policy anchors, compliance card, chatbot), C2 (`pol2`, helper text, ethics badges) | ✅ **Replaced everywhere** by the Health White Paper (2023). The harness now blocks the name in all four languages |
+| "Health White Paper (2023)" | S9 executive summary; GCP-06 anchor | ✅ **Verified against the MOH PDF (v1.4).** Ministry of Health Malaysia (2023). *Health White Paper for Malaysia: Strengthening people's health, future-proofing the nation's health system*. Kuala Lumpur: Ministry of Health for the Government of Malaysia (title p. 1; ©2023 MOH, p. 3). The command-paper number (No. 29 of 2023) comes from the canonical facts table (`harness/dtam_constants.json`); the MOH web edition does not print it. The document says it "will be tabled" in Parliament (pp. 10, 63); the June 2023 approval is from news reports (NST, The Star, Malay Mail). See the evidence table below |
 | "12th Malaysia Plan" | C1 `polMp` | Real plan; confirm the specific digital-health commitments cited `[NEEDS VERIFICATION]` |
 | Instrument citations: Davis 1989; Venkatesh et al. 2012; Parmanto et al. 2016; Brooke 1996; WHO 1996; Zarit et al. 1980; Kidholm et al. 2012; WHO 2001; Braun & Clarke 2006 | C2, C3, C8 | Standard and widely cited; confirm full references in the thesis bibliography |
 | Crisis lines (Befrienders 03-7627 2929; MIASA 03-2780 6803) | Protocol §6 | Operational contact details. Re-verify before pilot, because numbers change `[NEEDS VERIFICATION]` |
@@ -1187,39 +1205,39 @@ flowchart LR
 
 Severity: **Critical** blocks valid data collection or ethics approval · **High** risks data loss, privacy breach or analysis validity · **Medium** degrades quality or maintainability · **Low** cosmetic or hygiene.
 
-Status: rows marked **✅ Fixed (v1.1)** were resolved by roadmap step 0, and **✅ Fixed (v1.2)** by the follow-up pass. **◐ Partly fixed** means the code-level part is done and the rest needs a decision or infrastructure. Unmarked rows remain open.
+Status: **✅ Fixed (v1.1/v1.2)** = this branch; **✅ Fixed (`main`)** = fixed by PRs merged into `main` (kept in v1.5); **(merged)** = both. **◐ Partly fixed** means the code-level part is done and the rest needs a decision or infrastructure. Unmarked rows remain open.
 
 | ID | Sev. | Finding | Evidence | Recommendation | Cross-ref |
 |---|---|---|---|---|---|
-| F-01 | Critical | Blocked "National Digital Health Blueprint" reference counted as GCP-06 compliant; also live Policy-Maker item `pol2` | C8 `:258`, `:353`; C1 `:652`, `:1355`; C2 `:955` | **✅ Fixed (v1.1, v1.3).** Blocked citation removed; `pol2` reworded; GCP-06 re-anchored to the Health White Paper for Malaysia (MOH, 2023) → 19/22. Still to do: add page references; record in the protocol amendment log | §[12.6](#s12-6) |
+| F-01 | Critical | Fabricated policy citation counted as GCP-06 compliant; also in questionnaire item `pol2` | C8 `:258`, `:353`; C1 `:652`, `:1355`; C2 `:955` | **✅ Fixed.** Replaced by the Health White Paper (2023) in all apps and languages (`main` and this branch); page evidence in §12.6; harness blocks recurrence. Record in the protocol amendment log | §[12.6](#s12-6) |
 | F-02 | Critical | Three incompatible item-coding schemes and item sets across digital, paper and verbal channels | C2 `Q`; C3 `*_ITEMS`; C7 `INSTRUMENTS` | Canonical Item Registry; freeze before UREC | §[7.6](#s7-6), DP-03 |
 | F-02b | High | GP sheet codes `BI_1`, `SI_1`, `FC_1` collide with UTAUT2 construct codes in the C3 scorer | C3 `:224–232`, `:366–368` | **✅ Fixed (v1.2).** GP sheet codes renamed `GP_BI_1`, `GP_BI_2`, `GP_SI_1`, `GP_FC_1`, `GP_FC_2` | §[7.6](#s7-6) |
-| F-03 | High | `dtam_my_interviews` has no producer; no import for C6/C7 session files; E3 ≠ E8 schema | C4 `:1293`, `:1309`; C6 `:987` | **✅ Fixed (v1.2).** Sessions → "Import Session JSON" accepts Part C and verbal exports (including the legacy verbal array), dedupes by session ID, and maps E3/E4 to E8 | §[7.2](#s7-2) |
-| F-04 | Medium | Portal reads `r.lang`; record stores `meta.lang` → language column always "—" | C4 `:1477`; C2 `:1162` | **✅ Fixed (v1.1).** Reads `meta.lang`, with fallback to legacy `lang` | §[7.2](#s7-2) |
-| F-04b | High | Survey language chosen by the participant is not stored (only browser locale) | C2 `:1159–1162` | **✅ Fixed (v1.2).** `meta.surveyLang` stored; shown in the admin table and in both survey CSV exports | DP-06 |
+| F-03 | High | `dtam_my_interviews` has no producer; no import for C6/C7 session files; E3 ≠ E8 schema | C4 `:1293`, `:1309`; C6 `:987` | **✅ Fixed (merged).** Part C writes a metadata-only `dtam_my_interviews` index (`main`); the admin portal also imports Part C/verbal session JSON from other devices, metadata only, flagging SAEs (this branch) | §[7.2](#s7-2) |
+| F-04 | Medium | Portal reads `r.lang`; record stores `meta.lang` → language column always "—" | C4 `:1477`; C2 `:1162` | **✅ Fixed (merged).** Records carry top-level `lang`; the admin table and survey CSV read it (`main`); CSVs also include `browser_lang` and `timestamp` (this branch) | §[7.2](#s7-2) |
+| F-04b | High | Survey language chosen by the participant is not stored (only browser locale) | C2 `:1159–1162` | **✅ Fixed (`main`).** Questionnaire language stored as top-level `lang` | DP-06 |
 | F-05 | Critical | Data visible only within one browser origin; protocol lineage names LimeSurvey/REDCap, not the custom apps | C2 `:1143`; C8 `:283` | Backend before pilot, or a REDCap-primary decision; amend the protocol | §[4.2](#s4), §[15](#s15) |
 | F-06 | Medium | TUQ, ICF, TAM-BI, policy and public sections unscored in C2; time-since-stroke and rehab setting not collected | C2 `scoreSurvey` | **◐ Partly fixed (v1.2).** TUQ (mean, ≥3.5) and TAM-BI now scored. Open: ICF, policy and public sections have no defined scoring rule, and time-since-stroke/rehab-setting items need adding (instrument decisions) | §[7.5](#s7-5), §[13.3](#s13) |
 | F-06b | Medium | SDG indicators TAI and CAE need items that are not collected | C8 `:425–428` | Add access and travel-distance items | §[8.3](#s8) |
 | F-07 | High | Group batteries differ by mode (Policy TAM paper-only; MAST 12 vs 28 items; ZBI partial sums allowed on paper; SUS timing differs) | C2 `:985`; C3 `:190–287` | **◐ Partly fixed (v1.2).** C3 reports a ZBI total only when all 22 items are read. Open: one battery per group (research decision) | §[8.2](#s8-2) |
-| F-08 | High | Client-side-only authentication; unsalted SHA-256; login does not protect stored data | C4 `:962`, `:1032` | **◐ Partly fixed (v1.2).** PBKDF2-SHA256 (600k iterations, per-account salt); legacy hashes upgrade at login. Open: authentication is still client-side until a backend exists | §[12.3](#s12-3) |
-| F-09 | Medium | Registration tokens are read but never created → additional researchers can only be added via Settings | C4 `:981–985`, `:1151–1155` | **✅ Fixed (v1.2).** Settings → Registration Tokens: single-use, 7-day, stored as hashes, revocable | §[5.4](#s5) |
+| F-08 | High | Client-side-only authentication; unsalted SHA-256; login does not protect stored data | C4 `:962`, `:1032` | **◐ Partly fixed (`main`).** Salted PBKDF2; legacy hashes upgraded. Open: authentication is still client-side until a backend exists | §[12.3](#s12-3) |
+| F-09 | Medium | Registration tokens are read but never created → additional researchers can only be added via Settings | C4 `:981–985`, `:1151–1155` | **✅ Fixed (`main`).** Settings issues, revokes and redeems single-use hashed tokens | §[5.4](#s5) |
 | F-10 | High | Participant responses stored unencrypted in `localStorage` | DP-07 | Open: needs the backend (client-side encryption cannot protect a key that ships with the page) | §[12.5](#s12-5) |
-| F-11 | Low | Lockout counter in `sessionStorage` resets per tab | C4 `:1011` | **✅ Fixed (v1.2).** Lockout counter in `localStorage`; 15-minute lock survives new tabs and reloads | §[12.3](#s12-3) |
+| F-11 | Low | Lockout counter in `sessionStorage` resets per tab | C4 `:1011` | **✅ Fixed (`main`).** Lockout persists across tabs | §[12.3](#s12-3) |
 | F-12 | High | Browser STT sends interview audio to a vendor cloud; not disclosed | C6 `:860–889` | **✅ Fixed (v1.2).** STT off by default, with a disclosure notice; timer-only manual mode when off; removed the false "On-device — no cloud" label | §[12.4](#s12-4) |
-| F-13 | Low | C5 links `omr_scanner.html#SHEET`; C3 parses only `?sheet=` | C5 OMR tab; C3 `:775` | **✅ Fixed (v1.1).** C5 links use `?sheet=` | §[5.5](#s5) |
+| F-13 | Low | C5 links `omr_scanner.html#SHEET`; C3 parses only `?sheet=` | C5 OMR tab; C3 `:775` | **✅ Fixed (`main`).** The scanner accepts both `?sheet=` and `#SHEET` | §[5.5](#s5) |
 | F-14 | High | Imported JSON fields interpolated into `innerHTML` (stored XSS) | C4 `:1373`, `:1489–1497` | **✅ Fixed (v1.1).** `escHtml()` applied to OMR, activity, participant, interview and user tables; v1.2 adds escaping of Part C transcripts and notes | DP-10 |
 | F-15 | Medium | Conflicting ML specifications | S9 §12; C8 `:286` | Adopt the §13.2 reconciled design; pre-register | §[13](#s13) |
 | F-16 | Medium | Research Suite previews show UTAUT2/TUQ on 1–7 scales; instruments use 1–5 | C8 `:314–316`, `:374–376` | **✅ Fixed (v1.2).** Previews show 1–5 scales | §[7.6](#s7-6) |
-| F-17 | Medium | Group key `policymaker` (C6) ≠ `policy` (C2/C4/C5); C6 has no General Public guide | C6 `QB`, `TRANSLATIONS` | **◐ Partly fixed (v1.2).** C6 uses `policy`; the admin import also maps legacy `policymaker`. Open: no General Public interview guide (content decision) | §[0.3](#s0) |
-| F-18 | Medium | C7 `sessionId` recomputed every render; export lacks participant, researcher, group and language | C7 `:273`, `:452` | **✅ Fixed (v1.1).** `useMemo` ID; export is now `{meta, responses}` like E3 | §[7.2](#s7-2) |
+| F-17 | Medium | Group key `policymaker` (C6) ≠ `policy` (C2/C4/C5); C6 has no General Public guide | C6 `QB`, `TRANSLATIONS` | **◐ Partly fixed (`main`).** Part C maps `policymaker` → `policy` in the admin index; the admin import maps it too. Open: no General Public interview guide (content decision) | §[0.3](#s0) |
+| F-18 | Medium | C7 `sessionId` recomputed every render; export lacks participant, researcher, group and language | C7 `:273`, `:452` | **✅ Fixed (`main`).** Stable session ID; export includes session metadata; simulated STT never recorded as data | §[7.2](#s7-2) |
 | F-19 | Medium | CDN scripts without SRI; `'unsafe-eval'`; `frame-ancestors` ineffective in meta CSP | C2/C3/C5/C7 heads | **◐ Partly fixed (v1.2).** Scripts load from jsDelivr with SHA-384 SRI (hashes from the npm packages; tampered bytes are blocked in tests). Open: OpenCV.js has no SRI (not on npm); `'unsafe-eval'` remains until JSX is pre-compiled; `frame-ancestors` needs HTTP headers at hosting | DP-02 |
 | F-20 | Low | Phase percentages and deliverable counts disagree between C5 and C8; "PWA + APK + Node + PostgreSQL done" not reflected in the repo | C5 `:754–763`; C8 `:216–225`, `:285` | **◐ Partly fixed (v1.2).** C8 now says 5 OMR sheet types (verified in C3). Open: phase percentages (Ph 3: 80% vs 90%) and document counts are the PI's judgement | §[9.2](#s9) |
 | F-21 | Low | C1 CSP permits `connect-src api.anthropic.com` without using it | C1 line 5 | **✅ Fixed (v1.1).** `connect-src 'self'` | §[5.1](#s5) |
 | F-22 | Medium | OMR manual overrides not recorded in export (no provenance) | C3 `exportJSON` | **✅ Fixed (v1.2).** Overrides record `overridden` and `autoValue`; both CSV exports carry `overridden,auto_response` | DP-12 |
 | F-23 | Low | Group colour mapping differs between C5 and C8 | C5 `:690`; C8 `:423` | **✅ Fixed (v1.2).** C8 uses C5's group colours | DP-13 |
-| F-24 | Low | Byte-identical duplicates (`index`/`index_v2`, `omr_scanner`/`omr_scanner_v2`); C4 links `_v2`, C5 links non-`_v2` | MD5 match | **✅ Fixed (v1.1).** `_v2` copies deleted; C4 links repointed to `index.html` / `omr_scanner.html` | DP-15 |
+| F-24 | Low | Byte-identical duplicates (`index`/`index_v2`, `omr_scanner`/`omr_scanner_v2`); C4 links `_v2`, C5 links non-`_v2` | MD5 match | **✅ Fixed (`main`).** `_v2` copies are redirect stubs registered in `dtam_manifest.json` (old links keep working) | DP-15 |
 | F-25 | High | No tool captures AE/SAE or distress-protocol events, although Protocol §6 requires 24-hour SAE reporting | Protocol §6 `:282`; no code | **✅ Fixed (v1.2).** C6 "⚠ Distress / AE" record (type, outcome, 7 protocol steps, PI-notified time); SAE alert; exported; the admin import flags SAEs with the 24-hour reminder | §[9.1](#s9) |
-| F-26 | Low | C5's embedded OMR scanner `<iframe src="omr_scanner.html">` is blocked by C5's own CSP (`default-src 'none'` with no `frame-src`) | C5 line 5, `:676` | **✅ Fixed (v1.2).** `frame-src 'self'` added | §[5.5](#s5) |
+| F-26 | Low | C5's embedded OMR scanner `<iframe src="omr_scanner.html">` is blocked by C5's own CSP (`default-src 'none'` with no `frame-src`) | C5 line 5, `:676` | **✅ Fixed (`main`).** `frame-src 'self'`; the embedded scanner loads | §[5.5](#s5) |
 | F-27 | Low | Admin Settings asked for a Gemini API key for an "AI Insights" feature that does not exist; the key was never used | C4 Settings | **✅ Fixed (v1.2).** Setting removed | §[10](#s10) |
 
 
@@ -1243,7 +1261,7 @@ The roadmap is sequenced so that **ethics-critical fixes come before infrastruct
 
 | Step | Scope | Resolves | Exit criterion | Indicative timing |
 |---|---|---|---|---|
-| **0. Hygiene** (days) | Remove the NDHB reference; fix F-04, F-13, F-14, F-18, F-21, F-24; add SRI | F-01, F-04, F-13, F-14, F-18, F-21, F-24 | GCP matrix re-scored; no blocked citations | Before UREC submission (Q3 2026 target, per S9 roadmap) |
+| **0. Hygiene** (days) | Replace the fabricated policy reference; fix F-04, F-13, F-14, F-18, F-21, F-24; add SRI | F-01, F-04, F-13, F-14, F-18, F-21, F-24 | GCP matrix checked; no blocked citations | ✅ Done |
 | **1. Canonical instruments** | Item Registry JSON; generate C2 `Q`/`FLOWS`, C3 `SHEET_CONFIGS` and OMR PDFs from it; one battery per group; shared scoring library with unit tests | F-02, F-02b, F-06, F-07, F-16, F-17 | Same participant answers → identical scores in every channel (golden tests) | Before pilot |
 | **2. Minimal backend** | Node.js API + PostgreSQL in Malaysia; pseudo-ID issuance at intake; idempotent `POST /responses`, `/omr`, `/interviews`; server auth + RBAC; audit triggers | F-03, F-05, F-08, F-10, F-11 | Pilot data from all devices visible centrally; audit_log populated | Before pilot (Q4 2026) |
 | **3. Offline PWA** | Vite build, service worker, manifest, encrypted IndexedDB outbox, background sync; Capacitor APK | DP-02, DP-07, DP-09 gaps; F-19 | Survey completes and syncs after 24 h offline | Pilot rural sites |

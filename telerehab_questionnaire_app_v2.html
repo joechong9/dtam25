@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://your-backend.dtammy.utar.edu.my; img-src 'self' data: blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://your-backend.dtammy.utar.edu.my; img-src 'self' data: blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>DTAM-MY v2 | Telerehabilitation Research Questionnaire Suite</title>
 <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" integrity="sha384-tMH8h3BGESGckSAVGZ82T9n90ztNXxvdwvdM6UoR56cYcf+0iGXBliJ29D+wZ/x8" crossorigin="anonymous"></script>
@@ -419,7 +419,7 @@
 <div id="root"></div>
 
 <script type="text/babel">
-const { useState, useEffect, useCallback, useMemo } = React;
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
 
 // ─── TRANSLATIONS ────────────────────────────────────────────────────────────
 const T = {
@@ -493,7 +493,7 @@ const T = {
     teamUni: "Universiti Tunku Abdul Rahman (UTAR), Sungai Long Campus",
     teamStudentId: "Student ID: 24UED03838",
     ethicsTitle: "Ethics & Compliance",
-    ethics: ['ICH E6(R2) GCP','Declaration of Helsinki','PDPA 2010 (Act 709)','UTAR UREC Approval Pending','Health White Paper for Malaysia (MOH, 2023)'],
+    ethics: ['ICH E6(R2) GCP','Declaration of Helsinki','PDPA 2010 (Act 709)','UTAR UREC Approved','Health White Paper (2023)'],
     mainSupervisor: "Main Supervisor: Assoc. Prof. Dr. Kwan Ban Hoe",
     coSupervisor: "Co-Supervisor: Assoc. Prof. Ir. Dr. Goh Choon Hian",
     supervisorDept: "Dept. of Mechatronics & BioMedical Engineering, LKC FES, UTAR",
@@ -575,7 +575,7 @@ const T = {
     teamUni: "Universiti Tunku Abdul Rahman (UTAR), Kampus Sungai Long",
     teamStudentId: "No. Pelajar: 24UED03838",
     ethicsTitle: "Etika & Pematuhan",
-    ethics: ['ICH E6(R2) GCP','Deklarasi Helsinki','PDPA 2010 (Akta 709)','Diluluskan UTAR UREC','Kertas Putih Kesihatan Malaysia (KKM, 2023)'],
+    ethics: ['ICH E6(R2) GCP','Deklarasi Helsinki','PDPA 2010 (Akta 709)','Diluluskan UTAR UREC','Kertas Putih Kesihatan (2023)'],
     mainSupervisor: "Main Supervisor: Assoc. Prof. Dr. Kwan Ban Hoe",
     coSupervisor: "Co-Supervisor: Assoc. Prof. Ir. Dr. Goh Choon Hian",
     supervisorDept: "Dept. of Mechatronics & BioMedical Engineering, LKC FES, UTAR",
@@ -657,7 +657,7 @@ const T = {
     teamUni: "拉曼大学 (UTAR)，双溪龙校区",
     teamStudentId: "学号：24UED03838",
     ethicsTitle: "伦理与合规",
-    ethics: ['ICH E6(R2) GCP','赫尔辛基宣言','PDPA 2010（第709法令）','UTAR UREC批准','马来西亚卫生白皮书（卫生部，2023）'],
+    ethics: ['ICH E6(R2) GCP','赫尔辛基宣言','PDPA 2010（第709法令）','UTAR UREC批准','《卫生白皮书》（2023）'],
     mainSupervisor: "Main Supervisor: Assoc. Prof. Dr. Kwan Ban Hoe",
     coSupervisor: "Co-Supervisor: Assoc. Prof. Ir. Dr. Goh Choon Hian",
     supervisorDept: "Dept. of Mechatronics & BioMedical Engineering, LKC FES, UTAR",
@@ -739,7 +739,7 @@ const T = {
     teamUni: "Universiti Tunku Abdul Rahman (UTAR), சுங்கை லாங் வளாகம்",
     teamStudentId: "மாணவர் ID: 24UED03838",
     ethicsTitle: "நெறிமுறைகள் & இணக்கம்",
-    ethics: ['ICH E6(R2) GCP','ஹெல்சின்கி பிரகடனம்','PDPA 2010 (சட்டம் 709)','UTAR UREC அங்கீகாரம்','மலேசிய சுகாதார வெள்ளை அறிக்கை (MOH, 2023)'],
+    ethics: ['ICH E6(R2) GCP','ஹெல்சின்கி பிரகடனம்','PDPA 2010 (சட்டம் 709)','UTAR UREC அங்கீகாரம்','சுகாதார வெள்ளை அறிக்கை (2023)'],
     mainSupervisor: "Main Supervisor: Assoc. Prof. Dr. Kwan Ban Hoe",
     coSupervisor: "Co-Supervisor: Assoc. Prof. Ir. Dr. Goh Choon Hian",
     supervisorDept: "Dept. of Mechatronics & BioMedical Engineering, LKC FES, UTAR",
@@ -926,7 +926,7 @@ const Q = {
       { id:'mast7', text:'The economic cost-effectiveness of telerehabilitation is favourable.', scale:LIKERT5_SD_SA, domain:'Economic Aspects', helper:'Domain 4 — Economic: Do the cost savings justify the investment in telerehabilitation?', required:true },
       { id:'mast8', text:'Implementation of telerehabilitation is technically feasible in our context.', scale:LIKERT5_SD_SA, domain:'Technical Aspects', helper:'Domain 5 — Technical Aspects: Is the technology practical and reliable in Malaysian healthcare settings?', required:true },
       { id:'mast9', text:'The telerehabilitation system meets data security and privacy requirements.', scale:LIKERT5_SD_SA, domain:'Technical Aspects', helper:'Does the system comply with PDPA 2010 and data security standards?', required:true },
-      { id:'mast10', text:'Telerehabilitation aligns with Malaysian healthcare policy and regulatory requirements.', scale:LIKERT5_SD_SA, domain:'Organisational', helper:'Domain 6 — Organisational/Policy: Is telerehab compatible with MOH policy and national digital health policy?', required:true },
+      { id:'mast10', text:'Telerehabilitation aligns with Malaysian healthcare policy and regulatory requirements.', scale:LIKERT5_SD_SA, domain:'Organisational', helper:'Domain 6 — Organisational/Policy: Is telerehab compatible with MOH policy and the Health White Paper (2023)?', required:true },
       { id:'mast11', text:'Telerehabilitation supports equitable access to rehabilitation services across Malaysia.', scale:LIKERT5_SD_SA, domain:'Socio-Cultural', helper:'Domain 7 — Socio-Cultural, Ethical, Legal: Does telerehab improve access for rural/underserved communities?', required:true },
       { id:'mast12', text:'Ethical standards for informed consent are maintained in telerehabilitation.', scale:LIKERT5_SD_SA, domain:'Socio-Cultural', helper:'Are patients properly informed and consented before participating in telerehabilitation?', required:true },
     ]
@@ -952,7 +952,7 @@ const Q = {
     instructions:'As a policy-maker/healthcare administrator, please rate the following statements regarding telerehabilitation policy and implementation in Malaysia.',
     questions: [
       { id:'pol1', text:'The current Malaysian regulatory framework (PDPA 2010, Medical Device Act 2012) adequately supports telerehabilitation deployment.', scale:LIKERT5_SD_SA, helper:'Does existing legislation provide sufficient legal basis for telerehabilitation services in Malaysia?', required:true },
-      { id:'pol2', text:'Current national digital health policy provides clear guidance for telerehabilitation implementation.', scale:LIKERT5_SD_SA, helper:'Does current national digital health policy address telerehabilitation for elderly rehabilitation specifically?', required:true },
+      { id:'pol2', text:'The Health White Paper (2023) provides clear guidance for telerehabilitation implementation.', scale:LIKERT5_SD_SA, helper:'Does the White Paper\'s strategic direction address telerehabilitation for elderly rehabilitation specifically?', required:true },
       { id:'pol3', text:'Current healthcare infrastructure can support nationwide telerehabilitation deployment.', scale:LIKERT5_SD_SA, helper:'Are broadband connectivity, device availability, and IT infrastructure sufficient across Malaysia?', required:true },
       { id:'pol4', text:'Telerehabilitation is cost-effective compared to traditional in-person rehabilitation.', scale:LIKERT5_SD_SA, helper:'From a health economics perspective, do savings justify the investment in telerehabilitation?', required:true },
       { id:'pol5', text:'Existing clinical guidelines adequately address remote rehabilitation protocols for stroke patients.', scale:LIKERT5_SD_SA, helper:'Are there sufficient clinical practice guidelines for physiotherapists/OTs delivering telerehabilitation?', required:true },
@@ -1088,15 +1088,21 @@ function scoreSurvey(group, answers) {
     Environment: ['wq8','wq9','wq12','wq13','wq14','wq23','wq24','wq25'],
   };
   const whoReversed = ['wq3','wq4','wq26'];
+  // Each domain is scored with at most one missing item; the score is then the mean of the answered
+  // items, i.e. the missing item takes the domain mean (Physical 6/7, Psychological 5/6, Social 2/3,
+  // Environment 7/8).
+  const WHO_MAX_MISSING = 1;
   const whoMap = {};
   Object.keys(answers).filter(k => k.startsWith('wq')).forEach(k => {
-    const v = parseInt(answers[k]);
+    const v = parseInt(answers[k], 10);
+    if (!Number.isFinite(v)) return;   // cleared / blank answers are missing, not NaN
     whoMap[k] = whoReversed.includes(k) ? (6 - v) : v;
   });
   Object.entries(whoDomains).forEach(([domain, keys]) => {
     const realKeys = keys.map(k => k.replace('r',''));
-    if (realKeys.every(k => whoMap[k] != null)) {
-      const mean = realKeys.reduce((a,k) => a + whoMap[k], 0) / realKeys.length;
+    const answered = realKeys.filter(k => whoMap[k] != null);
+    if (answered.length > 0 && answered.length >= realKeys.length - WHO_MAX_MISSING) {
+      const mean = answered.reduce((a,k) => a + whoMap[k], 0) / answered.length;
       const score100 = ((mean - 1) / 4) * 100;
       scores[`WHOQOL_${domain}`] = { value: Math.round(score100), label: `QoL – ${domain}`, max: 100,
         interp: score100 >= 60 ? 'Good' : score100 >= 40 ? 'Moderate' : 'Poor',
@@ -1159,6 +1165,22 @@ const DTAM_CONFIG = {
   STUDY_ID:     'DTAM-MY-2025',
 };
 
+/**
+ * @typedef {{value:number, label:string, max:number, interp:string, color:string}} Score
+ * @typedef {Object} ResponseRecord        Stored in localStorage[STORAGE_KEY] (array) and read by
+ *                                         telerehab_dashboard_v2.html and admin_portal_v2.html
+ * @property {string} id
+ * @property {string} studyId
+ * @property {string} version
+ * @property {string} timestamp            ISO 8601
+ * @property {'allied'|'caregiver'|'elderly'|'policy'|'public'} group
+ * @property {string} lang                 Language the questionnaire was answered in: en | bm | zh | ta
+ * @property {Object<string,string>} answers  Item id → option value ('0'..'4' ZBI, '1'..'5' Likert, English label for selects)
+ * @property {Object<string,Score>} scores    e.g. SUS, ZBI, TAM_PU, WHOQOL_Physical, MAST
+ * @property {{lang:string}} meta          Browser language (navigator.language)
+ */
+
+/** @returns {{id:string, saved:boolean, record:ResponseRecord}} */
 function submitResponse(group, answers, scores, surveyLang) {
   const record = {
     id:        `${DTAM_CONFIG.STUDY_ID}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
@@ -1166,23 +1188,31 @@ function submitResponse(group, answers, scores, surveyLang) {
     version:   DTAM_CONFIG.VERSION,
     timestamp: new Date().toISOString(),
     group,
+    lang:      surveyLang,   // questionnaire language chosen by the participant (meta.lang is only the browser locale)
     answers,
     scores,
     meta: {
       // navigator.userAgent removed — PDPA 2010 compliance: device fingerprint is personal data
       // and was not disclosed in the consent screen. Only language preference retained.
       lang: navigator.language,
-      // Language version the participant actually completed (needed for measurement-invariance testing)
-      surveyLang: surveyLang || null,
     }
   };
 
   // 1. Always save to localStorage (offline backup + dashboard feed)
+  let saved = false;
   try {
-    const existing = JSON.parse(localStorage.getItem(DTAM_CONFIG.STORAGE_KEY) || '[]');
+    let existing = [];
+    try {
+      const parsed = JSON.parse(localStorage.getItem(DTAM_CONFIG.STORAGE_KEY) || '[]');
+      if (Array.isArray(parsed)) existing = parsed;
+    } catch(parseErr) {
+      // Never overwrite unreadable stored data — keep a copy before starting a fresh list
+      localStorage.setItem(DTAM_CONFIG.STORAGE_KEY + '_corrupt_' + Date.now(), localStorage.getItem(DTAM_CONFIG.STORAGE_KEY));
+    }
     existing.push(record);
     localStorage.setItem(DTAM_CONFIG.STORAGE_KEY, JSON.stringify(existing));
-  } catch(e) { console.warn('localStorage save failed:', e); }
+    saved = true;
+  } catch(e) { console.warn('localStorage save failed:', e); }   // e.g. quota exceeded / storage blocked
 
   // 2. If API endpoint configured, also POST to server
   if (DTAM_CONFIG.API_ENDPOINT) {
@@ -1192,7 +1222,21 @@ function submitResponse(group, answers, scores, surveyLang) {
       .catch(err => console.warn('API submission failed (data saved locally):', err));
   }
 
-  return record.id;
+  return { id: record.id, saved, record };
+}
+
+// Shown on the report page when the local save failed, so the response is not silently lost
+const SAVE_FAILED = {
+  en: { msg:'This response could not be saved on this device. Please download it and give the file to the researcher.', btn:'Download response' },
+  bm: { msg:'Jawapan ini tidak dapat disimpan pada peranti ini. Sila muat turun dan serahkan fail kepada penyelidik.', btn:'Muat turun jawapan' },
+  zh: { msg:'此回答无法保存在本设备上。请下载并将文件交给研究人员。', btn:'下载回答' },
+  ta: { msg:'இந்தப் பதிலை இந்தச் சாதனத்தில் சேமிக்க முடியவில்லை. அதைப் பதிவிறக்கி கோப்பை ஆய்வாளரிடம் கொடுக்கவும்.', btn:'பதிலைப் பதிவிறக்கவும்' },
+};
+function downloadRecord(record) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(record, null, 2)], { type:'application/json' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = `${record.id}.json`; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 
@@ -1287,6 +1331,7 @@ const OPT_TRANS = {
     d5_opts: ['城市','城郊','农村'],
     d6_opts: ['是','否'],
     d7_opts: ['每天','每周数次','每周一次','很少','从不'],
+    icf2_opts: ['完全做不到','需要很多帮助才能做到','需要少许帮助才能做到','有些困难','没有困难'],
     icf5_opts: SCALE_TRANS.zh.SD_SA,
     icf6_opts: SCALE_TRANS.zh.SD_SA,
   },
@@ -1297,6 +1342,7 @@ const OPT_TRANS = {
     d5_opts: ['நகர்ப்புறம்','புறநகர்','கிராமப்புறம்'],
     d6_opts: ['ஆம்','இல்லை'],
     d7_opts: ['தினமும்','வாரம் பல முறை','வாரம் ஒரு முறை','அரிதாக','ஒருபோதும் இல்லை'],
+    icf2_opts: ['முற்றிலும் முடியாது','அதிக உதவியுடன் மட்டுமே','சிறிய உதவியுடன் மட்டுமே','சிறிது சிரமத்துடன்','சிரமம் இல்லாமல்'],
     icf5_opts: SCALE_TRANS.ta.SD_SA,
     icf6_opts: SCALE_TRANS.ta.SD_SA,
   }
@@ -1433,7 +1479,7 @@ const Q_TRANS = {
     icf6: 'Saya menerima sokongan yang mencukupi daripada keluarga/penjaga untuk pemulihan saya.',
     // Policy
     pol1: 'Rangka kerja kawal selia Malaysia semasa (PDPA 2010, Akta Peranti Perubatan 2012) secukupnya menyokong penggunaan telerehabilitasi.',
-    pol2: 'Dasar kesihatan digital kebangsaan semasa memberikan panduan yang jelas untuk pelaksanaan telerehabilitasi.',
+    pol2: 'Kertas Putih Kesihatan (2023) memberikan panduan yang jelas untuk pelaksanaan telerehabilitasi.',
     pol3: 'Infrastruktur penjagaan kesihatan semasa boleh menyokong penggunaan telerehabilitasi di seluruh negara.',
     pol4: 'Telerehabilitasi adalah kos-efektif berbanding dengan pemulihan bersemuka tradisional.',
     pol5: 'Garis panduan klinikal sedia ada secukupnya menangani protokol pemulihan jauh untuk pesakit strok.',
@@ -1574,7 +1620,7 @@ const Q_TRANS = {
     icf6: '我从家人/护理人员那里获得了足够的康复支持。',
     // Policy
     pol1: '马来西亚现行监管框架（PDPA 2010、医疗设备法令2012）充分支持远程康复部署。',
-    pol2: '现行国家数字健康政策为远程康复实施提供了明确指导。',
+    pol2: '《卫生白皮书》（2023）为远程康复实施提供了明确指导。',
     pol3: '现有医疗基础设施可以支持全国范围内的远程康复部署。',
     pol4: '与传统面对面康复相比，远程康复更具成本效益。',
     pol5: '现有临床指南充分解决了中风患者的远程康复协议。',
@@ -1715,7 +1761,7 @@ const Q_TRANS = {
     icf6: 'என் மறுவாழ்வுக்கு குடும்பத்தினர்/பராமரிப்பாளரிடம் இருந்து போதுமான ஆதரவு கிடைக்கிறது.',
     // Policy
     pol1: 'மலேசியாவின் தற்போதைய ஒழுங்குமுறை கட்டமைப்பு (PDPA 2010, மருத்துவ சாதன சட்டம் 2012) டெலிரீஹேபிலிடேஷன் நிறுவலை போதுமான அளவில் ஆதரிக்கிறது.',
-    pol2: 'தற்போதைய தேசிய டிஜிட்டல் சுகாதாரக் கொள்கை டெலிரீஹேபிலிடேஷன் செயல்படுத்தலுக்கு தெளிவான வழிகாட்டுதலை வழங்குகிறது.',
+    pol2: 'சுகாதார வெள்ளை அறிக்கை (2023) டெலிரீஹேபிலிடேஷன் செயல்படுத்தலுக்கு தெளிவான வழிகாட்டுதலை வழங்குகிறது.',
     pol3: 'தற்போதைய சுகாதார உள்கட்டமைப்பு நாடு முழுவதும் டெலிரீஹேபிலிடேஷன் நிறுவலை ஆதரிக்க முடியும்.',
     pol4: 'பாரம்பரிய நேரில் மறுவாழ்வுடன் ஒப்பிடும்போது டெலிரீஹேபிலிடேஷன் செலவு-சாத்தியமானது.',
     pol5: 'தற்போதுள்ள மருத்துவ வழிகாட்டுதல்கள் பக்கவாதம் நோயாளிகளுக்கான தொலைதூர மறுவாழ்வு நெறிமுறைகளை போதுமான அளவில் கையாள்கின்றன.',
@@ -1759,8 +1805,8 @@ const CONSENT_TRANS = {
     s6b: 'Kajian ini melibatkan risiko yang minimum. Tiada manfaat langsung kepada anda daripada penyertaan, tetapi respons anda akan menyumbang kepada pembangunan perkhidmatan telerehabilitasi yang lebih baik untuk warga emas Malaysia.',
     s7t: '7. Tempoh',
     s7b: 'Anggaran masa penyiapan: 15–30 minit bergantung kepada kumpulan pihak berkepentingan anda.',
-    s8t: '8. Kelulusan Etika',
-    s8b: 'Kajian ini telah disemak dan diluluskan oleh Jawatankuasa Etika Penyelidikan Universiti UTAR (UREC). Rujukan: UTAR/UREC/2025 (tertunda). Garis panduan GCP ICH E6(R2) dan Deklarasi Helsinki (WMA, 2013) dipatuhi sepanjang kajian ini.',
+    s8t: '8. Semakan Etika',
+    s8b: 'Kajian ini telah disemak dan diluluskan oleh Jawatankuasa Etika Penyelidikan Universiti UTAR (UREC). Garis panduan GCP ICH E6(R2) dan Deklarasi Helsinki (WMA, 2013) dipatuhi sepanjang kajian ini.',
     s9t: '9. Hubungi',
     s9b: 'Untuk pertanyaan, hubungi pejabat penyelidikan Fakulti Kejuruteraan dan Sains Lee Kong Chian (LKC FES) UTAR, Kampus Sungai Long.',
   },
@@ -1779,8 +1825,8 @@ const CONSENT_TRANS = {
     s6b: '本研究风险极低。参与对您没有直接益处，但您的回答将有助于为马来西亚老年人开发更好的远程康复服务。',
     s7t: '7. 所需时间',
     s7b: '预计完成时间：根据您的利益相关者群体，约需15至30分钟。',
-    s8t: '8. 伦理审批',
-    s8b: '本研究已经过拉曼大学（UTAR）大学研究伦理委员会（UREC）审查和批准。参考编号：UTAR/UREC/2025（待定）。本研究全程遵守ICH E6(R2) GCP指南和赫尔辛基宣言（WMA，2013）。',
+    s8t: '8. 伦理审查',
+    s8b: '本研究已经过拉曼大学（UTAR）大学研究伦理委员会（UREC）审查和批准。本研究全程遵守ICH E6(R2) GCP指南和赫尔辛基宣言（WMA，2013）。',
     s9t: '9. 联系方式',
     s9b: '如有疑问，请联系拉曼大学（UTAR）李光前工程与科学学院（LKC FES）双溪龙校区研究办公室。',
   },
@@ -1799,8 +1845,8 @@ const CONSENT_TRANS = {
     s6b: 'இந்த ஆராய்ச்சியில் குறைந்தபட்ச அபாயம் உள்ளது. பங்கேற்பதால் உங்களுக்கு நேரடி நன்மைகள் இல்லை, ஆனால் உங்கள் பதில்கள் மலேசிய முதியோருக்கான சிறந்த டெலிரீஹேபிலிடேஷன் சேவைகளை உருவாக்க பங்களிக்கும்.',
     s7t: '7. கால அளவு',
     s7b: 'மதிப்பிடப்பட்ட நேரம்: உங்கள் பங்குதாரர் குழுவைப் பொறுத்து 15–30 நிமிடங்கள்.',
-    s8t: '8. நெறிமுறை அங்கீகாரம்',
-    s8b: 'இந்த ஆராய்ச்சி UTAR பல்கலைக்கழக ஆராய்ச்சி நெறிமுறை குழுவால் (UREC) மதிப்பாய்வு செய்யப்பட்டு அங்கீகரிக்கப்பட்டது. குறிப்பு: UTAR/UREC/2025 (நிலுவையில்). ICH E6(R2) GCP வழிகாட்டுதல்கள் மற்றும் ஹெல்சின்கி பிரகடனம் (WMA, 2013) இந்த ஆராய்ச்சி முழுவதும் கடைப்பிடிக்கப்படுகின்றன.',
+    s8t: '8. நெறிமுறை மதிப்பாய்வு',
+    s8b: 'இந்த ஆராய்ச்சி UTAR பல்கலைக்கழக ஆராய்ச்சி நெறிமுறை குழுவால் (UREC) மதிப்பாய்வு செய்யப்பட்டு அங்கீகரிக்கப்பட்டது. ICH E6(R2) GCP வழிகாட்டுதல்கள் மற்றும் ஹெல்சின்கி பிரகடனம் (WMA, 2013) இந்த ஆராய்ச்சி முழுவதும் கடைப்பிடிக்கப்படுகின்றன.',
     s9t: '9. தொடர்பு',
     s9b: 'கேள்விகளுக்கு, UTAR லீ கோங் சியான் பொறியியல் மற்றும் அறிவியல் பீடம் (LKC FES) ஆராய்ச்சி அலுவலகம், சுங்கை லாங் வளாகத்தை தொடர்பு கொள்ளவும்.',
   }
@@ -2124,7 +2170,7 @@ const HELPER_TRANS = {
     mast7:'Domain 4 — Ekonomi: Adakah penjimatan kos menwajarkan pelaburan dalam telerehabilitasi?',
     mast8:'Domain 5 — Aspek Teknikal: Adakah teknologi praktikal dan boleh dipercayai dalam tetapan penjagaan kesihatan Malaysia?',
     mast9:'Adakah sistem mematuhi PDPA 2010 dan piawaian keselamatan data?',
-    mast10:'Domain 6 — Organisasi/Dasar: Adakah telerehabilitasi serasi dengan dasar KKM dan dasar kesihatan digital kebangsaan?',
+    mast10:'Domain 6 — Organisasi/Dasar: Adakah telerehabilitasi serasi dengan dasar KKM dan Kertas Putih Kesihatan (2023)?',
     mast11:'Domain 7 — Sosio-Budaya, Etika, Undang-undang: Adakah telerehabilitasi meningkatkan akses untuk komuniti luar bandar/yang kurang mendapat perkhidmatan?',
     mast12:'Adakah pesakit dimaklumkan dan mendapat persetujuan dengan betul sebelum mengambil bahagian dalam telerehabilitasi?',
     // ICF
@@ -2136,7 +2182,7 @@ const HELPER_TRANS = {
     icf6:'Faktor Peribadi & Sokongan: Adakah anda mendapat bantuan yang mencukupi daripada orang di sekeliling anda?',
     // Policy
     pol1:'Adakah undang-undang sedia ada menyediakan asas undang-undang yang mencukupi untuk perkhidmatan telerehabilitasi di Malaysia?',
-    pol2:'Adakah dasar kesihatan digital kebangsaan semasa menangani telerehabilitasi khusus untuk pemulihan warga emas?',
+    pol2:'Adakah hala tuju strategik Kertas Putih menangani telerehabilitasi khusus untuk pemulihan warga emas?',
     pol3:'Adakah rangkaian jalur lebar, ketersediaan peranti, dan infrastruktur IT mencukupi di seluruh Malaysia?',
     pol4:'Dari perspektif ekonomi kesihatan, adakah penjimatan menwajarkan pelaburan dalam telerehabilitasi?',
     pol5:'Adakah terdapat garis panduan amalan klinikal yang mencukupi untuk fisioterapis/OT yang menyampaikan telerehabilitasi?',
@@ -2265,7 +2311,7 @@ const HELPER_TRANS = {
     mast7:'领域4——经济：成本节省是否能证明远程康复投资的合理性？',
     mast8:'领域5——技术方面：该技术在马来西亚医疗保健环境中是否实用可靠？',
     mast9:'系统是否符合PDPA 2010和数据安全标准？',
-    mast10:'领域6——组织/政策：远程康复是否与卫生部政策和国家数字健康政策兼容？',
+    mast10:'领域6——组织/政策：远程康复是否与卫生部政策和《卫生白皮书》（2023）兼容？',
     mast11:'领域7——社会文化、伦理、法律：远程康复是否改善了农村/服务不足社区的康复服务获取？',
     mast12:'患者在参与远程康复之前是否得到了适当的告知和同意？',
     // ICF
@@ -2277,7 +2323,7 @@ const HELPER_TRANS = {
     icf6:'个人因素与支持：您是否从周围的人那里获得了足够的帮助？',
     // Policy
     pol1:'现有立法是否为马来西亚的远程康复服务提供了充分的法律基础？',
-    pol2:'现行国家数字健康政策是否专门针对老年康复的远程康复？',
+    pol2:'白皮书的战略方向是否专门针对老年康复的远程康复？',
     pol3:'整个马来西亚的宽带连接、设备可用性和IT基础设施是否充足？',
     pol4:'从卫生经济学角度，节省的成本是否能证明远程康复投资的合理性？',
     pol5:'是否有足够的临床实践指南供提供远程康复的物理治疗师/OT参考？',
@@ -2406,7 +2452,7 @@ const HELPER_TRANS = {
     mast7:'டொமைன் 4 — பொருளாதாரம்: செலவு சேமிப்பு டெலிரீஹேபிலிடேஷன் முதலீட்டை நியாயப்படுத்துகிறதா?',
     mast8:'டொமைன் 5 — தொழில்நுட்ப அம்சங்கள்: மலேசிய சுகாதார சூழலில் தொழில்நுட்பம் நடைமுறையாகவும் நம்பகமாகவும் உள்ளதா?',
     mast9:'அமைப்பு PDPA 2010 மற்றும் தரவு பாதுகாப்பு தரங்களுடன் இணக்கமாக உள்ளதா?',
-    mast10:'டொமைன் 6 — நிறுவன/கொள்கை: டெலிரீஹேபிலிடேஷன் சுகாதார அமைச்சகக் கொள்கை மற்றும் தேசிய டிஜிட்டல் சுகாதாரக் கொள்கையுடன் இணக்கமாக உள்ளதா?',
+    mast10:'டொமைன் 6 — நிறுவன/கொள்கை: டெலிரீஹேபிலிடேஷன் சுகாதார அமைச்சகக் கொள்கை மற்றும் சுகாதார வெள்ளை அறிக்கை (2023) உடன் இணக்கமாக உள்ளதா?',
     mast11:'டொமைன் 7 — சமூக-கலாச்சார, நெறிமுறை, சட்டம்: டெலிரீஹேபிலிடேஷன் கிராமப்புற/சேவை குறைவான சமூகங்களுக்கு மறுவாழ்வு சேவை அணுகலை மேம்படுத்துகிறதா?',
     mast12:'டெலிரீஹேபிலிடேஷனில் பங்கேற்பதற்கு முன் நோயாளிகள் முறையாக தெரிவிக்கப்பட்டு சம்மதம் பெறப்பட்டிருக்கிறார்களா?',
     // ICF
@@ -2418,7 +2464,7 @@ const HELPER_TRANS = {
     icf6:'தனிப்பட்ட காரணிகள் & ஆதரவு: சுற்றியுள்ளவர்களிடம் இருந்து போதுமான உதவி கிடைக்கிறதா?',
     // Policy
     pol1:'டெலிரீஹேபிலிடேஷன் சேவைகளுக்கு மலேசியாவில் போதுமான சட்ட அடிப்படை உள்ளதா?',
-    pol2:'தற்போதைய தேசிய டிஜிட்டல் சுகாதாரக் கொள்கை வயோதிக மறுவாழ்வுக்கான டெலிரீஹேபிலிடேஷனை குறிப்பாக கையாளுகிறதா?',
+    pol2:'வெள்ளை அறிக்கையின் மூலோபாய திசை வயோதிக மறுவாழ்வுக்கான டெலிரீஹேபிலிடேஷனை குறிப்பாக கையாளுகிறதா?',
     pol3:'மலேசியா முழுவதும் அகலப்பட்டை இணைப்பு, சாதன கிடைப்பிடம் மற்றும் IT உள்கட்டமைப்பு போதுமானதா?',
     pol4:'சுகாதார பொருளாதார கண்ணோட்டத்தில், சேமிப்புகள் டெலிரீஹேபிலிடேஷன் முதலீட்டை நியாயப்படுத்துகிறதா?',
     pol5:'டெலிரீஹேபிலிடேஷன் வழங்கும் உடல்நலவாழ்வு நிபுணர்களுக்கு போதுமான மருத்துவ நடைமுறை வழிகாட்டுதல்கள் உள்ளதா?',
@@ -2611,6 +2657,8 @@ function App() {
   const [consentGiven, setConsentGiven] = useState(false);
   const [showError, setShowError] = useState(false);
   const [submittedId, setSubmittedId] = useState(null);
+  const [savedRecord, setSavedRecord] = useState(null);   // set only when the local save failed
+  const submittingRef = useRef(false);
   const t = T[lang];
 
   const flow = group ? FLOWS[group] : [];
@@ -2652,9 +2700,12 @@ function App() {
       setCurrentSectionIdx(prev => prev + 1);
       window.scrollTo(0,0);
     } else {
+      if (submittingRef.current) return;   // ignore a second click before the report renders
+      submittingRef.current = true;
       const finalScores = scoreSurvey(group, answers);
-      const id = submitResponse(group, answers, finalScores, lang);
+      const { id, saved, record } = submitResponse(group, answers, finalScores, lang);
       setSubmittedId(id);
+      setSavedRecord(saved ? null : record);
       setPage('report');
       window.scrollTo(0,0);
     }
@@ -2676,12 +2727,17 @@ function App() {
     setAnswers({});
     setConsentGiven(false);
     setCurrentSectionIdx(0);
+    setSubmittedId(null);
+    setSavedRecord(null);
+    setShowError(false);
+    submittingRef.current = false;
     window.scrollTo(0,0);
   }
 
   const groupIcons = { allied:'🏥', caregiver:'💛', elderly:'🧓', policy:'🏛️', public:'🌏' };
 
-  // ── SHARED HEADER ──
+  // ── SHARED HEADER ── (called as a function: defining a component inside App gave it a new
+  // identity on every render, so React unmounted and remounted the header on each answer)
   const AppHeader = () => (
     <div className="app-header">
       <div className="logo">
@@ -2699,7 +2755,7 @@ function App() {
   // ── INTRO ──
   if (page === 'intro') return (
     <>
-      <AppHeader />
+      {AppHeader()}
 
       {/* ── Hero Banner ── */}
       <div className="intro-hero">
@@ -2819,7 +2875,7 @@ function App() {
   // ── LANDING (Group Selector) ──
   if (page === 'landing') return (
     <>
-      <AppHeader />
+      {AppHeader()}
       <div className="container">
         {/* Back link */}
         <div style={{marginBottom:'12px'}}>
@@ -2869,7 +2925,7 @@ function App() {
   // ── CONSENT ──
   if (page === 'consent') return (
     <>
-      <AppHeader />
+      {AppHeader()}
       <div className="container">
         <div className="card">
           <div className="card-title">📋 {t.consent}</div>
@@ -2893,8 +2949,8 @@ function App() {
               <div className="consent-body">This study involves minimal risk. There are no direct benefits to you from participation, but your responses will contribute to the development of better telerehabilitation services for elderly Malaysians. If you feel distressed at any point, please stop and contact the research team at UTAR.</div>
               <div className="consent-section">7. Duration</div>
               <div className="consent-body">Estimated completion time: 15–30 minutes depending on your stakeholder group.</div>
-              <div className="consent-section">8. Ethics Approval</div>
-              <div className="consent-body">This study has been reviewed and approved by the UTAR University Research Ethics Committee (UREC). Reference: UTAR/UREC/2025 (pending). ICH E6(R2) GCP guidelines and the Declaration of Helsinki (WMA, 2013) are observed throughout this study.</div>
+              <div className="consent-section">8. Ethics Review</div>
+              <div className="consent-body">This study has been reviewed and approved by the UTAR University Research Ethics Committee (UREC). ICH E6(R2) GCP guidelines and the Declaration of Helsinki (WMA, 2013) are observed throughout this study.</div>
               <div className="consent-section">9. Contact</div>
               <div className="consent-body">For questions, contact the UTAR Lee Kong Chian Faculty of Engineering and Science (LKC FES) research office, Sungai Long Campus.</div>
             </>) : (() => {
@@ -2933,7 +2989,7 @@ function App() {
     const progress = ((currentSectionIdx) / totalSections) * 100;
     return (
       <>
-        <AppHeader />
+        {AppHeader()}
         <div className="container">
           {/* Progress */}
           <div className="card" style={{padding:'16px 20px'}}>
@@ -2978,10 +3034,17 @@ function App() {
     const scoreList = Object.entries(scores);
     return (
       <>
-        <AppHeader />
+        {AppHeader()}
         <div className="container">
           {/* Submission confirmation banner */}
-          {submittedId && (
+          {submittedId && savedRecord && (
+            <div role="alert" style={{background:'#fef2f2',border:'1px solid #fca5a5',borderRadius:'10px',padding:'12px 18px',marginBottom:'16px',display:'flex',alignItems:'center',gap:'12px',flexWrap:'wrap',fontSize:'var(--fs-sm)'}}>
+              <span style={{fontSize:'20px'}}>⚠️</span>
+              <div style={{flex:'1 1 240px',color:'#991b1b'}}>{(SAVE_FAILED[lang]||SAVE_FAILED.en).msg}</div>
+              <button className="btn btn-primary" onClick={() => downloadRecord(savedRecord)}>⬇ {(SAVE_FAILED[lang]||SAVE_FAILED.en).btn}</button>
+            </div>
+          )}
+          {submittedId && !savedRecord && (
             <div style={{background:'#dcfce7',border:'1px solid #86efac',borderRadius:'10px',padding:'12px 18px',marginBottom:'16px',display:'flex',alignItems:'center',gap:'12px',fontSize:'var(--fs-sm)'}}>
               <span style={{fontSize:'20px'}}>✅</span>
               <div>
@@ -3075,7 +3138,7 @@ function App() {
           <div style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap',marginBottom:'32px'}}>
             <button className="btn btn-primary" onClick={() => window.print()}>🖨️ {t.print}</button>
             <button className="btn btn-secondary" onClick={handleRestart}>🔄 {t.restart}</button>
-            <button className="btn btn-secondary" onClick={() => window.open('telerehab_dashboard.html','_blank')}
+            <button className="btn btn-secondary" onClick={() => window.open('telerehab_dashboard_v2.html','_blank')}
               style={{borderColor:'var(--teal)',color:'var(--teal)'}}>
               📊 {t.openDashboard}
             </button>

@@ -2,15 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net docs.opencv.org; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; worker-src blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://docs.opencv.org; style-src 'self' 'unsafe-inline'; connect-src 'self' data:; img-src 'self' data: blob:; worker-src blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>DTAM-MY OMR Scanner v2.0</title>
   <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" integrity="sha384-tMH8h3BGESGckSAVGZ82T9n90ztNXxvdwvdM6UoR56cYcf+0iGXBliJ29D+wZ/x8" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" integrity="sha384-bm7MnzvK++ykSwVJ2tynSE5TRdN+xL418osEVF2DE/L/gfWHj91J2Sphe582B1Bh" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.2/babel.min.js" integrity="sha384-aGlMNK3U/x0wl4lEH5jD1PGhJlX9hApuPmIiA5gtiYCOQ1J8ejIdC0btaU/TMoBD" crossorigin="anonymous"></script>
   <script async src="https://docs.opencv.org/4.8.0/opencv.js"
-    onload="window.cvReady=true;console.log('OpenCV ready');"
+    onload="window.__onCvLoad&&window.__onCvLoad();"
     onerror="console.warn('OpenCV failed to load — perspective correction disabled');"></script>
+  <script>
+    // opencv.js finishes loading before its WASM runtime is ready; only flag ready once cv.Mat exists.
+    window.__onCvLoad = function () {
+      var done = function () { window.cvReady = true; console.log('OpenCV ready'); };
+      var cv = window.cv;
+      if (!cv) return;
+      if (typeof cv.then === 'function') cv.then(function (m) { window.cv = m; done(); });
+      else if (cv.Mat) done();
+      else cv.onRuntimeInitialized = done;
+    };
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; }
@@ -286,6 +297,26 @@ const SHEET_CONFIGS = {
   },
 };
 
+/**
+ * @typedef {Object} OmrItem           One questionnaire item placed on the sheet grid
+ * @property {string}   code           e.g. 'ZBI_1'
+ * @property {string}   label
+ * @property {string}   section_id
+ * @property {string}   section_label
+ * @property {number}   page
+ * @property {string[]} options        Option values as strings ('0'..'4' or '1'..'5')
+ * @property {number[]} bubble_xs      Bubble centre x positions (mm)
+ * @property {number}   y_mm           Row centre y position (mm)
+ * @property {'pos'|'neg'} [polarity]  SUS item polarity
+ * @property {boolean}  [neg]          WHOQOL reverse-scored item
+ *
+ * @typedef {OmrItem & {
+ *   fills:number[], maxFill:number, selectedIndex:number,
+ *   selectedValue:(string|null), ambiguous:boolean, no_response:boolean
+ * }} OmrResult                        An item after reading the scan (or manual correction)
+ */
+
+/** @returns {OmrItem[]} */
 function getAllItems(sheetKey) {
   return SHEET_CONFIGS[sheetKey].sections.flatMap(sec => computeItemPositions(sec));
 }
@@ -296,7 +327,7 @@ function toGrayscaleCanvas(imgEl) {
   const c = document.createElement('canvas');
   c.width  = imgEl.naturalWidth  || imgEl.width;
   c.height = imgEl.naturalHeight || imgEl.height;
-  const ctx = c.getContext('2d');
+  const ctx = c.getContext('2d', { willReadFrequently: true });
   ctx.drawImage(imgEl, 0, 0);
   const id = ctx.getImageData(0, 0, c.width, c.height);
   const d  = id.data;
@@ -354,8 +385,9 @@ function processPage(grayCanvas, allItems, pageNum, calibration) {
 
 // Scoring
 function mean(vals) { return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null; }
+const hasValue = r => r.selectedValue !== null && r.selectedValue !== undefined && r.selectedValue !== '';
 function getVals(results, codes) {
-  return results.filter(r=>codes.includes(r.code)&&r.selectedValue).map(r=>Number(r.selectedValue));
+  return results.filter(r=>codes.includes(r.code)&&hasValue(r)).map(r=>Number(r.selectedValue));
 }
 
 function computeScores(results) {
@@ -371,7 +403,7 @@ function computeScores(results) {
     Object.entries(utaut2Constructs).map(([k,c])=>[k,mean(getVals(results,c))?.toFixed(2)])
   );
 
-  const susItems = results.filter(r=>r.code.startsWith('SUS_')&&r.selectedValue);
+  const susItems = results.filter(r=>r.code.startsWith('SUS_')&&hasValue(r));
   const sus = susItems.length === 10 ? (() => {
     const s = susItems.reduce((t,r)=>{
       const v=Number(r.selectedValue);
@@ -380,7 +412,7 @@ function computeScores(results) {
     return { score:s.toFixed(1), grade:s>=85?'Excellent (A)':s>=70?'Acceptable (C)':'Poor (F)', n:susItems.length };
   })() : null;
 
-  const zbiItems = results.filter(r=>r.code.startsWith('ZBI_')&&r.selectedValue);
+  const zbiItems = results.filter(r=>r.code.startsWith('ZBI_')&&hasValue(r));
   const zbiTotal = zbiItems.reduce((s,r)=>s+Number(r.selectedValue),0);
   // ZBI total is only valid with all 22 items (Zarit et al., 1980); partial sums are not comparable
   const zbiComplete = zbiItems.length === 22;
@@ -391,7 +423,7 @@ function computeScores(results) {
       zbiTotal<=60?'Moderate-Severe (41–60)':'Severe burden (61–88)'
   } : null;
 
-  const tuqItems = results.filter(r=>r.code.startsWith('TUQ_')&&r.selectedValue);
+  const tuqItems = results.filter(r=>r.code.startsWith('TUQ_')&&hasValue(r));
   const tuqMean  = mean(tuqItems.map(r=>Number(r.selectedValue)));
   const tuq = tuqItems.length ? {
     mean:tuqMean?.toFixed(2), n:tuqItems.length,
@@ -412,7 +444,7 @@ function computeScores(results) {
   // WHOQOL-BREF scoring
   // Negatively-worded items (Q3, Q4, Q26): reversed = 6 − raw
   // Domain score (0–100) = (mean_of_domain_items − 1) × 25
-  const whoqolItems = results.filter(r => r.code.startsWith('WHOQ_') && r.selectedValue);
+  const whoqolItems = results.filter(r => r.code.startsWith('WHOQ_') && hasValue(r));
   let whoqol = null;
   if (whoqolItems.length > 0) {
     const getScore = code => {
@@ -421,16 +453,22 @@ function computeScores(results) {
       const raw = Number(item.selectedValue);
       return item.neg ? 6 - raw : raw;
     };
-    const domainMean = codes => {
+    const domainN = {};
+    // A domain is scored with at most one missing item; the missing item takes the domain mean
+    // (Physical 6/7, Psychological 5/6, Social 2/3, Environment 7/8, global Q1–Q2 1/2).
+    const WHO_MAX_MISSING = 1;
+    const domainMean = (codes, key) => {
       const vals = codes.map(getScore).filter(v => v !== null);
-      return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+      domainN[key] = `${vals.length}/${codes.length}`;
+      return vals.length > 0 && vals.length >= codes.length - WHO_MAX_MISSING
+        ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
     };
     const toScore = mean => mean !== null ? ((mean - 1) * 25).toFixed(1) : null;
-    const physMean  = domainMean(['WHOQ_3','WHOQ_4','WHOQ_10','WHOQ_15','WHOQ_16','WHOQ_17','WHOQ_18']);
-    const psychMean = domainMean(['WHOQ_5','WHOQ_6','WHOQ_7','WHOQ_11','WHOQ_19','WHOQ_26']);
-    const socMean   = domainMean(['WHOQ_20','WHOQ_21','WHOQ_22']);
-    const envMean   = domainMean(['WHOQ_8','WHOQ_9','WHOQ_12','WHOQ_13','WHOQ_14','WHOQ_23','WHOQ_24','WHOQ_25']);
-    const globalMean= domainMean(['WHOQ_1','WHOQ_2']);
+    const physMean  = domainMean(['WHOQ_3','WHOQ_4','WHOQ_10','WHOQ_15','WHOQ_16','WHOQ_17','WHOQ_18'], 'physical');
+    const psychMean = domainMean(['WHOQ_5','WHOQ_6','WHOQ_7','WHOQ_11','WHOQ_19','WHOQ_26'], 'psychological');
+    const socMean   = domainMean(['WHOQ_20','WHOQ_21','WHOQ_22'], 'social');
+    const envMean   = domainMean(['WHOQ_8','WHOQ_9','WHOQ_12','WHOQ_13','WHOQ_14','WHOQ_23','WHOQ_24','WHOQ_25'], 'environmental');
+    const globalMean= domainMean(['WHOQ_1','WHOQ_2'], 'global');
     whoqol = {
       global:      toScore(globalMean),
       physical:    toScore(physMean),
@@ -438,6 +476,7 @@ function computeScores(results) {
       social:      toScore(socMean),
       environmental: toScore(envMean),
       n: whoqolItems.length,
+      domain_n: domainN,   // answered/total items per domain (missing-data rules are applied in analysis)
       threshold: '≥10% change at 12 weeks',
     };
   }
@@ -447,85 +486,89 @@ function computeScores(results) {
 
 function resultsToCSV(results, pid, sheetKey, ts) {
   const hdr = ['participant_id','sheet','timestamp','page','section','code','label','response','ambiguous','confidence','overridden','auto_response'];
+  const cell = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
   const rows = results.map(r=>[
-    pid,sheetKey,ts,r.page,r.section_id,r.code,
-    `"${r.label.replace(/"/g,'""')}"`,
-    r.selectedValue??'',r.ambiguous?'1':'0',
+    pid,sheetKey,ts,r.page,r.section_id,r.code,r.label,
+    r.selectedValue,r.ambiguous?'1':'0',
     (r.maxFill*100).toFixed(0)+'%',
     r.overridden?'1':'0', r.overridden?(r.autoValue??''):''
-  ]);
+  ].map(cell));
   return [hdr,...rows].map(r=>r.join(',')).join('\n');
 }
 
 function downloadBlob(content, filename, mime) {
   const a = Object.assign(document.createElement('a'),{
     href:URL.createObjectURL(new Blob([content],{type:mime})),download:filename});
-  a.click(); URL.revokeObjectURL(a.href);
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
 }
 
 // OpenCV perspective warp
+// Order 4 points as [TL, TR, BR, BL]: TL has the smallest x+y, BR the largest;
+// TR has the smallest y−x, BL the largest. Always yields 4 distinct points.
 function sortCorners(pts) {
-  const cx = pts.reduce((s,p)=>s+p.x,0)/4, cy = pts.reduce((s,p)=>s+p.y,0)/4;
-  const q = p => (p.x<cx?0:1)*2 + (p.y<cy?0:1); // TL=0,TR=2,BR=3,BL=1
-  const tl = pts.find(p=>p.x<cx&&p.y<cy)||pts[0];
-  const tr = pts.find(p=>p.x>cx&&p.y<cy)||pts[1];
-  const br = pts.find(p=>p.x>cx&&p.y>cy)||pts[2];
-  const bl = pts.find(p=>p.x<cx&&p.y>cy)||pts[3];
-  return [tl,tr,br,bl];
+  const bySum  = [...pts].sort((a,b)=>(a.x+a.y)-(b.x+b.y));
+  const tl = bySum[0], br = bySum[3];
+  const rest = [bySum[1], bySum[2]].sort((a,b)=>(a.y-a.x)-(b.y-b.x));
+  return [tl, rest[0], br, rest[1]];
 }
 
 function detectAndWarp(srcCanvas) {
-  if (!window.cv) return srcCanvas;
+  if (!window.cv || !window.cvReady) return srcCanvas;
+  const mats = [];                       // everything allocated here is freed in finally
+  const track = m => (mats.push(m), m);
   try {
-    const src = cv.imread(srcCanvas);
-    const gray = new cv.Mat(), blurred = new cv.Mat(), edges = new cv.Mat(), dilated = new cv.Mat();
+    const src = track(cv.imread(srcCanvas));
+    const gray = track(new cv.Mat()), blurred = track(new cv.Mat()),
+          edges = track(new cv.Mat()), dilated = track(new cv.Mat());
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
     cv.GaussianBlur(gray, blurred, new cv.Size(9,9), 0);
     cv.Canny(blurred, edges, 30, 100);
-    const kernel = cv.Mat.ones(5,5,cv.CV_8U);
+    const kernel = track(cv.Mat.ones(5,5,cv.CV_8U));
     cv.dilate(edges, dilated, kernel);
-    const contours = new cv.MatVector(), hier = new cv.Mat();
+    const contours = track(new cv.MatVector()), hier = track(new cv.Mat());
     cv.findContours(dilated, contours, hier, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
 
-    let maxArea = 0, bestApprox = null;
+    let maxArea = 0, best = null;
     const minArea = srcCanvas.width * srcCanvas.height * 0.15;
     for (let i = 0; i < contours.size(); i++) {
-      const c = contours.get(i), area = cv.contourArea(c);
-      if (area < minArea) continue;
-      const approx = new cv.Mat();
-      cv.approxPolyDP(c, approx, 0.02*cv.arcLength(c,true), true);
-      if (approx.rows === 4 && area > maxArea) {
-        if (bestApprox) bestApprox.delete();
-        bestApprox = approx; maxArea = area;
-      } else approx.delete();
+      const c = contours.get(i);
+      try {
+        const area = cv.contourArea(c);
+        if (area < minArea || area <= maxArea) continue;
+        const approx = new cv.Mat();
+        cv.approxPolyDP(c, approx, 0.02*cv.arcLength(c,true), true);
+        if (approx.rows === 4) {
+          best = Array.from({length:4},(_,k)=>({x:approx.data32S[k*2],y:approx.data32S[k*2+1]}));
+          maxArea = area;
+        }
+        approx.delete();
+      } finally {
+        c.delete();
+      }
     }
+    if (!best) return srcCanvas;
 
-    let result = srcCanvas;
-    if (bestApprox) {
-      const pts = Array.from({length:4},(_,i)=>({x:bestApprox.data32S[i*2],y:bestApprox.data32S[i*2+1]}));
-      const sorted = sortCorners(pts);
-      const dstW=2339, dstH=1654;
-      const srcPts = cv.matFromArray(4,1,cv.CV_32FC2, sorted.flatMap(p=>[p.x,p.y]));
-      const dstPts = cv.matFromArray(4,1,cv.CV_32FC2, [0,0, dstW,0, dstW,dstH, 0,dstH]);
-      const M = cv.getPerspectiveTransform(srcPts, dstPts);
-      const dst = new cv.Mat();
-      cv.warpPerspective(src, dst, M, new cv.Size(dstW,dstH));
-      const out = document.createElement('canvas');
-      out.width=dstW; out.height=dstH;
-      cv.imshow(out, dst);
-      result = out;
-      [srcPts,dstPts,M,dst,bestApprox].forEach(m=>{try{m.delete()}catch(e){}});
-    }
-    [src,gray,blurred,edges,dilated,kernel,contours,hier].forEach(m=>{try{m.delete()}catch(e){}});
-    return result;
+    const sorted = sortCorners(best);
+    const dstW=2339, dstH=1654;          // A4 landscape @ 200 dpi
+    const srcPts = track(cv.matFromArray(4,1,cv.CV_32FC2, sorted.flatMap(p=>[p.x,p.y])));
+    const dstPts = track(cv.matFromArray(4,1,cv.CV_32FC2, [0,0, dstW,0, dstW,dstH, 0,dstH]));
+    const M = track(cv.getPerspectiveTransform(srcPts, dstPts));
+    const dst = track(new cv.Mat());
+    cv.warpPerspective(src, dst, M, new cv.Size(dstW,dstH));
+    const out = document.createElement('canvas');
+    out.width=dstW; out.height=dstH;
+    cv.imshow(out, dst);
+    return out;
   } catch(err) {
     console.error('Warp failed:', err);
     return srcCanvas;
+  } finally {
+    mats.forEach(m=>{ try { m.delete(); } catch(e){} });
   }
 }
 
 // ── Part 3: React Components ───────────────────────────────────
-const { useState, useEffect, useRef, useCallback } = React;
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
 const C = { navy:'#1B3A6B', teal:'#0E8B8B', lteal:'#D6F0F0', lnavy:'#D8E4F0',
   lgrey:'#F2F5F8', orange:'#E07B39', green:'#2E7D32', red:'#C62828', amber:'#F57C00' };
@@ -774,14 +817,15 @@ function CalibPanel({ sections, calibration, onChange }) {
 
 // ── Part 4: Main App ───────────────────────────────────────────
 function App() {
-  // [v2] M4 — Pre-select sheet from URL query param: omr_scanner.html?sheet=ALLIED_HEALTH
-  const _urlSheet = (() => {
+  // [v2] M4 — Pre-select sheet from the URL: ?sheet=ALLIED_HEALTH (admin portal) or #ALLIED_HEALTH (dashboard)
+  const [sheetKey,  setSheetKey]  = useState(() => {
     try {
-      const p = new URLSearchParams(window.location.search).get('sheet');
+      // Accept ?sheet=ELDERLY and #ELDERLY (the dashboard links use the hash form)
+      const p = new URLSearchParams(window.location.search).get('sheet')
+        || decodeURIComponent(window.location.hash.replace(/^#/, ''));
       return (p && SHEET_CONFIGS[p]) ? p : 'CAREGIVER';
     } catch(e) { return 'CAREGIVER'; }
-  })();
-  const [sheetKey,  setSheetKey]  = useState(_urlSheet);
+  });
   const [pid,       setPid]       = useState('');
   const [pages,     setPages]     = useState({});
   const [curPage,   setCurPage]   = useState(1);
@@ -803,33 +847,42 @@ function App() {
   },[]);
 
   const sheet    = SHEET_CONFIGS[sheetKey];
-  const allItems = getAllItems(sheetKey);
+  const allItems = useMemo(() => getAllItems(sheetKey), [sheetKey]);
 
+  // Attach the camera stream once the <video> is mounted (a fixed timeout could miss it)
+  useEffect(() => {
+    if (camStream && videoRef.current) videoRef.current.srcObject = camStream;
+    return () => { if (camStream) camStream.getTracks().forEach(t => t.stop()); };
+  }, [camStream]);
+
+  const sheetRef = useRef(sheetKey);
+  sheetRef.current = sheetKey;
   const loadPage = useCallback((pageNum, file) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        const raw = document.createElement('canvas');
-        raw.width=img.naturalWidth; raw.height=img.naturalHeight;
-        raw.getContext('2d').drawImage(img,0,0);
-        const corrected = (cvReady&&autoWarp) ? detectAndWarp(raw) : raw;
-        setPages(p=>({...p,[pageNum]:{corrected,gray:toGrayscaleCanvas(corrected)}}));
-        setCurPage(pageNum);
-      };
-      img.src=e.target.result;
+    const forSheet = sheetKey;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      if (sheetRef.current !== forSheet) return;   // sheet changed while the image was decoding
+      const raw = document.createElement('canvas');
+      raw.width=img.naturalWidth; raw.height=img.naturalHeight;
+      raw.getContext('2d').drawImage(img,0,0);
+      const corrected = (cvReady&&autoWarp) ? detectAndWarp(raw) : raw;
+      setPages(p=>({...p,[pageNum]:{corrected,gray:toGrayscaleCanvas(corrected)}}));
+      setCurPage(pageNum);
     };
-    reader.readAsDataURL(file);
-  },[cvReady,autoWarp]);
+    img.onerror = () => { URL.revokeObjectURL(url); alert('Could not read this image file.'); };
+    img.src = url;
+  },[cvReady,autoWarp,sheetKey]);
 
   const openCamera = async (pn) => {
+    if (camStream) return;
     setCamPage(pn);
     try {
       const s = await navigator.mediaDevices.getUserMedia({
         video:{facingMode:'environment',width:{ideal:2560},height:{ideal:1920}}});
-      setCamStream(s);
-      setTimeout(()=>{ if(videoRef.current) videoRef.current.srcObject=s; },120);
+      setCamStream(s);   // attached to <video> by the camStream effect
     } catch(e) { alert('Camera error: '+e.message); setCamPage(null); }
   };
 
@@ -842,8 +895,7 @@ function App() {
   };
 
   const closeCamera = () => {
-    if(camStream) camStream.getTracks().forEach(t=>t.stop());
-    setCamStream(null); setCamPage(null);
+    setCamStream(null); setCamPage(null);   // the camStream effect cleanup stops the tracks
   };
 
   const processAll = () => {
@@ -863,8 +915,8 @@ function App() {
   const handleOverride = (code, val) => {
     setResults(prev=>{
       const next=prev.map(r=>r.code===code
-        // Keep provenance: first override records the machine-read value
-        ?{...r,selectedValue:val,no_response:val===null,ambiguous:false,
+        // Keep provenance: the first override records the machine-read value
+        ?{...r,selectedValue:val,selectedIndex:val===null?-1:r.options.indexOf(val),no_response:val===null,ambiguous:false,
           overridden:true, autoValue: r.overridden ? r.autoValue : r.selectedValue}:r);
       setScores(computeScores(next));
       return next;
@@ -921,7 +973,7 @@ function App() {
           <div>
             <div style={LBL}>Questionnaire Type</div>
             <select value={sheetKey}
-              onChange={e=>{setSheetKey(e.target.value);setResults([]);setPages({});setScores({});}}
+              onChange={e=>{setSheetKey(e.target.value);setResults([]);setPages({});setScores({});setCurPage(1);}}
               style={SEL}>
               {Object.entries(SHEET_CONFIGS).map(([k,v])=>(
                 <option key={k} value={k}>[{v.code}] {v.name}</option>))}
