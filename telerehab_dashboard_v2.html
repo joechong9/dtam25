@@ -1114,8 +1114,16 @@ function exportCSV() {
     ...allKeys.map(k => r.answers?.[k] ?? ''),
     ...scoreKeys.map(k => r.scores?.[k]?.value ?? ''),
   ]);
-  const csv = [header, ...rows].map(row => row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const url = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' }));
+  // CSV cell: quoted; text starting with = + - @ (spreadsheet formula triggers) gets a leading ' so Excel
+  // shows it as text. Plain numbers such as -1 or 0.5 are left unchanged.
+  const cell = v => {
+    let s = String(v ?? '');
+    if (/^[=+\-@\t\r]/.test(s) && !/^[-+]?\d+(\.\d+)?([eE][-+]?\d+)?$/.test(s)) s = "'" + s;
+    return `"${s.replace(/"/g,'""')}"`;
+  };
+  const csv = [header, ...rows].map(row => row.map(cell).join(',')).join('\n');
+  // UTF-8 byte-order mark so Excel shows Chinese/Tamil text correctly
+  const url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type:'text/csv;charset=utf-8' }));
   const a = document.createElement('a');
   a.href = url;
   a.download = `dtam_my_responses_${new Date().toISOString().slice(0,10)}.csv`;

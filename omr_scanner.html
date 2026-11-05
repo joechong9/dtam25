@@ -486,7 +486,13 @@ function computeScores(results) {
 
 function resultsToCSV(results, pid, sheetKey, ts) {
   const hdr = ['participant_id','sheet','timestamp','page','section','code','label','response','ambiguous','confidence','overridden','auto_response'];
-  const cell = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
+  // CSV cell: quoted; text starting with = + - @ (spreadsheet formula triggers) gets a leading ' so Excel
+  // shows it as text. Plain numbers such as -1 or 0.5 are left unchanged.
+  const cell = v => {
+    let s = String(v ?? '');
+    if (/^[=+\-@\t\r]/.test(s) && !/^[-+]?\d+(\.\d+)?([eE][-+]?\d+)?$/.test(s)) s = "'" + s;
+    return `"${s.replace(/"/g,'""')}"`;
+  };
   const rows = results.map(r=>[
     pid,sheetKey,ts,r.page,r.section_id,r.code,r.label,
     r.selectedValue,r.ambiguous?'1':'0',
@@ -497,8 +503,10 @@ function resultsToCSV(results, pid, sheetKey, ts) {
 }
 
 function downloadBlob(content, filename, mime) {
+  // CSV gets a UTF-8 byte-order mark so Excel shows non-Latin text correctly
+  const body = mime.startsWith('text/csv') ? '\uFEFF' + content : content;
   const a = Object.assign(document.createElement('a'),{
-    href:URL.createObjectURL(new Blob([content],{type:mime})),download:filename});
+    href:URL.createObjectURL(new Blob([body],{type:mime})),download:filename});
   a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
 }
 
@@ -868,13 +876,15 @@ function App() {
       const raw = document.createElement('canvas');
       raw.width=img.naturalWidth; raw.height=img.naturalHeight;
       raw.getContext('2d').drawImage(img,0,0);
-      const corrected = (cvReady&&autoWarp) ? detectAndWarp(raw) : raw;
+      // detectAndWarp checks window.cvReady itself. The React cvReady state only mirrors it on a 400 ms poll
+      // (for the badge), so gating on it skipped correction for scans uploaded just after OpenCV became ready.
+      const corrected = autoWarp ? detectAndWarp(raw) : raw;
       setPages(p=>({...p,[pageNum]:{corrected,gray:toGrayscaleCanvas(corrected)}}));
       setCurPage(pageNum);
     };
     img.onerror = () => { URL.revokeObjectURL(url); alert('Could not read this image file.'); };
     img.src = url;
-  },[cvReady,autoWarp,sheetKey]);
+  },[autoWarp,sheetKey]);
 
   const openCamera = async (pn) => {
     if (camStream) return;

@@ -42,3 +42,26 @@ jobs:
             python3 harness/dtam_harness.py check || true
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  browser:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: harness/tests/browser
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: harness/tests/browser/package-lock.json
+
+      - name: Install pinned app libraries and Playwright
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser tests (all apps, file:// and HTTP; CDN libraries served from pinned local copies)
+        run: npm test
