@@ -572,7 +572,7 @@ def check_repo(ctx: Ctx):
 # ───────────────────────────── generated blocks (sync) ────────────────────
 
 def generated_block(ctx: Ctx) -> str:
-    rules = [{"id": r["id"], "sev": r["severity"], "p": r["pattern"],
+    rules = [{"id": r["id"], "sev": r["severity"], "label": r.get("label", r["id"]), "p": r["pattern"],
               "f": r.get("flags", "") + "u", "fix": r["fix"]}
              for r in ctx.rules_doc["rules"] if r["severity"] in ("error", "warn")]
     llm = ctx.constants["llm"]
