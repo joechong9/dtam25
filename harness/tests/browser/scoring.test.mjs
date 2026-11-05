@@ -42,7 +42,7 @@ test('OMR scanner: synthetic ZBI sheet, perspective warp, manual fix, safe CSV, 
     const dl = page.waitForEvent('download'); await page.click('text=⬇ CSV');
     const csv = fs.readFileSync(await (await dl).path(), 'utf8');
     assert.ok(csv.startsWith('\uFEFF'));
-    assert.match(csv.split('\n')[1], /^\uFEFF?"'=CG,001","CAREGIVER"/, 'participant ID quoted and formula-guarded');
+    assert.match(csv.split('\n')[1], /^\uFEFF?"'=CG,001","CAREGIVER","paper"/, 'participant ID quoted and formula-guarded; capture mode column');
     const [before, after] = await page.evaluate(() => {
       const c = document.createElement('canvas'); c.width = 1200; c.height = 900;
       const x = c.getContext('2d'); x.fillStyle = '#333'; x.fillRect(0, 0, 1200, 900); x.fillStyle = '#fff'; x.fillRect(100, 80, 1000, 700);
