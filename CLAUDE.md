@@ -32,6 +32,7 @@ python3 harness/dtam_harness.py check FILE...    # specific files
 python3 harness/dtam_harness.py sync --write     # regenerate rule/model blocks in apps
 python3 harness/dtam_harness.py baseline --write # tighten the ratchet after fixing
 python3 -m unittest discover -s harness/tests -v # harness self-tests
+(cd harness/tests/browser && npm ci && npm test)  # browser tests for every app (Playwright)
 ```
 
 `harness/baseline.json` lists known open defects, not exemptions. Shrink it; never
