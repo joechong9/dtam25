@@ -98,9 +98,9 @@
     ]
   },
   "ethics": {
-    "_comment": "While status is 'pending', any claim of UREC approval (EN/BM/ZH/TA) is an error. When approval is granted: set status to 'approved', fill reference, run check, and update every place it lists.",
-    "status": "pending",
-    "committee": "UTAR University Research Ethics Committee (UREC)",
-    "reference": "UTAR/UREC/2025 (pending)"
+    "_comment": "UREC has approved the study (canonical source: PostGrad Work CLAUDE.md §1, private). The approval reference is deliberately NOT stored here because this repo is public; adding it is the PI's decision. While status is 'approved', any 'pending'/'not submitted' claim or placeholder reference is an error; while 'pending', any approval claim is.",
+    "status": "approved",
+    "reference": null,
+    "committee": "UTAR University Research Ethics Committee (UREC)"
   }
 }
