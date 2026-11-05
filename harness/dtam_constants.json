@@ -98,8 +98,9 @@
     ]
   },
   "ethics": {
-    "_comment": "While status is 'pending', any claim of UREC approval (EN/BM/ZH/TA) is an error. When approval is granted: set status to 'approved', fill reference, run check, and update every place it lists.",
+    "_comment": "While status is 'pending', any claim of UREC approval (EN/BM/ZH/TA) is an error. While submitted is false, any claim that the application has been submitted to UREC is an error. When the application is submitted: set submitted to true. When approval is granted: set status to 'approved', fill reference, run check, and update every place it lists.",
     "status": "pending",
+    "submitted": false,
     "committee": "UTAR University Research Ethics Committee (UREC)",
     "reference": "UTAR/UREC/2025 (pending)"
   }

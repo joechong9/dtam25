@@ -187,6 +187,16 @@ APPROVAL_CLAIM_RX = re.compile(
     r"|审查和批准|审核并批准|已(?:获|经)[^。待]{0,20}批准|UREC批准(?!待)"
     r"|அங்கீகரிக்கப்பட்டது|UREC\s+அங்கீகாரம்(?!\s*நிலுவை)",
     re.IGNORECASE)
+SUBMISSION_CLAIM_RX = re.compile(
+    r"submitted\s+(?:to\s+(?:the\s+)?(?:UTAR|UREC|University\s+Research\s+Ethics)|for\s+(?:ethics\s+|ethical\s+)?review)"
+    r"|application\s+submitted"
+    r"|dikemukakan\s+kepada\s+(?:Jawatankuasa|UTAR|UREC)|Permohonan\s+etika\s+(?:telah\s+)?dikemukakan"
+    r"|已(?:经)?提交|提交[^。，]{0,12}审查"
+    r"|சமர்ப்பிக்கப்பட்டுள்ளது|சமர்ப்பிக்கப்பட்டது",
+    re.IGNORECASE)
+SUBMISSION_CTX_RX = re.compile(r"UREC|ethic|etika|伦理|倫理|நெறிமுறை", re.IGNORECASE)
+SUBMISSION_NEG_RX = re.compile(r"\b(not|yet\s+to\s+be|awaiting|before|until|once|after|will\s+be|belum|akan)\b[^.。;]{0,25}$",
+                               re.IGNORECASE)
 RANK_BEFORE_RX = re.compile(r"(Assoc\.?\s*Prof|A/Prof|Associate\s+Prof|Prof\.?\s*Madya|PM\.?)[^<\n]{0,14}$", re.IGNORECASE)
 RANK_AFTER_RX = re.compile(r"^[^\n]{0,40}?(Associate\s+Prof|Assoc\.?\s*Prof|Prof(?:esor|\.)?\s*Madya|副教授|இணைப்\s*பேராசிரியர்|இணை)", re.IGNORECASE)
 SUP_RX = re.compile(
@@ -236,6 +246,18 @@ def check_constants(ctx: Ctx, path: Path, text: str):
                                "Claims UREC approval, but ethics status is 'pending' "
                                "(dtam_constants.json ethics.status). State that approval is pending; "
                                "participant-facing text must not overstate ethics status."))
+    if c.get("ethics", {}).get("submitted") is False:
+        for m in SUBMISSION_CLAIM_RX.finditer(text):
+            window = text[max(0, m.start() - 100):m.end() + 100]
+            if not SUBMISSION_CTX_RX.search(window):
+                continue   # e.g. "your response was submitted": not about the ethics application
+            if SUBMISSION_NEG_RX.search(text[max(0, m.start() - 40):m.start()]):
+                continue   # "not yet submitted to UREC", "belum dikemukakan kepada ..."
+            if suppressed(ctx, text, m.start(), m.end(), "ETHICS_SUBMISSION"):
+                continue
+            out.append(finding("ETHICS_SUBMISSION", "error", r, line_of(text, m.start()), m.group(0),
+                               "Claims the UREC application has been submitted, but dtam_constants.json "
+                               "ethics.submitted is false. State that the application is awaiting submission."))
     for name in (c["supervisors"]["main"], c["supervisors"]["co"]):
         for m in re.finditer(re.escape(name), text):
             before = text[max(0, m.start() - 22):m.start()]
