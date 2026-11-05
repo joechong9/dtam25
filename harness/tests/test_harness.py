@@ -41,6 +41,17 @@ class DriftRuleFixtures(unittest.TestCase):
         ("NDHB_EN_SHORT", "Does the Blueprint's strategic direction address"),
         ("NDHB_BM_SHORT", "Adakah hala tuju strategik Pelan Induk menangani"),
         ("NDHB_ZH_SHORT", "蓝图的战略方向是否专门针对"),
+        ("NDHB_EN", "linked to the National Digital Health Record"),
+        ("NDHB_BM", "Rangka Tindakan Kesihatan Digital Negara"),
+        ("NDHB_BM", "Pelan Kesihatan Digital Kebangsaan"),
+        ("NDHB_TA", "தேசிய டிஜிட்டல் சுகாதார கொள்கை"),
+        ("MOH_TELEMED_2015", "per the MOH Telemedicine Guidelines (2015)"),
+        ("MOH_TELEMED_2015", "MOH Telemedicine Guideline 2015"),
+        ("AGEING_IN_PLACE", "Malaysia's Ageing-in-Place Policy"),
+        ("AGEING_IN_PLACE", "selaras dengan Dasar Penuaan di Tempat Malaysia"),
+        ("AGEING_IN_PLACE", "How does Malaysia's Ageing-in-Place policy framework currently support"),
+        ("AGEING_IN_PLACE", "马来西亚的就地养老政策框架目前如何支持"),
+        ("AGEING_IN_PLACE", "மலேசியாவின் இடத்திலேயே வயதாவது கொள்கை கட்டமைப்பு தற்போது"),
         ("LIM2017", "attrition of 20% (Lim et al., 2017)"),
         ("LIM2017", "Lim et al. 2017 reported"),
         ("FACULTY", "PhD candidate, FICT, UTAR"),
@@ -57,6 +68,17 @@ class DriftRuleFixtures(unittest.TestCase):
         "Lim et al. (2019) examined stroke rehabilitation",
         "digital health services for older adults",
         "pelan rawatan kesihatan",
+        "supporting ageing in place for older adults",
+        "Equity, Inclusion & Ageing-in-Place",
+        "Malaysia's ageing-in-place policy framework (National Policy for Older Persons, 2011) currently",
+        "rangka kerja dasar penuaan di tempat Malaysia (Dasar Warga Emas Negara, 2011) kini",
+        "马来西亚的就地养老政策框架（国家乐龄人士政策，2011年）目前",
+        "இடத்திலேயே வயதாவது கொள்கை கட்டமைப்பு (தேசிய முதியோர் கொள்கை, 2011) தற்போது",
+        "Dasar Warga Emas Negara 2011",
+        "MOH Guideline on Online Healthcare Services (2025)",
+        "MMC Guideline on Telemedicine (2024)",
+        "Pelan Strategik Pendigitalan KKM",
+        "National Policy for Older Persons",
         "டிஜிட்டல் சுகாதார சேவைகளை",
         "சுகாதார வெள்ளை அறிக்கை (2023)",
         "《卫生白皮书》（2023）",
@@ -92,6 +114,26 @@ class DriftRuleFixtures(unittest.TestCase):
         covered = {r for r, _ in self.SHOULD_HIT}
         for rule in CTX.rules_doc["rules"]:
             self.assertIn(rule["id"], covered, f"add a should-hit fixture for {rule['id']}")
+
+    def test_labels_and_fixes_do_not_trip_any_rule(self):
+        # The generated DTAM_RULES block lands in page source (admin portal, PostGrad Work
+        # library apps). Other scanners (pre-commit claims gate, pre-upload gate) read it
+        # unmasked, so no label or fix text may contain a string any rule forbids.
+        for r in CTX.rules:
+            for q in CTX.rules:
+                for field in ("label", "fix"):
+                    with self.subTest(rule=r["id"], field=field, by=q["id"]):
+                        self.assertIsNone(q["rx"].search(r[field]))
+
+    def test_generated_block_has_no_literal_forbidden_names(self):
+        # Literal-string scanners (e.g. a pre-commit claims gate) read the block as plain
+        # text with word boundaries; rule ids like NDHB_EN and escaped patterns are fine.
+        block = h.generated_block(CTX)
+        for pat in (r"National Digital Health Blue ?print", r"\bNDH[BR]\b", r"Lim et al\.? \(2017\)",
+                    r"\bFICT\b", r"MOH Telemedicine Guidelines \(2015\)", r"Ageing-in-Place Policy",
+                    r"Dasar Penuaan di Tempat"):
+            with self.subTest(pattern=pat):
+                self.assertIsNone(re.search(pat, block, re.I))
 
     def test_patterns_are_js_compatible(self):
         for rule in CTX.rules_doc["rules"]:
