@@ -665,7 +665,9 @@ input[type=text].api-input:focus,input[type=password].api-input:focus,input[type
       <div class="section-header"><h2>Settings</h2><p>Administrator configuration and API keys</p></div>
       <div class="card">
         <div class="card-title" style="margin-bottom:4px">🔑 API Keys</div>
-        <p class="card-desc">Keys are stored in memory only — you will need to re-enter after a page refresh.</p>
+        <p class="card-desc">Keys are stored in memory only — you will need to re-enter after a page refresh.
+          The assistant sends your messages and aggregate study counts (no participant records) to Anthropic's API,
+          on servers outside Malaysia — directly, or through the proxy if one is set. Record this in the data-management plan.</p>
         <div class="setting-row" style="flex-direction:column;align-items:flex-start">
           <div><div class="setting-label">Anthropic API Key (Claude Chatbot)</div><div class="setting-desc">Required for the Claude AI assistant in the admin portal. Get key at console.anthropic.com</div></div>
           <input type="password" autocomplete="off" class="api-input" id="claude-key-input" placeholder="sk-ant-api... (not needed when a proxy URL is set)" oninput="saveKey('claude',this.value)"/>
@@ -675,11 +677,6 @@ input[type=text].api-input:focus,input[type=password].api-input:focus,input[type
           <div class="setting-desc" style="margin-top:8px">Model</div>
           <select class="api-input" id="claude-model-select" onchange="saveLlmSetting('model',this.value)"></select>
           <div style="margin-top:6px;font-size:11px;color:var(--muted)">Replies are checked against the DTAM drift rules (fabricated citations, wrong faculty) before display.</div>
-        </div>
-        <div class="setting-row" style="flex-direction:column;align-items:flex-start">
-          <div><div class="setting-label">Gemini API Key (AI Insights in Survey App)</div><div class="setting-desc">Used by the Survey App's AI Insights feature. Get key at aistudio.google.com/apikey</div></div>
-          <input type="password" autocomplete="off" class="api-input" id="gemini-key-input" placeholder="AIza..." oninput="saveKey('gemini',this.value)"/>
-          <div style="margin-top:6px;font-size:11px;color:var(--muted)">Model: gemini-2.0-flash</div>
         </div>
       </div>
       <div class="card">
@@ -927,6 +924,10 @@ input[type=text].api-input:focus,input[type=password].api-input:focus,input[type
   </div>
   <div class="chat-msgs" id="chat-msgs">
       <div class="chat-msg model">Hi! I'm Claude, your DTAM-MY admin assistant. I can help you interpret data, plan interviews, draft reports, or answer study questions.</div>
+    </div>
+    <div style="font-size:10.5px;line-height:1.4;color:#6b7280;background:#F2F5F8;padding:6px 12px;border-top:1px solid #e5e7eb">
+      Sent to Anthropic's API (servers outside Malaysia): your messages and aggregate study counts only.
+      Never enter participant names, IDs or answers.
     </div>
     <div class="chat-input-area">
       <input type="text" id="chat-input" placeholder="Ask anything…" onkeypress="if(event.key==='Enter')sendChat()"/>
@@ -1532,10 +1533,8 @@ const GROUP_ICONS  = { allied:'🏥', caregiver:'👨‍👩‍👧', elderly:'�
 
 // ── API KEYS (session memory) ─────────────────────────
 let _claudeKey = '';
-let _geminiKey = '';
 function saveKey(type, val) {
   if (type === 'claude') _claudeKey = val.trim();
-  if (type === 'gemini') _geminiKey = val.trim();
 }
 
 // ── LLM SETTINGS + DRIFT RULES ────────────────────────
@@ -1820,11 +1819,17 @@ function exportInterviewJSON() {
   downloadText(JSON.stringify(data, null, 2), `dtam_my_interviews_${dateStr()}.json`);
 }
 /** Quote a CSV cell; null/undefined become empty, but 0 and false are kept. */
+// CSV cell: quoted; text starting with = + - @ (spreadsheet formula triggers) gets a leading ' so Excel
+// shows it as text. Plain numbers such as -1 or 0.5 are left unchanged.
 function csvCell(v) {
-  return `"${String(v ?? '').replace(/"/g,'""')}"`;
+  let s = String(v ?? '');
+  if (/^[=+\-@\t\r]/.test(s) && !/^[-+]?\d+(\.\d+)?([eE][-+]?\d+)?$/.test(s)) s = "'" + s;
+  return `"${s.replace(/"/g,'""')}"`;
 }
 function downloadText(text, filename, type = 'text/plain') {
-  const url = URL.createObjectURL(new Blob([text], {type}));
+  // CSV gets a UTF-8 byte-order mark so Excel shows Chinese/Tamil text correctly
+  const body = type.startsWith('text/csv') ? '\uFEFF' + text : text;
+  const url = URL.createObjectURL(new Blob([body], {type}));
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
