@@ -172,7 +172,7 @@
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef, useMemo } = React;
 
 // ── Instrument bank (sample items from DTAM-MY suite) ──────────────────────
 const INSTRUMENTS = {
@@ -270,7 +270,11 @@ function App() {
   const totalItems = items.length;
   const isOverride = manualScore !== null && manualScore !== autoScore;
   const activeScore = manualScore ?? autoScore;
-  const sessionId = `DTAM-${config.group.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+  // Generate once per group selection (was recomputed on every render, so the ID drifted mid-session)
+  const sessionId = useMemo(
+    () => `DTAM-${config.group.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`,
+    [config.group]
+  );
 
   // Timer
   useEffect(() => {
@@ -448,7 +452,15 @@ function App() {
             Submit to Warehouse
           </button>
           <button className="btn btn-outline" style={{flex:1}}
-            onClick={() => { const d = JSON.stringify(log,null,2); const a=document.createElement("a");
+            onClick={() => {
+              // Envelope mirrors the Part C export shape ({meta, responses}) so files are attributable
+              const payload = {
+                meta: { sessionId, participantId: config.participantId, researcherId: config.researcherId,
+                        group: config.group, language: config.lang, mode: config.mode, site: config.site,
+                        exportedAt: new Date().toISOString(), totalItems, completed: log.length },
+                responses: log,
+              };
+              const d = JSON.stringify(payload,null,2); const a=document.createElement("a");
               a.href=URL.createObjectURL(new Blob([d],{type:"application/json"}));
               a.download=`${sessionId}.json`; a.click(); }}>
             Export JSON
