@@ -1299,7 +1299,7 @@
 
   <div class="chat-input-row">
     <input class="chat-input" id="chatInput" type="text" placeholder="Ask about the study…"
-      onkeydown="if(event.key==='Enter')sendMessage()"/>
+      onkeydown="if(event.key==='Enter'&&!event.isComposing)sendMessage()"/>
     <button class="chat-send" id="chatSendBtn" onclick="sendMessage()">➤</button>
   </div>
 </div>
@@ -1992,7 +1992,7 @@ function setLang(lang){
 
   // reset chatbot with new language greeting
   const msgs = document.getElementById('chatMessages');
-  if(msgs){ msgs.innerHTML = ''; addBotMsg(T.chat.greeting, T.chat.quick); }
+  if(msgs){ chatGen++; msgs.innerHTML = ''; addBotMsg(T.chat.greeting, T.chat.quick); document.getElementById('chatSendBtn').disabled = false; }
 }
 
 // ─── Knowledge base ────────────────────────────────────────────────────────────
@@ -2501,6 +2501,11 @@ const FALLBACK_TRANS = {
 // ─── State ─────────────────────────────────────────────────────────────────────
 let chatOpen = false;
 let badgeShown = true;
+let chatGen = 0;   // bumped when the chat is reset (language switch) so pending replies are dropped
+
+function escHtml(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 
 function toggleChat(){
   chatOpen = !chatOpen;
@@ -2538,7 +2543,7 @@ function addUserMsg(text){
   const msgs = document.getElementById('chatMessages');
   const wrap = document.createElement('div');
   wrap.className='msg user';
-  wrap.innerHTML=`<div><div class="msg-bubble">${text}</div><div class="msg-time">${now()}</div></div>`;
+  wrap.innerHTML=`<div><div class="msg-bubble">${escHtml(text)}</div><div class="msg-time">${now()}</div></div>`;   // visitor text is never HTML
   msgs.appendChild(wrap);
   setQuickReplies([]);
   msgs.scrollTop = msgs.scrollHeight;
@@ -2594,7 +2599,9 @@ function handleInput(text){
   document.getElementById('chatSendBtn').disabled=true;
   addUserMsg(text);
   showTyping();
+  const gen = chatGen;
   setTimeout(()=>{
+    if (gen !== chatGen) return;   // chat was reset (e.g. language switch) while this reply was pending
     removeTyping();
     const {reply, quick} = findResponse(text);
     addBotMsg(reply, quick);
