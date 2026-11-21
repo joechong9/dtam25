@@ -435,5 +435,45 @@ class Hooks(unittest.TestCase):
         self.assertEqual(code, 0, err)
 
 
+class FactsProvenance(unittest.TestCase):
+    CONST = {"version": "1", "_comment": "x", "gcp": {"score": 19}, "ethics": {"status": "approved"}}
+
+    def entry(self, **kw):
+        e = {"source": "s", "recorded": "2026-11-21", "owner": "o", "confirmed_by_pi": True}
+        e.update(kw)
+        return e
+
+    def run_report(self, facts, today="2026-11-30", refresh=120):
+        import datetime
+        doc = {"refresh_days": refresh, "facts": facts}
+        return h.facts_report(self.CONST, doc, datetime.date.fromisoformat(today))
+
+    def test_clean(self):
+        errs, warns = self.run_report({"gcp": self.entry(), "ethics": self.entry()})
+        self.assertEqual((errs, warns), ([], []))
+
+    def test_missing_provenance_is_error(self):
+        errs, _ = self.run_report({"gcp": self.entry()})
+        self.assertTrue(any(e.startswith("ethics:") for e in errs))
+
+    def test_orphan_entry_is_error(self):
+        errs, _ = self.run_report({"gcp": self.entry(), "ethics": self.entry(), "gone": self.entry()})
+        self.assertTrue(any(e.startswith("gone:") for e in errs))
+
+    def test_missing_source_and_bad_date_are_errors(self):
+        errs, _ = self.run_report({"gcp": self.entry(source=" "), "ethics": self.entry(recorded="soon")})
+        self.assertEqual(len(errs), 2)
+
+    def test_stale_and_unconfirmed_are_warnings_not_errors(self):
+        errs, warns = self.run_report(
+            {"gcp": self.entry(recorded="2026-01-01"), "ethics": self.entry(confirmed_by_pi=False)})
+        self.assertEqual(errs, [])
+        self.assertEqual(len(warns), 2)
+
+    def test_real_files_have_no_structural_errors(self):
+        errs, _ = h.facts_report(h.load_json(h.CONSTANTS_PATH), h.load_json(h.FACTS_PATH))
+        self.assertEqual(errs, [])
+
+
 if __name__ == "__main__":
     unittest.main()

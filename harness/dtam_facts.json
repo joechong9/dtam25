@@ -1,0 +1,20 @@
+{
+  "_comment": "Provenance sidecar for harness/dtam_constants.json (Kaplan-style facts file: fact, source, date, owner). Values live ONLY in dtam_constants.json; this file says where each top-level constant came from and when it was last checked. 'recorded' is when provenance was written, not when the PI last confirmed the value: confirmed_by_pi stays false until YZ confirms it, and only YZ flips it. Sources name the private canonical table (PostGrad Work CLAUDE.md §1) by pointer only; never copy private text here (public repo). Check with: python3 harness/dtam_harness.py facts",
+  "version": 1,
+  "refresh_days": 120,
+  "facts": {
+    "study":             {"source": "PostGrad Work CLAUDE.md §1 (private)", "recorded": "2026-11-21", "owner": "CHONG Yu Zheng", "confirmed_by_pi": false},
+    "supervisors":       {"source": "PostGrad Work CLAUDE.md §1 (private); dtam-working-method §3.5", "recorded": "2026-11-21", "owner": "CHONG Yu Zheng", "confirmed_by_pi": false},
+    "sample":            {"source": "PostGrad Work CLAUDE.md §1 (private); dtam-working-method §3.3", "recorded": "2026-11-21", "owner": "CHONG Yu Zheng", "confirmed_by_pi": false},
+    "gcp":               {"source": "PostGrad Work CLAUDE.md §1 (private); dtam-working-method §3.3", "recorded": "2026-11-21", "owner": "CHONG Yu Zheng", "confirmed_by_pi": false},
+    "languages":         {"source": "PostGrad Work CLAUDE.md §1 (private); dtam-working-method §3.3", "recorded": "2026-11-21", "owner": "CHONG Yu Zheng", "confirmed_by_pi": false},
+    "stakeholder_groups": {"source": "PostGrad Work CLAUDE.md §1 (private); dtam-working-method §3.3", "recorded": "2026-11-21", "owner": "CHONG Yu Zheng", "confirmed_by_pi": false},
+    "frameworks":        {"source": "dtam-working-method §5", "recorded": "2026-11-21", "owner": "CHONG Yu Zheng", "confirmed_by_pi": false},
+    "policy_anchors":    {"source": "dtam-working-method §3.1", "recorded": "2026-11-21", "owner": "CHONG Yu Zheng", "confirmed_by_pi": false},
+    "domain6":           {"source": "dtam-working-method §5", "recorded": "2026-11-21", "owner": "CHONG Yu Zheng", "confirmed_by_pi": false},
+    "palette":           {"source": "dtam-working-method §5; dtam-html-design-standard", "recorded": "2026-11-21", "owner": "CHONG Yu Zheng", "confirmed_by_pi": false},
+    "omr_geometry_mm":   {"source": "dtam-working-method §5 (F1-F6 regression rules)", "recorded": "2026-11-21", "owner": "CHONG Yu Zheng", "confirmed_by_pi": false},
+    "llm":               {"source": "repo decision: harness/dtam_constants.json llm.chat_model", "recorded": "2026-11-21", "owner": "CHONG Yu Zheng", "confirmed_by_pi": false},
+    "ethics":            {"source": "PostGrad Work CLAUDE.md §1 (private): study recorded as approved", "recorded": "2026-11-21", "owner": "CHONG Yu Zheng", "confirmed_by_pi": false, "clash_rule": "If any file, skill or session contradicts this value, stop and show YZ both; never resolve by majority of files."}
+  }
+}
