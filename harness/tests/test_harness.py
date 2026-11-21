@@ -191,7 +191,19 @@ class ConstantsFixtures(unittest.TestCase):
                       "'UTAR UREC批准待定'",
                       "UREC நெறிமுறை விண்ணப்பம் — <b>இன்னும் சமர்ப்பிக்கப்படவில்லை</b>",
                       "'UTAR UREC அங்கீகாரம் நிலுவையில்'"]
-    NEUTRAL = ["Available after UREC ethics clearance", "8. Ethics Approval",
+    PENDING_CLAIMS += [
+        "**Status**: △ In progress (ref number pending approval)",
+        "ethics reference number placeholder in all documents",
+        "will be resolved in the normal course of UREC submission",
+        "| UREC ethics submission | Q3 2026 | ⏳ Pending |",
+        "Nombor rujukan etika masih tertunda",
+        "Penghantaran UREC belum selesai",
+        "伦理参考号待定",
+        "UREC提交尚未完成",
+        "UREC சமர்ப்பிப்பு நிலுவையில்",
+    ]
+    NEUTRAL = ["Available after UREC ethics clearance", "UREC ethics submission | Q3 2026 | Approved",
+               "ethics reference number: see approval letter", "amendment submission is pending approval of the sponsor", "8. Ethics Approval",
                "MREC registration follows UREC approval", "⏳ Distribution planned for Phase 4 (pilot)",
                "✈ TestFlight — நிலுவையில்"]
 

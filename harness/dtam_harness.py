@@ -201,7 +201,15 @@ PENDING_CLAIM_RX = re.compile(
     r"|belum\s+dikemukakan|kelulusan\s+belum\s+diterima|menunggu\s+nombor\s+rujukan\s+etika"
     r"|批准待定|尚待批准|正在等待[^。]{0,40}批准|等待\s*UREC\s*伦理审批|尚未提交|审批中|等待伦理参考号"
     r"|அங்கீகாரம்\s+(?:இன்னும்\s+)?நிலுவையில்|நெறிமுறை\s+ஒப்புதல்\s+வரை|இன்னும்\s+சமர்ப்பிக்கப்படவில்லை"
-    r"|நெறிமுறை\s+குறிப்பு\s+எண்[^.\n]{0,40}நிலுவை",
+    r"|நெறிமுறை\s+குறிப்பு\s+எண்[^.\n]{0,40}நிலுவை"
+    # Added 2026-11-21 (found in synced skills): reference-number placeholders, "normal course of
+    # submission", and status-table rows that list the UREC submission as pending.
+    r"|ref(?:erence)?\s+(?:number\s+)?pending\s+approval|ethics\s+(?:ref(?:erence)?\s+)?(?:number\s+)?placeholder"
+    r"|normal\s+course\s+of\s+UREC\s+submission"
+    r"|UREC\s+(?:ethics\s+)?submission\s*\|[^|\n]*\|\s*(?:⏳\s*)?Pending"
+    r"|nombor\s+rujukan\s+etika\s+(?:masih\s+)?(?:tertunda|belum\s+diterima)|penghantaran\s+UREC\s+(?:masih\s+)?(?:tertunda|belum)"
+    r"|伦理参考号(?:待定|占位|待批准)|UREC\s*提交(?:待定|尚未)"
+    r"|UREC\s+சமர்ப்பிப்பு\s+(?:இன்னும்\s+)?நிலுவையில்",
     re.IGNORECASE)
 # An ethics-committee reference token: optional prefixes, then SERC/ or UREC/, then the rest.
 # Tokens with no digit after the committee name ("UREC/MREC", "UTAR/SERC/...") are prose
