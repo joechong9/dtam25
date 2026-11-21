@@ -35,11 +35,17 @@ This file is deliberately thin. Rules live in the `dtam-*` skills; numbers live 
 - **Stop** blocks if the repo has new errors relative to `harness/baseline.json`.
 - **CI** (`.github/workflows/harness.yml`) runs the same checks plus the test suite.
 
+- **Facts provenance** (`harness/dtam_facts.json`): every constant has a source, date and
+  owner; `confirmed_by_pi` is flipped only by YZ. If two facts clash, stop and show YZ both.
+  The context-agent routine is in `harness/CONTEXT_AGENT.md`; corrections that recur go in
+  `harness/REVIEW_LOG.md`; fact changes go in `harness/CHANGELOG.md`.
+
 Manual commands:
 
 ```bash
 python3 harness/dtam_harness.py check            # all checks vs baseline
 python3 harness/dtam_harness.py check FILE...    # specific files
+python3 harness/dtam_harness.py facts            # provenance: source/date/owner per constant
 python3 harness/dtam_harness.py sync --write     # regenerate rule/model blocks in apps
 python3 harness/dtam_harness.py baseline --write # tighten the ratchet after fixing
 python3 -m unittest discover -s harness/tests -v # harness self-tests

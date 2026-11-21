@@ -18,6 +18,7 @@ Commands
   baseline --write                  record current findings as the accepted baseline
   sync [FILES...] [--write]         regenerate DTAM_RULES blocks (repo apps, or any FILES given,
                                     e.g. the Report Assembler in PostGrad Work)
+  facts [--quiet]                   provenance check (harness/dtam_facts.json): source, date, owner
   status                            short summary (used by the SessionStart hook)
   hook post-edit | hook stop        Claude Code hook entry points (JSON on stdin)
 
@@ -37,6 +38,7 @@ from pathlib import Path
 HARNESS_DIR = Path(__file__).resolve().parent
 ROOT = Path(os.environ.get("CLAUDE_PROJECT_DIR") or HARNESS_DIR.parent).resolve()
 CONSTANTS_PATH = HARNESS_DIR / "dtam_constants.json"
+FACTS_PATH = HARNESS_DIR / "dtam_facts.json"
 RULES_PATH = HARNESS_DIR / "drift_rules.json"
 BASELINE_PATH = HARNESS_DIR / "baseline.json"
 MANIFEST_PATH = ROOT / "dtam_manifest.json"
@@ -834,6 +836,52 @@ def cmd_baseline(args) -> int:
     return 0
 
 
+def facts_report(constants: dict, facts_doc: dict, today=None):
+    """Provenance check of constants vs the facts sidecar. Returns (errors, warnings).
+
+    Errors (structural): a constant with no provenance, provenance for a constant
+    that does not exist, a missing source/owner, or an unparseable date.
+    Warnings (need YZ): not yet confirmed by the PI, or older than refresh_days.
+    """
+    import datetime as _dt
+    today = today or _dt.date.today()
+    facts = facts_doc.get("facts", {})
+    max_age = int(facts_doc.get("refresh_days", 120))
+    keys = [k for k in constants if not k.startswith("_") and k != "version"]
+    errors, warns = [], []
+    for k in keys:
+        if k not in facts:
+            errors.append(f"{k}: no provenance entry in dtam_facts.json (a fact with no source is a guess)")
+    for k, e in facts.items():
+        if k not in constants:
+            errors.append(f"{k}: provenance entry for a constant that no longer exists (drop it)")
+            continue
+        for fld in ("source", "owner"):
+            if not str(e.get(fld, "")).strip():
+                errors.append(f"{k}: missing {fld}")
+        try:
+            rec = _dt.date.fromisoformat(e.get("recorded", ""))
+        except ValueError:
+            errors.append(f"{k}: 'recorded' must be an ISO date")
+            continue
+        if (today - rec).days > max_age:
+            warns.append(f"{k}: last checked {rec} ({(today - rec).days} days ago, refresh every {max_age}); re-check against its source")
+        if not e.get("confirmed_by_pi"):
+            warns.append(f"{k}: not yet confirmed by the PI")
+    return errors, warns
+
+
+def cmd_facts(args) -> int:
+    errors, warns = facts_report(load_json(CONSTANTS_PATH), load_json(FACTS_PATH))
+    for m in errors:
+        print(f"ERROR {m}")
+    if not args.quiet:
+        for m in warns:
+            print(f"WARN  {m}")
+    print(f"facts: {len(errors)} error(s), {len(warns)} warning(s)")
+    return 1 if errors else 0
+
+
 def cmd_status(_args) -> int:
     ctx = Ctx()
     c = ctx.constants
@@ -853,6 +901,12 @@ def cmd_status(_args) -> int:
     print(f"  Canonical file versions: dtam_manifest.json (a higher _vN is NOT canonical).")
     print(f"  Open defects in baseline: {open_err} error, {open_warn} warn"
           + (f" - top: {', '.join(f'{k} x{v}' for k, v in rules.most_common(4))}" if rules else ""))
+    try:
+        fe, fw = facts_report(c, load_json(FACTS_PATH))
+        print(f"  Facts provenance (dtam_facts.json): {len(fe)} error, {len(fw)} awaiting YZ/refresh. "
+              "Two facts clash: stop and show YZ both.")
+    except (OSError, ValueError):
+        print("  Facts provenance: dtam_facts.json missing or unreadable.")
     print("  Edits are drift-scanned automatically; run `python3 harness/dtam_harness.py check` "
           "before declaring work done.")
     return 0
@@ -930,6 +984,9 @@ def main(argv=None) -> int:
     s.add_argument("files", nargs="*", help="files to sync (may be outside the repo); default: discover in repo")
     s.add_argument("--write", action="store_true")
     s.set_defaults(fn=lambda a: do_sync(Ctx(), a.write, a.files or None))
+    fa = sub.add_parser("facts", help="provenance check: every constant has source, date, owner")
+    fa.add_argument("--quiet", action="store_true", help="errors only")
+    fa.set_defaults(fn=cmd_facts)
     st = sub.add_parser("status")
     st.set_defaults(fn=cmd_status)
     h = sub.add_parser("hook")

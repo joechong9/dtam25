@@ -2,8 +2,12 @@
 
 **Status (2026-11-05): corrected copies of 11 skills were delivered as
 `dtam_skills_corrected.zip`, ready to upload.** They apply Patches 1, 3, 4 and 5
-below, plus two additions found later: the UREC approval status (pending — never
-state approval) and supervisor ranks. Patch 2 concerns files in PostGrad Work
+below, plus two additions found later: the UREC approval status and supervisor
+ranks. **Correction (2026-11-21): the UREC wording in that zip ("pending, never
+state approval") is wrong. PostGrad Work CLAUDE.md §1 records the study as
+approved, and `harness/dtam_constants.json` `ethics.status` is `approved`. Do not
+upload those 11 skills until the UREC line is fixed, and re-check any already
+uploaded.** Patch 2 concerns files in PostGrad Work
 (Bundle Compiler, Report Assembler, Citation Auditor, Loop Engine), which are not
 in this repository, so it remains to be done there.
 

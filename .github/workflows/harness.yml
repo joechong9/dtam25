@@ -30,6 +30,9 @@ jobs:
       - name: Generated blocks in sync with source files
         run: python3 harness/dtam_harness.py sync
 
+      - name: Facts provenance (every constant has source, date, owner)
+        run: python3 harness/dtam_harness.py facts --quiet
+
       - name: Drift, constants, parity, OMR, manifest checks (ratchet vs baseline)
         run: python3 harness/dtam_harness.py check
 
