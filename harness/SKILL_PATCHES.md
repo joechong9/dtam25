@@ -82,3 +82,57 @@ Add a final checklist item:
 (Ethics & Protocol, Questionnaire & OMR, Literature & Framework, Statistical &
 Analytics, App & FHIR Dev, QA & Data Warehouse, ML Pipeline). Either name the eighth
 or change the count to 7. This needs your decision.
+
+## Patch 6: stale UREC wording in four synced skills (found 2026-11-21)
+
+The study is approved (`ethics.status`; PostGrad Work CLAUDE.md §1). These synced
+skills still treat it as pre-submission. `check --external` now catches all four
+(new rules in `PENDING_CLAIM_RX`). Paths are inside each skill; line numbers are from
+the copies synced on 2026-11-21. The approval reference is not stored here (public
+repo), so the replacements point to the approval letter; YZ supplies the reference.
+
+**1. `telerehab-questionnaire/assets/telerehab_questionnaire_app.html`, line 945**
+(participant-facing consent, section 8). It says the study is approved but gives an
+invented placeholder reference that does not match `^U/SERC/\d+\([A-Z]\)-\d+/\d{4}$`.
+Replace the second sentence with one of:
+
+- Reference known: `Reference: <YZ to supply, shape U/SERC/n(X)-n/yyyy>.`
+- Reference not yet released for this copy: delete the `Reference: ...` sentence.
+
+Do not leave a placeholder reference in a participant-facing page.
+
+**2. `telerehab-research-protocol/references/gcp-audit-full.md`, lines 28-31 and 203**
+(E6 2.1 Ethics Committee Approval).
+
+Replace the Protocol response and Status with:
+
+```
+**Protocol response**: UTAR UREC approval obtained (reference per the approval letter);
+the ethics reference number appears in all participant-facing documents; no data
+collection outside the approved protocol; amendment log maintained for all subsequent
+changes.
+**Status**: <YZ to set the marker, see note>
+```
+
+Replace line 203 (the sentence that says both open items resolve in the normal course
+of submission) with: `△ Items are procedural (pre-registration) and do not
+represent substantive gaps.` **Note for YZ:** moving E6 2.1 from △ to ✓ changes the
+audit tally (the file and `SKILL.md` quote 20/22 = 91% with advisory corrections;
+the constants say 19/22). I have not recalculated it; that is your call.
+
+**3. `dtam-architecture-doc/references/arch-content.md`, line 213** (status table).
+Change the status cell of the UREC ethics submission row from pending to
+`✓ Approved`. The Q3 2026 date cell is a plan date; replace it with the actual
+approval date only if YZ gives it.
+
+**4. `telerehab-research-protocol/SKILL.md`, lines 126 and 130** (mild, generic wording).
+
+- Line 126: drop the ethics reference number from the list of pending examples,
+  leaving `(e.g., pre-registration)`.
+- Line 130: change `acceptable for UREC submission with explanation of △ items` to
+  `acceptable with explanation of △ items`.
+
+**Also seen, not UREC (needs YZ):** `check --external` warns `STALE_PILOT_N` in
+`telerehab-research-protocol/SKILL.md` (lines 160, 173, 247) and
+`references/gcp-audit-full.md` (line 171). Per-group pilot targets of n=50 are
+legitimate; canonical pilot n=70 (42 + 28, 45 completers). Review each in context.
